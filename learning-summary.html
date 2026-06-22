@@ -334,7 +334,10 @@
     .tab-btn { font-size: 0.8rem; padding: 8px 12px; }
     th, td { padding: 8px 10px; }
   }
-</style>
+
+  .qa-item { margin-bottom: 12px; padding: 10px 14px; background: var(--accent-light); border-radius: var(--radius-sm); }
+  .qa-q { color: var(--text); font-weight: 500; font-size: 0.88rem; margin-bottom: 4px; }
+  .qa-a { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; }</style>
 </head>
 <body>
 <div class="container">
@@ -781,7 +784,7 @@ LoRA 插两个小矩阵 A（4096×r）和 B（r×4096）
   <!-- ===== Day 3 ===== -->
   <div class="day-content" id="day3">
     <div class="day-header">
-      <span class="date">2026年6月22日 · LLM 评估 · Eval</span>
+      <span class="date">2026年6月22日 · LLM 评估 + 缓存成本优化</span>
       <span class="lock-badge">📝 可编辑</span>
     </div>
 
@@ -889,8 +892,135 @@ CI = p ± z × √(p(1-p)/n + z²/(4n²))  /  分母</div>
       <div class="code">test_eval_real.py  — 真实 Eval 流水线（20 条用例 + LLM 裁判 + Wilson CI）<br>test_eval.py       — 模拟版 Eval 演示（确定性打分 + 模型对比）<br><br># 运行方式：<br>source venv/bin/activate && python3 test_eval_real.py</div>
     </div>
 
-    <div class="footer">Day 3 · 2026-06-22 · LLM 评估 · Eval</div>
+    
+
+<div class="section">
+      <h2><span class="emoji">💰</span> 1. 成本计算 — calculate_cost</h2>
+      <p>每次 API 调用按 token 计费，output 比 input 贵 4 倍：</p>
+      <div class="table-wrap">
+      <table>
+        <tr><th>模型</th><th>input / 百万 token</th><th>output / 百万 token</th></tr>
+        <tr><td>gpt-4o</td><td>$2.50</td><td>$10.00</td></tr>
+        <tr><td>gpt-4o-mini</td><td>$0.15</td><td>$0.60</td></tr>
+        <tr><td>claude-sonnet-4</td><td>$3.00</td><td>$15.00</td></tr>
+      </table>
+      </div>
+      <div class="code">def calculate_cost(model, input_tokens, output_tokens, cached_input_tokens=0):
+    # input 分两部分：未命中按原价，命中按缓存价
+    input_cost = (non_cached / 1_000_000) * pricing["input"]
+    cached_cost = (cached_input_tokens / 1_000_000) * pricing["cached_input"]
+    output_cost = (output_tokens / 1_000_000) * pricing["output"]</div>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">🔑</span> 2. 精确缓存 — ExactCache</h2>
+      <p>完全相同的输入直接返回缓存结果，不调 API：</p>
+      <ul>
+        <li><strong>key</strong> = SHA256(model + messages + temperature)</li>
+        <li><strong>temperature > 0 不缓存</strong>——有随机性的回答缓存没意义</li>
+        <li><strong>TTL 过期自动删除</strong>——知识可能过时（如退货政策半年后变了）</li>
+        <li><strong>LRU 淘汰</strong>——缓存满了删最旧的</li>
+      </ul>
+      <div class="code"># "怎么退货" 第一次 → MISS，调 API，存缓存
+# "怎么退货" 第二次 → HIT，直接返回，省一次 API 调用</div>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">🧠</span> 3. 语义缓存 — SemanticCache</h2>
+      <p>ExactCache 的升级版，意思相近就算命中：</p>
+      <ul>
+        <li>"怎么退货" → 向量化 → 存起来</li>
+        <li>"如何退货" → 向量化 → 算余弦相似度 → 够高就命中</li>
+        <li>演示代码用简化的词袋模型，生产环境用 sentence-transformers 生成 384 维向量</li>
+        <li>相似度阈值通常设 0.85-0.95</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">🪣</span> 4. 令牌桶限流 — TokenBucketRateLimiter</h2>
+      <p>防止单个用户刷爆你的预算：</p>
+      <div class="table-wrap">
+      <table>
+        <tr><th>用户等级</th><th>每日额度</th><th>每分钟最大请求</th><th>可用模型</th></tr>
+        <tr><td>Free</td><td>50,000 token</td><td>10 次</td><td>仅便宜模型</td></tr>
+        <tr><td>Pro</td><td>500,000 token</td><td>60 次</td><td>中高端模型</td></tr>
+        <tr><td>Enterprise</td><td>5,000,000 token</td><td>300 次</td><td>全部模型</td></tr>
+      </table>
+      </div>
+      <p>令牌桶算法：桶里 token 随时间自动补充，请求消耗 token，桶空了就拒绝。</p>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">🧭</span> 5. 模型路由 — route_model</h2>
+      <p>简单问题走便宜模型，复杂问题走贵模型：</p>
+      <div class="code">"几点关门？"              → gpt-4o-mini ($0.15/百万 input)
+"分析微服务和单体架构的优劣" → claude-sonnet-4 ($3.00/百万 input)
+"帮我写一个红黑树的删除算法"  → gpt-4o ($2.50/百万 input)</div>
+      <p>路由分类器靠关键词匹配：问时间/地址/价格 = simple；分析/对比/设计 = complex。</p>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">🔔</span> 6. 预算警报 — CostTracker</h2>
+      <p>三层警报机制，防止预算超支：</p>
+      <ul>
+        <li><strong>70% 警告</strong> → 发通知</li>
+        <li><strong>85% 限流</strong> → 自动切到便宜模型</li>
+        <li><strong>95% 停止</strong> → 拒绝新请求，只返回缓存</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">📊</span> 7. 优化前后对比</h2>
+      <div class="table-wrap">
+      <table>
+        <tr><th>指标</th><th>优化前</th><th>优化后</th><th>节省</th></tr>
+        <tr><td>月费</td><td>$22,500</td><td>$5,200</td><td>77%</td></tr>
+        <tr><td>每次查询成本</td><td>$0.0075</td><td>$0.0017</td><td>77%</td></tr>
+        <tr><td>缓存命中率</td><td>0%</td><td>52%</td><td>—</td></tr>
+        <tr><td>P95 延迟</td><td>2,800ms</td><td>900ms</td><td>68%</td></tr>
+      </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">🎤</span> 8. 面试可能问什么</h2>
+      <div class="qa-item">
+        <p class="qa-q"><strong>Q: LLM 调用的成本构成是怎样的？哪些部分最烧钱？</strong></p>
+        <p class="qa-a">按 token 计费，input + output。System prompt 是"沉默的杀手"——每次都带着但从不变化，1500 token 的 system prompt × 10 万次/天 = $11,250/月。Output 比 input 贵 4 倍，长回答成本飙升。</p>
+      </div>
+      <div class="qa-item">
+        <p class="qa-q"><strong>Q: 精确缓存和语义缓存有什么区别？各自适用什么场景？</strong></p>
+        <p class="qa-a">精确缓存比哈希值，完全一样才能命中，适用于 temperature=0 的确定性问题。语义缓存比向量相似度，意思相近就能命中，适用于用户表达多样化的场景（客服。但语义缓存有阈值选择问题——设太高命中少，设太低可能答非所问。</p>
+      </div>
+      <div class="qa-item">
+        <p class="qa-q"><strong>Q: 令牌桶算法怎么防止用户刷接口？</strong></p>
+        <p class="qa-a">每个用户一个桶，按等级设置容量和补充速率。请求消耗 token，桶空了拒绝。两层防护：每分钟最大请求数（RPM）防高频刷，每日 token 总额防长时间消耗。补充是自动的——隔 1 小时回来，桶又满了。</p>
+      </div>
+      <div class="qa-item">
+        <p class="qa-q"><strong>Q: 模型路由怎么决定一个问题是"简单"还是"复杂"？</strong></p>
+        <p class="qa-a">最简单的方案：关键词匹配 + 句子长度。问时间/地址/价格 = simple，含"分析/对比/设计" = complex，其他 = medium。更精确的做法：用小模型分类（classifier）或让 LLM 自己判断路由目标。</p>
+      </div>
+      <div class="qa-item">
+        <p class="qa-q"><strong>Q: 你提到缓存 TTL，过期时间设多长合适？</strong></p>
+        <p class="qa-a">取决于知识更新频率。退货政策这类稳定知识可以设 24h-7d，实时库存/价格信息只能设几分钟。如果知识库有更新机制（如 webhook），应该在更新时主动失效缓存而不是等 TTL 过期。</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">📁</span> 9. 代码文件</h2>
+      <div class="code">phases/11-llm-engineering/11-caching-cost/code/caching_cost.py
+
+# 运行 demo：
+source venv/bin/activate && python3 phases/11-llm-engineering/11-caching-cost/code/caching_cost.py</div>
+    </div>
+
+<div class="footer">Day 3 · 2026-06-22 · LLM 评估 · Eval + 缓存成本优化</div>
   </div>
+
+  
+  </div>
+
+  
 
   <script>
     const tabs = document.querySelectorAll('.tab-btn');
