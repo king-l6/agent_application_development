@@ -23,6 +23,21 @@
 
   document.documentElement.setAttribute('lang', lang === LANG_ZH ? 'zh' : 'en');
 
+  // Anti-flash: hide page in Chinese mode until i18n.js translates
+  if (lang === LANG_ZH) {
+    document.documentElement.setAttribute('data-i18n-pending', '');
+  }
+
+  // Wire lang-toggle button
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('langToggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        window.__LangManager.toggle();
+      });
+    }
+  });
+
   window.__LangManager = {
     getLanguage: function () { return window.__LANG; },
 

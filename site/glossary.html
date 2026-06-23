@@ -19,7 +19,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260525a">
+  <link rel="stylesheet" href="style.css?v=20260525b">
+  <style>html[data-i18n-pending] body{opacity:0}</style>
   <style>
     .glossary-page {
       padding: 100px 0 80px;
@@ -232,12 +233,12 @@
     </div>
   </footer>
 
-  <script src="data.js?v=20260525a"></script>
-  <script src="progress.js?v=20260525a"></script>
-<script src="lang.js?v=20260525a"></script>
-<script src="i18n.js?v=20260525a" defer></script>
-  <script src="header.js?v=20260525a" defer></script>
-  <script src="cmdpalette.js?v=20260525a" defer></script>
+  <script src="data.js?v=20260525b"></script>
+  <script src="progress.js?v=20260525b"></script>
+<script src="lang.js?v=20260525b"></script>
+<script src="i18n.js?v=20260525b" defer></script>
+  <script src="header.js?v=20260525b" defer></script>
+  <script src="cmdpalette.js?v=20260525b" defer></script>
   <script>
     (function () {
       var root = document.documentElement;
@@ -281,37 +282,67 @@
           return div.innerHTML;
         }
 
+        function glossKey(term) {
+          return term
+            .toLowerCase()
+            .replace(/[()]/g, '')
+            .replace(/&/g, '-and-')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+        }
+
         function renderGlossary(filter) {
           var terms = GLOSSARY;
+          var isZh = window.__LANG === 'zh' && typeof window.__t === 'function';
+
           if (filter) {
             var q = filter.toLowerCase();
             terms = terms.filter(function (t) {
-              return t.term.toLowerCase().indexOf(q) !== -1 ||
-                t.says.toLowerCase().indexOf(q) !== -1 ||
-                t.means.toLowerCase().indexOf(q) !== -1;
+              var termText = isZh ? window.__t('gloss.' + glossKey(t.term) + '.term') || t.term : t.term;
+              var saysText = isZh ? window.__t('gloss.' + glossKey(t.term) + '.says') || t.says : t.says;
+              var meansText = isZh ? window.__t('gloss.' + glossKey(t.term) + '.means') || t.means : t.means;
+              return termText.toLowerCase().indexOf(q) !== -1 ||
+                saysText.toLowerCase().indexOf(q) !== -1 ||
+                meansText.toLowerCase().indexOf(q) !== -1;
             });
           }
 
-          countEl.textContent = terms.length + ' of ' + GLOSSARY.length + ' terms';
+          var countSuffix = window.__t ? window.__t('glossary.count') : 'terms';
+          countEl.textContent = terms.length + ' / ' + GLOSSARY.length + ' ' + countSuffix;
 
           if (terms.length === 0) {
-            listEl.innerHTML = '<div class="glossary-empty">No terms match your search.</div>';
+            var emptyMsg = isZh ? window.__t('glossary.empty') : 'No terms match your search.';
+            listEl.innerHTML = '<div class="glossary-empty">' + escapeHtml(emptyMsg) + '</div>';
             return;
           }
+
+          var saysLabel = isZh ? window.__t('glossary.says') : 'What people say';
+          var meansLabel = isZh ? window.__t('glossary.means') : 'What it actually means';
 
           var html = '';
           for (var i = 0; i < terms.length; i++) {
             var t = terms[i];
+            var termText, saysText, meansText;
+            if (isZh) {
+              var k = glossKey(t.term);
+              termText = window.__t('gloss.' + k + '.term') || t.term;
+              saysText = window.__t('gloss.' + k + '.says') || t.says;
+              meansText = window.__t('gloss.' + k + '.means') || t.means;
+            } else {
+              termText = t.term;
+              saysText = t.says;
+              meansText = t.means;
+            }
             html += '<div class="glossary-card">';
-            html += '<div class="glossary-term">' + escapeHtml(t.term) + '</div>';
+            html += '<div class="glossary-term">' + escapeHtml(termText) + '</div>';
             html += '<div class="glossary-row">';
             html += '<div class="glossary-col">';
-            html += '<div class="glossary-col-label">What people say</div>';
-            html += '<div class="glossary-col-says">"' + escapeHtml(t.says) + '"</div>';
+            html += '<div class="glossary-col-label">' + escapeHtml(saysLabel) + '</div>';
+            html += '<div class="glossary-col-says">"' + escapeHtml(saysText) + '"</div>';
             html += '</div>';
             html += '<div class="glossary-col">';
-            html += '<div class="glossary-col-label">What it actually means</div>';
-            html += '<div class="glossary-col-means">' + escapeHtml(t.means) + '</div>';
+            html += '<div class="glossary-col-label">' + escapeHtml(meansLabel) + '</div>';
+            html += '<div class="glossary-col-means">' + escapeHtml(meansText) + '</div>';
             html += '</div>';
             html += '</div>';
             html += '</div>';
@@ -329,6 +360,10 @@
         }
 
         renderGlossary(urlQ);
+
+        document.documentElement.addEventListener('langchange', function () {
+          renderGlossary(searchInput ? searchInput.value.trim() : '');
+        });
 
         if (searchInput) {
           searchInput.addEventListener('input', function () {
