@@ -20,6 +20,11 @@
     initSmoothScroll();
     initFadeObserver();
     initScrollExplode();
+    // Re-render phases on language switch
+    document.documentElement.addEventListener('langchange', function () {
+      renderPhases();
+      populateStats();
+    });
   });
 
   function updateThemeIcon() {
@@ -126,7 +131,7 @@
       var num = String(p.id).padStart(2, '0');
       html += '<div class="toc-row" data-phase="' + i + '">';
       html += '<span class="toc-num">' + roman + '.</span>';
-      html += '<div><span class="toc-status ' + statusClass + '"></span><span class="toc-name">' + escapeHtml(p.name) + '</span></div>';
+      html += '<div><span class="toc-status ' + statusClass + '"></span><span class="toc-name">' + (window.__t ? window.__t('phase.' + num) : escapeHtml(p.name)) + '</span></div>';
       html += '<span class="toc-meta">' + done + ' / ' + total + '</span>';
       html += '<span class="toc-meta">' + num + '</span>';
       html += '</div>';
