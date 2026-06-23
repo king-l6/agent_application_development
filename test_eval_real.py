@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 from anthropic import Anthropic
 import numpy as np
+import torch
 from sentence_transformers import SentenceTransformer
 
 client = Anthropic(
@@ -59,29 +60,60 @@ print(f"   - 对抗样本：{len([t for t in test_cases if t['cat'] == '对抗']
 # ===== 2. 生产级缓存层 =====
 
 class FactualClassifier:
-    """判断问题是事实性还是创意性，决定是否可缓存。"""
+    """判断问题是事实性还是创意性，决定是否可缓存。
 
-    FACTUAL_PATTERNS = [
-        "是什么", "怎么", "哪里", "几点", "多少", "价格",
-        "政策", "电话", "地址", "在吗", "能不能", "可以",
-    ]
-    CREATIVE_PATTERNS = [
-        "写", "创作", "骂", "评价", "比较", "分析", "入侵",
-        "忽略", "投诉",
-    ]
+    生产级方案：用一个轻量级交叉编码器（cross-encoder）做二分类，
+    比关键词匹配准确得多，比调大模型便宜得多。
+    """
 
-    @classmethod
-    def is_factual(cls, query: str) -> bool:
+    LABELS = ["creative", "factual"]
+
+    def __init__(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-2-v2"):
+        self._model_name = model_name
+        self._model = None
+        self._tokenizer = None
+        self._cache: dict[str, bool] = {}
+
+    def _lazy_load(self):
+        if self._model is None:
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer
+            self._tokenizer = AutoTokenizer.from_pretrained(self._model_name)
+            self._model = AutoModelForSequenceClassification.from_pretrained(self._model_name)
+            self._model.eval()
+
+    def is_factual(self, query: str) -> bool:
         if not query or not query.strip():
             return True
-        q = query.lower()
-        for kw in cls.CREATIVE_PATTERNS:
-            if kw in q:
-                return False
-        for kw in cls.FACTUAL_PATTERNS:
-            if kw in q:
-                return True
-        return True  # 默认走缓存
+
+        # 精确缓存：相同问题直接返回
+        if query in self._cache:
+            return self._cache[query]
+
+        self._lazy_load()
+
+        # 用 [CLS] query 的方式做二分类
+        # 生产上通常微调一个 "是否事实性问题" 的专用分类器，
+        # 这里用 cross-encoder 的序列分类头做零样本近似
+        inputs = self._tokenizer(
+            query,
+            return_tensors="pt",
+            truncation=True,
+            max_length=64,
+        )
+        with torch.no_grad():
+            outputs = self._model(**inputs)
+            logits = outputs.logits
+            # logits[0][0] = creative 得分, logits[0][1] = factual 得分
+            scores = torch.softmax(logits, dim=1).squeeze().tolist()
+
+        # 如果只有单个分数（某些模型只有二选一logits）
+        if isinstance(scores, float):
+            result = scores > 0.5
+        else:
+            result = scores[1] > 0.5  # factual 概率 > 0.5
+
+        self._cache[query] = result
+        return result
 
 
 class ExactCache:
@@ -192,6 +224,7 @@ class CachedGenerator:
         self._generate = raw_generate
         self.exact = exact
         self.semantic = semantic
+        self.classifier = FactualClassifier()
         self.calls_saved = 0
 
     def __call__(self, question: str) -> str:
@@ -205,7 +238,7 @@ class CachedGenerator:
             return f"[精确缓存] {cached}"
 
         # 层 2：语义缓存（仅事实性问题）
-        if FactualClassifier.is_factual(question):
+        if self.classifier.is_factual(question):
             cached = self.semantic.get(question)
             if cached:
                 self.calls_saved += 1
@@ -216,7 +249,7 @@ class CachedGenerator:
 
         # 回填缓存
         self.exact.put(model, messages, 0, answer)
-        if FactualClassifier.is_factual(question):
+        if self.classifier.is_factual(question):
             self.semantic.put(question, answer)
 
         return answer

@@ -916,8 +916,8 @@ CI = p ± z × √(p(1-p)/n + z²/(4n²))  /  分母</div>
       <h2><span class="emoji">🔑</span> 2. 精确缓存 — ExactCache</h2>
       <p>完全相同的输入直接返回缓存结果，不调 API：</p>
       <ul>
-        <li><strong>key</strong> = SHA256(model + messages + temperature)</li>
-        <li><strong>temperature > 0 不缓存</strong>——有随机性的回答缓存没意义</li>
+        <li><strong>key</strong> = SHA256(model + messages + temperature) 的 hex 摘要</li>
+        <li><strong>temperature > 0 不走缓存</strong>——有随机性的回答，缓存上次结果没意义；所以生产上事实性问题一律设 temperature=0 以充分利用缓存</li>
         <li><strong>TTL 过期自动删除</strong>——知识可能过时（如退货政策半年后变了）</li>
         <li><strong>LRU 淘汰</strong>——缓存满了删最旧的</li>
       </ul>
@@ -931,9 +931,44 @@ CI = p ± z × √(p(1-p)/n + z²/(4n²))  /  分母</div>
       <ul>
         <li>"怎么退货" → 向量化 → 存起来</li>
         <li>"如何退货" → 向量化 → 算余弦相似度 → 够高就命中</li>
-        <li>演示代码用简化的词袋模型，生产环境用 sentence-transformers 生成 384 维向量</li>
-        <li>相似度阈值通常设 0.85-0.95</li>
+        <li>生产环境用 sentence-transformers 生成 384 维向量（all-MiniLM-L6-v2）</li>
+        <li>相似度阈值通常设 0.85-0.95，用 numpy dot product 算余弦相似度</li>
+        <li>每次 get() 遍历所有缓存项，O(n) 复杂度；缓存量大时可改用向量数据库（FAISS）做 ANN 检索</li>
       </ul>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">🔍</span> 3b. 事实性分类器 — FactualClassifier</h2>
+      <p>不是所有问题都能缓存。创意性问题（"帮我写个差评"）每次都该调 API，缓存会返回不相关的结果：</p>
+      <div class="code">[判断逻辑]
+      "我的货丢了怎么办" → factual ✅ → 走语义缓存
+      "帮我写个差评骂这家店" → creative ❌ → 跳过缓存，直接调 API</div>
+      <p><strong>生产级做法</strong>：不用脆弱的<strong>关键词匹配</strong>，而是用 <span class="highlight">cross-encoder 小模型</span>做二分类。</p>
+      <ul>
+        <li><strong>关键词匹配</strong>：列关键词列表，命中就判创意性 -> 容易被绕过，"帮我写首诗"里没"写"字就漏了</li>
+        <li><strong>Cross-encoder 分类</strong>：把问题过 MiniLM 模型 → softmax 转概率 → factual 概率 > 0.5 算事实性</li>
+        <li>模型只有 20MB，比调大模型判便宜几百倍，比关键词匹配准得多</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2><span class="emoji">🏗</span> 3c. 缓存分层架构</h2>
+      <p>生产环境三层缓存逐层回退：</p>
+      <div class="code">用户问题
+      ↓
+      ① ExactCache（精确哈希命中？）
+      │  ├─ HIT  → 直接返回 [最快，0ms]
+      │  └─ MISS → 下钻
+      ↓
+      ② FactualClassifier 判断问题类型
+      │  ├─ creative → 跳过语义缓存，直接调 API
+      │  └─ factual → 查 SemanticCache
+      │     ├─ HIT  → 返回语义相似结果 [~50ms]
+      │     └─ MISS → 下钻
+      ↓
+      ③ API 调用（真金白银）
+      ↓
+      回填 ExactCache + SemanticCache（下次同问题直接命中）</div>
     </div>
 
     <div class="section">
@@ -1003,6 +1038,14 @@ CI = p ± z × √(p(1-p)/n + z²/(4n²))  /  分母</div>
       <div class="qa-item">
         <p class="qa-q"><strong>Q: 你提到缓存 TTL，过期时间设多长合适？</strong></p>
         <p class="qa-a">取决于知识更新频率。退货政策这类稳定知识可以设 24h-7d，实时库存/价格信息只能设几分钟。如果知识库有更新机制（如 webhook），应该在更新时主动失效缓存而不是等 TTL 过期。</p>
+      </div>
+      <div class="qa-item">
+        <p class="qa-q"><strong>Q: 语义缓存会不会缓存"帮我写差评骂人"这种请求？怎么避免？</strong></p>
+        <p class="qa-a">会，如果不加过滤的话。生产方案是在语义缓存前面加一个 FactualClassifier（事实性分类器），先用一个小模型判断问题是事实性还是创意性。创意性问题跳过缓存直接调 API，不回填，既避免缓存无意义的结果，也防止缓存被污染。</p>
+      </div>
+      <div class="qa-item">
+        <p class="qa-q"><strong>Q: 你们的三层缓存架构是怎么设计的？每层各解决什么问题？</strong></p>
+        <p class="qa-a">ExactCache 解决完全相同的问题（0ms 命中），SemanticCache 解决换说法问同一意思（~50ms），API 兜底。关键设计点：每层都是独立的回退链，上层 miss 才走到下层。回填策略也很重要——API 结果同时回填两层，下次同问题直接精确命中，不需要再走语义检索。</p>
       </div>
     </div>
 
