@@ -1,0 +1,78 @@
+{
+  "lesson": "32-token-positional-embeddings",
+  "title": "Token与位置嵌入",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "嵌入阶段从 (B, T) ID 产生什么形状？",
+      "options": [
+        "(B, T)",
+        "(B, V)",
+        "(B, T, D) 其中 D 是模型维度",
+        "(B, T, V) 其中 V 是词汇表大小"
+      ],
+      "correct": 2,
+      "explanation": "每个 ID 映射到 D 维向量。批次保留 B 和 T，并获得一个新的特征维度 D。"
+    },
+    {
+      "stage": "check",
+      "question": "本课中 token 和位置嵌入如何组合？",
+      "options": [
+        "沿特征轴拼接",
+        "逐元素相加，位置向量在批次上广播",
+        "通过额外的线性投影",
+        "取逐元素最大值"
+      ],
+      "correct": 1,
+      "explanation": "两个形状为 (B, T, D) 和 (T, D) 的张量被相加。广播沿批次轴复制位置表。"
+    },
+    {
+      "stage": "check",
+      "question": "SinusoidalPositionalEmbedding 贡献多少可学习参数？",
+      "options": [
+        "max_context_length",
+        "max_context_length * d_model",
+        "d_model",
+        "零"
+      ],
+      "correct": 3,
+      "explanation": "正弦表通过公式计算并存储为缓冲区。它不贡献任何参数。"
+    },
+    {
+      "stage": "check",
+      "question": "哪种位置编码不能接受超过其构造限制的序列？",
+      "options": [
+        "正弦位置嵌入",
+        "学习位置嵌入",
+        "两者都不能",
+        "两者都能"
+      ],
+      "correct": 2,
+      "explanation": "在本课实现中，两个类都在前向时强制 max_context_length。学习嵌入天生受限于表大小；这里的正弦嵌入也受限，因为它使用预建的表。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么正弦方案在相邻特征对上同时使用 sin 和 cos？",
+      "options": [
+        "因为单独的 sin 不是周期性的",
+        "因为单独的 cos 不能通过反向传播",
+        "使得位置 p+k 处的向量是位置 p 处向量的线性函数",
+        "因为它使参数数量翻倍"
+      ],
+      "correct": 2,
+      "explanation": "在相同波长上配对 sin 和 cos 意味着位置偏移 k 是一个旋转，这是一个线性映射。注意力然后可以通过线性投影学习相对偏移。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么嵌入反向传播只更新批次中出现过的 token 表的行？",
+      "options": [
+        "PyTorch 只为非零条目存储梯度",
+        "前向传播中未触及的行按照链式法则产生零梯度",
+        "优化器跳过它未见过的行",
+        "Token ID 存储在稀疏数据结构中"
+      ],
+      "correct": 1,
+      "explanation": "未对任何输出做贡献的行对损失的导数为零，因此其梯度在该步为零。"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "lesson": "18-agno-and-mastra-runtimes",
+  "title": "Agno 和 Mastra：生产运行时",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "本课推荐每个运行时使用哪种语言配对？",
+      "options": [
+        "Agno 用于 TypeScript，Mastra 用于 Python",
+        "Agno 用于 Python，Mastra 用于 TypeScript",
+        "两者都是 Rust 优先",
+        "两者都是 Go 优先"
+      ],
+      "correct": 1,
+      "explanation": "Agno 是 Python（FastAPI 形态）；Mastra 是 TypeScript（Vercel AI SDK 形态）。"
+    },
+    {
+      "stage": "pre",
+      "question": "Agno 推荐的生成部署形态是什么？",
+      "options": [
+        "一个长时间运行的有状态守护进程",
+        "一个无状态会话范围的 FastAPI 后端；每个请求启动一个新智能体，会话状态存在于数据库中",
+        "仅限无服务器定时工作器",
+        "仅限 WebSocket 服务器"
+      ],
+      "correct": 1,
+      "explanation": "每个请求使用无状态 FastAPI；会话状态外部化到数据库。"
+    },
+    {
+      "stage": "check",
+      "question": "Mastra 的三个基本要素是什么？",
+      "options": [
+        "Agents、Tools、Workflows",
+        "Actor、Message、Inbox",
+        "Plan、Worker、Solver",
+        "Node、Edge、State"
+      ],
+      "correct": 0,
+      "explanation": "Agents（LLM + 角色）、Tools（Zod 类型化）和 Workflows 是 Mastra 的三个基本要素。"
+    },
+    {
+      "stage": "check",
+      "question": "根据 Agno 文档，其智能体实例化成本大约是多少？",
+      "options": [
+        "约2微秒，每智能体约3.75 KiB",
+        "约200毫秒，每智能体约100 MiB",
+        "约1秒，每智能体约1 GiB",
+        "约10分钟，每智能体约4 GiB"
+      ],
+      "correct": 0,
+      "explanation": "Agno 文档引用约2微秒和每智能体约3.75 KiB。"
+    },
+    {
+      "stage": "check",
+      "question": "Mastra 的统一模型路由器提供了什么？",
+      "options": [
+        "一个单一的客户端接口，用于跨多个提供商的数千个模型",
+        "一个工具调用队列",
+        "一个向量数据库层",
+        "一个图形检查点"
+      ],
+      "correct": 0,
+      "explanation": "Mastra 的统一模型路由器引用跨94个提供商的3,300多个模型。"
+    },
+    {
+      "stage": "post",
+      "question": "何时为性能而性能是选择 Agno 的错误理由？",
+      "options": [
+        "当工作负载是每个请求一个慢速智能体调用，且开销不是瓶颈时",
+        "当使用 Python 3.13 时",
+        "当部署到 AWS 时",
+        "当使用 Langfuse 时"
+      ],
+      "correct": 0,
+      "explanation": "2微秒在聊天扇入规模上重要，而不是对于每个请求的单个慢速调用。"
+    },
+    {
+      "stage": "post",
+      "question": "在分叉 Mastra 之前，你应该仔细阅读哪个许可证部分？",
+      "options": [
+        "没有许可证文件",
+        "ee/ 目录是源代码可用而非 Apache 2.0，限制商业使用",
+        "所有 Mastra 都是 GPL",
+        "Mastra 需要 CLA 但无需许可证审查"
+      ],
+      "correct": 1,
+      "explanation": "Mastra 是 Apache 2.0，但 ee/ 目录是源代码可用；分叉前检查限制。"
+    }
+  ]
+}

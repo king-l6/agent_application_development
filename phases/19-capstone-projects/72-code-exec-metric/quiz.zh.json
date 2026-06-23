@@ -1,0 +1,78 @@
+{
+  "lesson": "72-code-exec-metric",
+  "title": "代码执行度量",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么运行器为每个候选生成一个新的 Python 子进程，而不是内联调用 exec？",
+      "options": [
+        "它比 exec 更快",
+        "它避免了污染内建函数",
+        "它将超时、输出溢出和危险导入与主机评估进程隔离开",
+        "exec 在现代 Python 中已弃用"
+      ],
+      "correct": 2,
+      "explanation": "候选代码中的无限循环或失控内存分配只会崩溃子进程。主机评估继续正常进行。"
+    },
+    {
+      "stage": "pre",
+      "question": "一个有三次断言的任务，两次通过一次失败，得分是多少？",
+      "options": [
+        "1.0",
+        "0.667",
+        "0.0",
+        "0.5"
+      ],
+      "correct": 1,
+      "explanation": "分数等于通过数除以总数。三分之二通过是 0.667。退出码是 assertion_fail。"
+    },
+    {
+      "stage": "check",
+      "question": "当候选代码无法解析时，运行器返回哪个退出码？",
+      "options": [
+        "error",
+        "assertion_fail",
+        "timeout",
+        "syntax_error"
+      ],
+      "correct": 3,
+      "explanation": "compile() 在运行器内部引发 SyntaxError，内部脚本捕获它并写入 exit_code=syntax_error。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么挂钟超时是承载负载的控制，而不是导入黑名单？",
+      "options": [
+        "Python 中无法拒绝导入",
+        "大多数失败是无限循环，且坚定的对手可以绕过任何进程内黑名单",
+        "subprocess.run 不支持黑名单",
+        "挂钟在编译时检查"
+      ],
+      "correct": 1,
+      "explanation": "黑名单捕获懒惰的代码，超时捕获无限循环。黑名单是备用防线，超时是兜底方案。"
+    },
+    {
+      "stage": "check",
+      "question": "当 n - c < k 时 pass_at_k(n, c, k) 返回什么？",
+      "options": [
+        "零，因为样本未定义",
+        "一，因为样本必须包含至少一个通过的解",
+        "c / n，经验通过率",
+        "引发 ValueError"
+      ],
+      "correct": 1,
+      "explanation": "如果失败数少于样本大小，每个大小为 k 的样本必然包含至少一个通过，因此概率为 1。"
+    },
+    {
+      "stage": "post",
+      "question": "运行器如何表面输出溢出，为什么上限是 256 KB？",
+      "options": [
+        "子进程的 stdout 被流式传输；一旦 256 KB 累计总量被超过，子进程被杀死，任务记录为 exit_code=error，详情为 \"output overflow\"",
+        "仅 stderr；大小匹配 OS 管道默认值",
+        "候选源代码大小，上限以确保生成的代码保持小型",
+        "分数值，以带两位小数的百分比表示"
+      ],
+      "correct": 0,
+      "explanation": "上限保护主机。淹没 stdout 的候选代码中途被杀死；运行器将结果规范化为 exit_code=error，详情为 \"output overflow\"，而不是创建一个新的退出码。"
+    }
+  ]
+}

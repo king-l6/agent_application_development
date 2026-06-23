@@ -1,0 +1,90 @@
+{
+  "lesson": "34-repo-memory-and-state",
+  "title": "仓库记忆与持久状态",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "决定一条信息是否属于仓库记忆的持久性测试是什么？",
+      "options": [
+        "是否是 JSON",
+        "三个月后在 CI 重新运行中是否还有用；如果有用则放入仓库，如果没有用则放入遥测",
+        "用户是否标记为重要",
+        "是否能放进 4 kB"
+      ],
+      "correct": 1,
+      "explanation": "仓库记忆用于持久的、三个月后仍然有用的状态；瞬态数据是遥测。"
+    },
+    {
+      "stage": "pre",
+      "question": "哪个 schema 字段承载 Agent 的合同版本？",
+      "options": [
+        "schema_version",
+        "build_hash",
+        "model_id",
+        "session_uuid"
+      ],
+      "correct": 0,
+      "explanation": "schema_version 是整数合同；管理器拒绝加载未知版本的文件。"
+    },
+    {
+      "stage": "check",
+      "question": "原子写入是如何工作的？",
+      "options": [
+        "在同一目录中使用 tempfile.mkstemp、写入、fsync、os.replace（原子重命名）覆盖目标",
+        "截断后写入目标",
+        "仅追加并附带 CRC",
+        "加密并覆盖"
+      ],
+      "correct": 0,
+      "explanation": "POSIX 和 Windows 上的原子重命名是防止部分写入损坏的方法。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么非幂等工具调用需要幂等键？",
+      "options": [
+        "用于计费",
+        "如果 Agent 在调用工具之后但在检查点结果之前崩溃，安全重试；在执行前记录调用 ID，重试时跳过",
+        "去重日志",
+        "缩短输出"
+      ],
+      "correct": 1,
+      "explanation": "pending_calls.jsonl 携带调用 ID；恢复时检查并跳过已执行的工作。"
+    },
+    {
+      "stage": "check",
+      "question": "大型工件（CSV、长记录、生成的文件）应该相对于状态存放在哪里？",
+      "options": [
+        "内联在 agent_state.json 中",
+        "作为单独文件（或对象存储），只在状态中保留路径，使检查点保持小巧快速",
+        "在环境变量中",
+        "拼接成一个巨大的日志"
+      ],
+      "correct": 1,
+      "explanation": "分离的工件独立于状态增长；检查点的读写成本保持低廉。"
+    },
+    {
+      "stage": "post",
+      "question": "用于审计的事件溯源加用于恢复的快照带来了什么好处？",
+      "options": [
+        "更低的磁盘使用",
+        "通过读取快照然后重放之后的事件来逐字重放 Agent 决策；与 Postgres WAL 形状相同",
+        "更快的推理",
+        "原生语音支持"
+      ],
+      "correct": 1,
+      "explanation": "每次变更时追加到 state.events.jsonl；定期快照到 state.json；重放快照时间戳之后的事件。"
+    },
+    {
+      "stage": "post",
+      "question": "当 schema_version 不匹配时，课程说会发生什么？",
+      "options": [
+        "管理器静默升级",
+        "管理器拒绝加载，直到 tools/migrate_state.py 中的迁移脚本运行",
+        "状态被删除",
+        "Agent 重试"
+      ],
+      "correct": 1,
+      "explanation": "Schema 迁移，否则拒绝加载；绝不静默升级。"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "lesson": "04-multimodal-document-qa",
+  "title": "Capstone 04 — 多模态文档问答（视觉优先的 PDF、表格、图表）",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么 2026 年的前沿在财务 PDF 和科学论文上偏好视觉优先的后期交互而不是 OCR 后接文本？",
+      "options": [
+        "视觉模型每页更便宜",
+        "OCR 管道会破坏旋转的表格、密集的公式和图表图像，丢失一半信号",
+        "OCR 比渲染慢",
+        "OCR 不能在 GPU 上运行"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "pre",
+      "question": "在 ColPali 风格的检索中，后期交互意味着什么？",
+      "options": [
+        "每个查询 token 与每个图像块 token 评分，每 token 最大值通过 MaxSim 求和",
+        "嵌入延迟到评估时间",
+        "嵌入在用户点击结果后计算",
+        "重排序器只在最终候选上运行"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "一个 ColQwen 嵌入每页产生大约多少个图像块向量，这带来了什么存储问题？",
+      "options": [
+        "每页约 2048 个图像块向量，与单向量索引相比大幅增加原始存储",
+        "正好 128 个向量，适合任何向量数据库",
+        "每页 1 个向量，没有存储问题",
+        "16 个向量，存储开销可忽略"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "DocPruner 在这个管道中做什么？",
+      "options": [
+        "摄入前删除重复的 PDF 页面",
+        "通过保留高信号图像块以约 50% 的比例压缩多向量索引，精度损失可忽略",
+        "重写查询嵌入以获得更短的向量",
+        "裁剪证据区域周围的边界框"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "为什么某些页面仍然拼接了一个 OCR 文本通道？",
+      "options": [
+        "它提高了 PDF 渲染质量",
+        "VLM 无法读取 180 DPI 的图像",
+        "OCR 是主要的检索模态",
+        "公式密集和表格密集的页面受益于与图像并行的文本后备方案"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "这个综合项目针对哪个基准评估视觉优先的检索？",
+      "options": [
+        "RewardBench-2",
+        "SWE-bench Pro",
+        "ViDoRe v3",
+        "MMLU-Pro"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "评分标准中"证据区域定位"指的是什么？",
+      "options": [
+        "DocPruner 实现的压缩比",
+        "重排序器在 p99 尾部的延迟",
+        "每次查询检索的页面总数",
+        "引用的边界框中实际包含答案范围的比例"
+      ],
+      "correct": 3,
+      "explanation": ""
+    }
+  ]
+}

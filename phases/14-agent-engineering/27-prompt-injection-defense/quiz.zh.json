@@ -1,0 +1,90 @@
+{
+  "lesson": "27-prompt-injection-defense",
+  "title": "提示注入与 PVE 防御",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "什么是间接提示注入？",
+      "options": [
+        "用户直接输入'忽略所有规则'",
+        "嵌入在智能体检索的数据（网页、PDF、邮件、记忆笔记）中的指令，在被摄取时覆盖开发者提示",
+        "模型误点击",
+        "系统提示中的拼写错误"
+      ],
+      "correct": 1,
+      "explanation": "Greshake 等人提出了间接提示注入：攻击者控制的检索内容携带指令。"
+    },
+    {
+      "stage": "pre",
+      "question": "本课程说处理检索到的提示相当于什么？",
+      "options": [
+        "言论自由",
+        "在智能体的工具使用表面上执行任意代码",
+        "一次静态分析过程",
+        "一次纯函数调用"
+      ],
+      "correct": 1,
+      "explanation": "Greshake 的框架：检索到的指令可以命中智能体有权访问的任何工具。"
+    },
+    {
+      "stage": "check",
+      "question": "以下哪项不是五种已证明的利用类别之一？",
+      "options": [
+        "数据窃取",
+        "蠕虫传播",
+        "持久记忆投毒",
+        "缓存失效"
+      ],
+      "correct": 3,
+      "explanation": "五种是数据窃取、蠕虫传播、持久记忆投毒、生态系统污染、任意工具使用。"
+    },
+    {
+      "stage": "check",
+      "question": "PVE 代表什么？",
+      "options": [
+        "Prompt-Validator-Executor：在昂贵的主模型提交之前，每个工具调用上运行廉价快速验证器",
+        "Provider-Verifier-Encoder",
+        "Plan-Verify-Execute，HTN 的一种方言",
+        "Pre-Vectorize-Embed"
+      ],
+      "correct": 0,
+      "explanation": "PVE 在每个工具调用周围包裹一个廉价验证器，然后再让主模型提交。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么"系统提示说忽略不可信指令"是不够的？",
+      "options": [
+        "它太短了",
+        "这是指令遵循，而不是强制机制；模型仍然可以被足够有说服力的注入内容覆盖",
+        "供应商会剥离它",
+        "它是加密的"
+      ],
+      "correct": 1,
+      "explanation": "真正的防御需要来源标签、白名单、逐步骤安全和 PVE 风格的验证，而不仅仅是指令提示。"
+    },
+    {
+      "stage": "post",
+      "question": "什么是过度信任检索到的记忆？",
+      "options": [
+        "缓存过于激进",
+        "昨天的智能体写了被投毒的记忆笔记；今天的智能体读取它并重新执行注入",
+        "加载了错误的模型",
+        "忘记压缩索引"
+      ],
+      "correct": 1,
+      "explanation": "持久记忆投毒意味着如果记忆被视为可信，注入会在会话之间存活。"
+    },
+    {
+      "stage": "post",
+      "question": "本课程推荐为每段内容附加什么元数据？",
+      "options": [
+        "加密密钥",
+        "来源标签：user_message vs tool_output vs retrieved；验证器拒绝检索内容中的指令",
+        "仅时间戳",
+        "令牌计数"
+      ],
+      "correct": 1,
+      "explanation": "来源标记让验证器根据内容的信任级别来对待内容。"
+    }
+  ]
+}

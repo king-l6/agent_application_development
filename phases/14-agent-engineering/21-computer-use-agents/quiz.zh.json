@@ -1,0 +1,90 @@
+{
+  "lesson": "21-computer-use-agents",
+  "title": "计算机使用：Claude、OpenAI CUA、Gemini",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Claude computer use接受什么输入，输出什么？",
+      "options": [
+        "无障碍树输入，键盘/鼠标命令输出",
+        "截图输入（基于视觉），键盘/鼠标命令输出",
+        "DOM XML输入，JavaScript输出",
+        "JSON输入，SQL输出"
+      ],
+      "correct": 1,
+      "explanation": "Claude读取像素并输出键盘/鼠标动作；不使用操作系统无障碍API。"
+    },
+    {
+      "stage": "pre",
+      "question": "Gemini 2.5 Computer Use独特的安全功能是什么？",
+      "options": [
+        "一个每步安全服务，在执行前评估每个动作并拒绝不安全的动作",
+        "硬编码的WAF规则",
+        "强制CAPTCHA",
+        "默认只读模式"
+      ],
+      "correct": 0,
+      "explanation": "Gemini 2.5 Computer Use以每步安全分类器作为其定义性特征。"
+    },
+    {
+      "stage": "check",
+      "question": "课程指出三个模型共同视为什么为不可信输入？",
+      "options": [
+        "仅HTTPS响应",
+        "截图、DOM文本、工具输出、PDF内容、任何检索到的内容",
+        "仅PDF内容",
+        "无；一切都是可信的"
+      ],
+      "correct": 1,
+      "explanation": "只有直接的用户指令才算作授权；其他一切都是不可信的。"
+    },
+    {
+      "stage": "check",
+      "question": "课程引用的OpenAI CUA发布时OSWorld / WebArena数字是什么？",
+      "options": [
+        "OSWorld 38.1%，WebArena 58.1%，WebVoyager 87%",
+        "OSWorld 0%，WebArena 0%",
+        "OSWorld 99%，WebArena 99%",
+        "未报告数字"
+      ],
+      "correct": 0,
+      "explanation": "这些是引用的发布时数字。"
+    },
+    {
+      "stage": "check",
+      "question": "以下哪个防御模式不在2026年趋同列表中？",
+      "options": [
+        "每步安全分类器",
+        "导航目标的允许列表/阻止列表",
+        "敏感操作的人工参与",
+        "自动点击对话框以节省时间"
+      ],
+      "correct": 3,
+      "explanation": "自动点击对话框与安全相反；课程建议明确的确认。"
+    },
+    {
+      "stage": "post",
+      "question": "课程强调的针对计算机使用智能体的主要攻击是什么？",
+      "options": [
+        "网络中断",
+        "恶意页面或PDF在检索内容中嵌入指令，模型将其视为用户意图",
+        "慢速渲染",
+        "操作系统更新延迟"
+      ],
+      "correct": 1,
+      "explanation": "将截图或DOM文本视为授权是典型的间接提示注入失败。"
+    },
+    {
+      "stage": "post",
+      "question": "特别建议在什么时候使用人工确认？",
+      "options": [
+        "在只读导航时",
+        "在敏感操作如登录、购买、文件删除时",
+        "仅当模型要求时",
+        "从不"
+      ],
+      "correct": 1,
+      "explanation": "敏感操作（资金、数据暴露、新登录）需要明确的人工确认。"
+    }
+  ]
+}

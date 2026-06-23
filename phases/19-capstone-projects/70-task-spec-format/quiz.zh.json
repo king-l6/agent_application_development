@@ -1,0 +1,78 @@
+{
+  "lesson": "70-task-spec-format",
+  "title": "任务规范格式",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么要在编写评分代码之前冻结任务记录模式？",
+      "options": [
+        "它让 JSON 解析器运行得更快",
+        "它锁定了契约，使度量、运行器和后处理器在字段名称上保持一致",
+        "它消除了对验证器的需求",
+        "它允许任意的新度量名称而无需进一步更改"
+      ],
+      "correct": 1,
+      "explanation": "模式是每个下游消费者读取的契约。锁定它使你可以独立更改组件而不会破坏其他部分。"
+    },
+    {
+      "stage": "pre",
+      "question": "metric_name 字段接受的封闭词汇表是什么？",
+      "options": [
+        "运行器配置为识别的任何内容",
+        "exact_match, f1, bleu_4, rouge_l, accuracy, code_exec",
+        "任务作者选择的任何字符串",
+        "只有 exact_match 和 f1"
+      ],
+      "correct": 1,
+      "explanation": "本课程将度量词汇表固定为六个名称。添加一个新度量需要一门新课程和一个新的验证器条目。"
+    },
+    {
+      "stage": "check",
+      "question": "当验证器在记录上看到未知的顶级字段时会怎么做？",
+      "options": [
+        "删除它并继续",
+        "记录警告但接受记录",
+        "返回验证错误并拒绝该记录",
+        "将其重命名为 metadata.unknown"
+      ],
+      "correct": 2,
+      "explanation": "未知字段是向前兼容性的风险。验证器拒绝它们，以确保模式始终是唯一的真相来源。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么少样本示例附加到任务记录而不是由运行器计算？",
+      "options": [
+        "运行器没有文件 I/O",
+        "作者意图是评估的一部分；将示例绑定到任务消除了提示构建中的每模型差异",
+        "它节省了磁盘空间",
+        "少样本仅在微调期间使用"
+      ],
+      "correct": 1,
+      "explanation": "少样本组合是评估定义的一部分，而不是模型接口。将其放在任务中意味着每个模型看到相同的提示。"
+    },
+    {
+      "stage": "check",
+      "question": "哪个类别-度量对在验证器下是非法的？",
+      "options": [
+        "summary + rouge_l",
+        "arithmetic + exact_match",
+        "mcq + bleu_4",
+        "code_exec + code_exec"
+      ],
+      "correct": 2,
+      "explanation": "在单个字母上使用 BLEU 是没有意义的。验证器强制 mcq 任务只使用 exact_match 或 accuracy。"
+    },
+    {
+      "stage": "post",
+      "question": "当生成结果是 `Answer: C is correct` 时，post_process 规则 extract_letter 返回什么？",
+      "options": [
+        "原样返回完整字符串",
+        "C",
+        "Answer",
+        "空字符串"
+      ],
+      "correct": 1,
+      "explanation": "extract_letter 返回生成结果中第一个匹配 [A-E] 的字符。该字符串中 C 位于正文的开头。"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "lesson": "09-code-migration-agent",
+  "title": "Capstone 09 — 代码迁移 Agent（仓库级语言/运行时升级）",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么管道要结合确定性基座和 Agent 层，而不是只使用其中一个？",
+      "options": [
+        "OpenRewrite 或 libcst 安全且廉价地处理 70-80% 的机械重写，剩下模糊长尾给 Agent",
+        "仅 Agent 就比配方更快",
+        "确定性配方比 LLM 慢",
+        "仅构建系统需要确定性"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "pre",
+      "question": "管道使用什么信号作为成功迁移的 ground truth？",
+      "options": [
+        "Agent 在评分标准上的自我评分",
+        "评审者对 PR 的批准",
+        "差异大小低于硬限制",
+        "沙盒中 CI 变绿，且覆盖率没有超过小阈值的回归"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "Agent 循环对每个仓库强制执行哪些预算上限？",
+      "options": [
+        "无限时间和成本；仅在出错时中止",
+        "无轮次限制，100 美元上限",
+        "1 小时挂钟时间和 100 轮",
+        "30 分钟挂钟时间、8 美元成本和 20 个 Agent 轮次"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "当迁移后覆盖率下降超过约 2% 时，什么门被触发？",
+      "options": [
+        "绕过评审者",
+        "仓库被归档到 coverage_regression 失败类别，而不是打开干净的 PR",
+        "确定性基座重放其配方",
+        "Agent 自动强制推送修复"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "为什么失败分类被视为交付物而不是副产品？",
+      "options": [
+        "它取代了测试套件",
+        "它将失败的仓库按类分组，以便未来的配方作者可以针对主要失败模式",
+        "GitHub 分支保护需要它",
+        "它满足合规检查清单"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "Java 8 到 17 迁移的这个综合项目针对哪个公共基准？",
+      "options": [
+        "Amazon 的 MigrationBench",
+        "SWE-bench Pro",
+        "MMLU-Pro",
+        "ViDoRe v3"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "Agent 集成评分标准衡量修复分布的什么？",
+      "options": [
+        "源文件的 tokenization 速度",
+        "每个仓库的强制推送次数",
+        "锁定的依赖数量",
+        "OpenRewrite 处理的修复比例 vs Agent 层编写的修复比例"
+      ],
+      "correct": 3,
+      "explanation": ""
+    }
+  ]
+}

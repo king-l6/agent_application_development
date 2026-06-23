@@ -1,0 +1,90 @@
+{
+  "lesson": "24-agent-observability-platforms",
+  "title": "智能体可观测性：Langfuse、Phoenix、Opik",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "2025年6月以前商业模块开源后，Langfuse使用什么许可证发布？",
+      "options": [
+        "GPLv3",
+        "MIT",
+        "Elastic License 2.0",
+        "Apache 2.0"
+      ],
+      "correct": 1,
+      "explanation": "Langfuse是MIT许可，包括2025年6月后的LLM作为评判、注释队列、提示实验和游乐场。"
+    },
+    {
+      "stage": "pre",
+      "question": "根据课程，Arize Phoenix最强于什么？",
+      "options": [
+        "提示版本管理",
+        "深度智能体特定评估：追踪聚类、异常检测、RAG检索相关性、OpenInference自动工具化",
+        "自动优化循环",
+        "代码静态分析"
+      ],
+      "correct": 1,
+      "explanation": "Phoenix专注于行为漂移和RAG评估，带有OpenInference自动工具化。"
+    },
+    {
+      "stage": "check",
+      "question": "哪个平台将自动提示优化与防护栏（PII编辑、主题约束）和LLM评判幻觉检测配对？",
+      "options": [
+        "Langfuse",
+        "Phoenix",
+        "Opik",
+        "Jaeger"
+      ],
+      "correct": 2,
+      "explanation": "Opik以优化+防护栏循环为中心。"
+    },
+    {
+      "stage": "check",
+      "question": "课程推荐哪个平台用于带提示管理的一体式方案？",
+      "options": [
+        "Langfuse",
+        "Phoenix",
+        "Opik",
+        "Datadog APM"
+      ],
+      "correct": 0,
+      "explanation": "Langfuse端到端覆盖追踪+提示管理+评估+会话回放。"
+    },
+    {
+      "stage": "check",
+      "question": "课程对厂商发布的平台基准测试有什么看法？",
+      "options": [
+        "它们是决定性的",
+        "将其视为方向性参考；衡量你自己的语料库",
+        "它们被OpenTelemetry禁止",
+        "只有Opik的可靠"
+      ],
+      "correct": 1,
+      "explanation": "即使是引用的Opik和Langfuse之间的14倍差距，也应在你自己的数据上衡量后再做决定。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么没有评估的追踪被认为是昂贵的日志记录？",
+      "options": [
+        "磁盘比CPU更贵",
+        "你看到了运行但没有评分，因此回归不可见且二分定位不可能",
+        "提供商按跨度收费",
+        "跨度无法回放"
+      ],
+      "correct": 1,
+      "explanation": "评估是将追踪转化为可操作质量信号的关键。"
+    },
+    {
+      "stage": "post",
+      "question": "课程对自建LLM评判的警告是什么？",
+      "options": [
+        "它们被Apache 2.0禁止",
+        "CRITIC适用：评判需要外部依据进行事实验证，否则它们会变成橡皮图章",
+        "它们只能在TypeScript中工作",
+        "它们必须在GPU上运行"
+      ],
+      "correct": 1,
+      "explanation": "没有外部工具依据的验证，LLM评判会趋向于橡皮图章（CRITIC，第5课）。"
+    }
+  ]
+}

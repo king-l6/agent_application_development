@@ -1,0 +1,90 @@
+{
+  "lesson": "36-scope-contracts",
+  "title": "范围合同与任务边界",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么范围蔓延被称为最被低估的失败模式？",
+      "options": [
+        "它会大声崩溃 Agent",
+        "每次触及在当时都有合理的理由；它们加在一起构成了与被审查的不同的变更",
+        "太罕见了不需要监控",
+        "测试会自动捕获"
+      ],
+      "correct": 1,
+      "explanation": "Agent 善意地叙述每一步；无声的总和就是蔓延。"
+    },
+    {
+      "stage": "pre",
+      "question": "课程称哪项合同字段为合同的一半？",
+      "options": [
+        "goal",
+        "forbidden_files（否定空间）",
+        "task_id",
+        "approvals_required"
+      ],
+      "correct": 1,
+      "explanation": "没有 forbidden_files 的合同是不完整的；否定空间是合同的一半。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么将允许/禁止绑定到 glob 而不是原始路径？",
+      "options": [
+        "Glob 更快",
+        "真实仓库会移动文件；glob 能在会话之间的重构中存活",
+        "Glob 加密更好",
+        "原始路径无法 JSON 序列化"
+      ],
+      "correct": 1,
+      "explanation": "Glob（app/**/*.py）使合同在重构中保持有效。"
+    },
+    {
+      "stage": "check",
+      "question": "'违规预算'模式是做什么的？",
+      "options": [
+        "为 Agent 设置月度预算",
+        "允许预算内的轻微范围滑移作为警告；只有超限才触发合并拒绝——这是能交付的门和被禁用的门之间的区别",
+        "限制模型调用",
+        "按违规收费"
+      ],
+      "correct": 1,
+      "explanation": "agent-guardrails 使用 violationBudget，使门在日常流程中可用。"
+    },
+    {
+      "stage": "check",
+      "question": "规范最大化实践者报告了什么？",
+      "options": [
+        "延迟降低了 90%",
+        "兔子洞率在三周内从 52% 下降到 21%，没有改变 Agent；合同发挥了作用，而不是模型",
+        "成本上升了 5 倍",
+        "测试变慢了"
+      ],
+      "correct": 1,
+      "explanation": "在调用 Agent 之前用 YAML 编写范围合同，兔子洞率减半，没有更改模型。"
+    },
+    {
+      "stage": "post",
+      "question": "多合同合并语义（最小权限）是什么？",
+      "options": [
+        "最后签订的合同获胜",
+        "allowed_files 取交集；forbidden_files 取并集；time_budget 取最小值；approvals 累加；全部拒绝保持；None 合并遵从另一方",
+        "最先签订的合同获胜",
+        "随机打破平局"
+      ],
+      "correct": 1,
+      "explanation": "最小权限合并：允许取交集，禁止取并集，时间取最严格，审批累加。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么时间和网络预算也属于合同？",
+      "options": [
+        "挂钟和外部主机访问是范围维度；仅文件 glob 是必要但不充分的",
+        "供应商要求",
+        "它们使 JSON 更小",
+        "Apache 2.0 要求"
+      ],
+      "correct": 0,
+      "explanation": "time_budget_minutes 和 network_egress 允许列表是在文件 glob 之上的范围维度。"
+    }
+  ]
+}

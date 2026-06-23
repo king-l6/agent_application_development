@@ -1,0 +1,78 @@
+{
+  "lesson": "phase-19/28-observability-otel-traces",
+  "title": "可观测性：OTel GenAI Span 和 Prometheus 指标",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "在阅读本课之前：以 OTel GenAI 属性形状编写框架的 span 的实际好处是什么？",
+      "options": [
+        "OTel span 在磁盘上压缩更好。",
+        "每个兼容 OTel 的后端无需自定义解析器即可读取它们。",
+        "OTel 是纯 Python 标准，因此框架获得类型提示。",
+        "HIPAA 要求这样做。"
+      ],
+      "correct": 1,
+      "explanation": "这些约定是与更广泛生态系统的契约。Honeycomb、Grafana Tempo、Jaeger 和 Datadog 都开箱即用地解析 gen_ai.* 属性。"
+    },
+    {
+      "stage": "check",
+      "question": "在 SpanBuilder.span() 上下文内部抛出了异常。本课的构建器记录了什么？",
+      "options": [
+        "span 被丢弃以避免污染追踪。",
+        "status=ERROR，status_message 包含异常类型和消息，并追加 'exception' 事件。",
+        "status 保持 UNSET，异常被静默吞没。",
+        "span 被重命名为 'error'。"
+      ],
+      "correct": 1,
+      "explanation": "状态 ERROR 加异常事件符合 OTel 规范。异常被重新抛出，以便调用方代码可以响应。"
+    },
+    {
+      "stage": "check",
+      "question": "直方图的 Prometheus 展示包含 _bucket、_sum 和 _count 行。为什么桶计数是累积的（每个 le 桶包含所有更小的桶）？",
+      "options": [
+        "累积计数让抓取器通过减法计算每桶计数，而无需存储所有观察值。",
+        "累积计数是 Grafana 唯一支持的格式。",
+        "它们不是累积的；本课的展示是非标准的。",
+        "累积计数减少浮点误差。"
+      ],
+      "correct": 0,
+      "explanation": "Prometheus 的设计选择：后端读取累积计数并计算每桶差异。这使得时间序列成为每个桶的简单单调计数器。"
+    },
+    {
+      "stage": "check",
+      "question": "框架将工具执行包装在 span 中。哪些属性键在 GenAI 约定下将其标识为工具调用？",
+      "options": [
+        "gen_ai.system + gen_ai.request.model。",
+        "gen_ai.tool.name + gen_ai.tool.call.id。",
+        "agent.harness.tool + agent.harness.call。",
+        "operation + tool.name。"
+      ],
+      "correct": 1,
+      "explanation": "gen_ai.tool.name 和 gen_ai.tool.call.id 是 GenAI 约定中工具执行的标准键。"
+    },
+    {
+      "stage": "post",
+      "question": "你想查询 'read_file 调用的 p95 延迟是多少'。你查询哪个产物？",
+      "options": [
+        "traces.jsonl 中每个 span 的 duration_ms，通过脚本解析。",
+        "在一个时间窗口内抓取的 Prometheus 直方图 tool_latency_ms{tool=\"read_file\"}。",
+        "计数器 tools_called_total，除以时间窗口。",
+        "span 的 status_message 字段。"
+      ],
+      "correct": 1,
+      "explanation": "直方图是百分位数的正确工具。计数器只计数；追踪包含原始 span 但未预聚合。"
+    },
+    {
+      "stage": "post",
+      "question": "一位审查者问为什么本课手工打造而非导入 opentelemetry-sdk。哪个答案是正确的？",
+      "options": [
+        "SDK 不支持 GenAI 约定。",
+        "手工打造教授线格式；SDK 可以在之后以相同的属性键接入。",
+        "手工打造在运行时更快。",
+        "SDK 在导入时需要网络连接。"
+      ],
+      "correct": 1,
+      "explanation": "约定跨实现是稳定的。手工打造的版本为了清晰而存在；生产环境接入 SDK 并重用相同的 gen_ai.* 键。"
+    }
+  ]
+}

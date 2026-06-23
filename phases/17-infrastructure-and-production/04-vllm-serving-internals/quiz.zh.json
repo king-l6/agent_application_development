@@ -1,0 +1,78 @@
+{
+  "lesson": "04-vllm-serving-internals",
+  "title": "vLLM 服务内部原理：PagedAttention、Continuous Batching、Chunked Prefill",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "经典静态批处理在处理混合长度请求时的主要问题是什么？",
+      "options": [
+        "它只适用于 FP4",
+        "它需要在每个 GPU 之间都有 NVLink",
+        "它根本不能使用 GPU",
+        "填充到最长提示和最长输出会浪费内存，并使整个批次阻塞在最慢序列上"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "PagedAttention 如何将 KV 缓存碎片率从 60-80% 降低到 4% 以下？",
+      "options": [
+        "通过完全禁用 KV 缓存",
+        "通过将权重压缩到 INT4",
+        "通过以固定大小的块（默认 16 个 token）分配 KV 缓存，通过每序列块表引用",
+        "通过将完整提示保存在 CPU RAM 中"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "什么不变性定义了 vLLM 的 V1 调度器中的 continuous batching？",
+      "options": [
+        "调度器每个请求运行一次，批次从不改变",
+        "每个请求获得自己专用的 GPU 流",
+        "调度器等待 10 ms 窗口来填充批次再运行",
+        "调度器每个解码迭代运行一次，将完成的序列移出，将等待的序列移入"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "Chunked prefill 在混合负载下主要保护哪个延迟指标？",
+      "options": [
+        "平均吞吐量",
+        "冷启动时间",
+        "网络 RTT",
+        "P99 token 间延迟（ITL）"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "在 vLLM v0.18.0 中，哪种推测解码变体仍然与 --enable-chunked-prefill 兼容？",
+      "options": [
+        "仅 EAGLE-1",
+        "V1 调度器中的 N-gram GPU 推测解码",
+        "没有推测解码兼容",
+        "草稿模型推测解码"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "为什么 chunked prefill 在独立情况下不增加平均吞吐量？",
+      "options": [
+        "它在与解码不同的 GPU 上运行",
+        "它在底层使用推测解码",
+        "它更激进地压缩权重",
+        "它仅减少解码时间抖动；实践中吞吐量的提升来自在长预填充期间保持解码序列存活，而非改变完成的工作量"
+      ],
+      "correct": 3,
+      "explanation": ""
+    }
+  ]
+}

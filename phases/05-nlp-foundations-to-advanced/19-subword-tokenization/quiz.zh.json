@@ -1,0 +1,102 @@
+{
+  "lesson": "19-subword-tokenization",
+  "title": "子词分词 — BPE、WordPiece、Unigram、SentencePiece",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "子词分词在词级词汇表的基础上提供了什么好处？",
+      "options": [
+        "稀有词分解为已知的子词片段，消除 OOV 同时保持词汇表有界",
+        "更小的模型",
+        "更快的训练",
+        "更好的嵌入"
+      ],
+      "correct": 0,
+      "explanation": "子词 token 通过分解覆盖任何输入，消除了词级词汇表的 OOV 问题。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么 GPT-2 使用字节级 BPE 而不是字符级 BPE？",
+      "options": [
+        "Transformer 的要求",
+        "字节 BPE 跳过合并",
+        "256 字节基础词汇表覆盖任何 UTF-8 输入，保证没有 [UNK] token",
+        "字节更小"
+      ],
+      "correct": 2,
+      "explanation": "字节级 BPE 从 256 字节开始，所以每个输入都能编码；没有 OOV。"
+    },
+    {
+      "stage": "check",
+      "question": "Unigram 分词器如何构建其词汇表？",
+      "options": [
+        "贪心 IDF 加权",
+        "从大的候选集开始，迭代剪枝那些移除后对语料库对数似然损害最小的 token",
+        "贪心频繁对合并",
+        "随机采样"
+      ],
+      "correct": 1,
+      "explanation": "Unigram 拟合一个 unigram LM 并迭代移除最无用的 token，直到达到目标词汇表大小。"
+    },
+    {
+      "stage": "check",
+      "question": "WordPiece 的合并标准与 BPE 的区别是什么？",
+      "options": [
+        "WordPiece 使用字节",
+        "WordPiece 是无监督的",
+        "WordPiece 合并最大化训练语料库似然的 pair，而 BPE 合并最频繁的 pair",
+        "WordPiece 跳过合并"
+      ],
+      "correct": 2,
+      "explanation": "WordPiece 根据似然选择合并；BPE 根据原始频率选择。"
+    },
+    {
+      "stage": "check",
+      "question": "哪个工具直接在原始多语言 Unicode 文本上训练分词器？",
+      "options": [
+        "spaCy",
+        "tiktoken",
+        "tokenizers-lite",
+        "SentencePiece（将空白编码为特殊标记，训练 BPE 或 Unigram）"
+      ],
+      "correct": 3,
+      "explanation": "SentencePiece 在原始文本上训练 BPE/Unigram，无需预分词；tiktoken 仅编码。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么生产 CI 必须哈希检查已部署的 tokenizer.json？",
+      "options": [
+        "分词器漂移产生不同于模型训练时的 token ID，静默破坏输出",
+        "Hugging Face 的要求",
+        "为了压缩存储",
+        "它减少词汇表大小"
+      ],
+      "correct": 0,
+      "explanation": "即使是小的分词器更改也会改变 ID；哈希检查在到达用户之前捕获漂移。"
+    },
+    {
+      "stage": "post",
+      "question": "单个表情符号需要多个 token 的常见原因是什么？",
+      "options": [
+        "表情符号是保留的",
+        "多码点表情符号编码为多个 UTF-8 字节；没有专用 token 时每个字节是自己独立的子词",
+        "表情符号存储为浮点数",
+        "表情符号是停止字符"
+      ],
+      "correct": 1,
+      "explanation": "复合表情符号编码为多个字节；字节级分词器可能每个字符使用多个 token。"
+    },
+    {
+      "stage": "post",
+      "question": "什么启发式指导新的单语言 transformer 的词汇表大小？",
+      "options": [
+        "始终 8000",
+        "始终 100 万",
+        "1B 参数以下模型约 32k；1-10B 用 50-100k；多语言或前沿模型用 200k+",
+        "匹配训练语料库大小"
+      ],
+      "correct": 2,
+      "explanation": "词汇表大小随模型和语言覆盖范围扩展；这些是粗略的社区默认值。"
+    }
+  ]
+}

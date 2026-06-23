@@ -1,0 +1,90 @@
+{
+  "lesson": "04-tree-of-thoughts-lats",
+  "title": "Tree of Thoughts 与 LATS：深思熟虑的搜索",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么思维链在 24 点游戏上表现不佳？",
+      "options": [
+        "模型无法对整数做乘法",
+        "线性路径无法在早期步骤错误时回溯，因此后续步骤会加剧错误",
+        "提示太短",
+        "CoT 需要一个计算器工具，而 GPT-4 没有"
+      ],
+      "correct": 1,
+      "explanation": "没有分支的情况下，错误的早期子表达式会污染链的其余部分；论文测量 CoT 仅为 4%。"
+    },
+    {
+      "stage": "pre",
+      "question": "Tree of Thoughts 搜索中的节点是什么？",
+      "options": [
+        "模型产生的一个令牌",
+        "一个连贯的中间步骤或想法，具有 K 个可能的子节点扩展",
+        "微调期间的权重更新",
+        "在运行时注册的工具"
+      ],
+      "correct": 1,
+      "explanation": "ToT 将推理视为一棵树，其中每个节点是一个可以扩展为 K 个子节点的中间想法。"
+    },
+    {
+      "stage": "check",
+      "question": "以下哪个不是 LATS 中 LLM 的角色？",
+      "options": [
+        "提出下一个动作的策略",
+        "评分部分轨迹的价值函数",
+        "在失败时编写反思的自我反思器",
+        "在展开之间更新模型权重的优化器"
+      ],
+      "correct": 3,
+      "explanation": "LATS 是无梯度的；三个 LLM 角色是策略、价值函数和自我反思器。没有权重更新。"
+    },
+    {
+      "stage": "check",
+      "question": "说出本课列举的四个 MCTS 阶段。",
+      "options": [
+        "Sample、Score、Sort、Submit",
+        "Select、Expand、Simulate、Backpropagate",
+        "Plan、Execute、Reflect、Stop",
+        "Search、Synthesize、Synthesize-Again、Stop"
+      ],
+      "correct": 1,
+      "explanation": "MCTS 每次迭代依次进行选择、扩展、模拟、反向传播。"
+    },
+    {
+      "stage": "check",
+      "question": "在 UCT 中，探索常数 c 的作用是什么？",
+      "options": [
+        "缩放价值估计 Q",
+        "权衡探索项 sqrt(ln N / n) 与利用项 Q",
+        "设置最大树深度",
+        "控制展开次数"
+      ],
+      "correct": 1,
+      "explanation": "c 平衡利用（Q）与探索项；根据任务调整。"
+    },
+    {
+      "stage": "post",
+      "question": "什么时候搜索比单条轨迹更有害？",
+      "options": [
+        "当评估器有噪声且只有单一正确答案时，搜索会收敛到高分错误答案",
+        "当任务涉及多个正确答案时",
+        "只要令牌便宜时",
+        "当任务是代码生成时"
+      ],
+      "correct": 0,
+      "explanation": "有噪声的价值函数加上单一正确答案正是搜索会过拟合噪声的情况。"
+    },
+    {
+      "stage": "post",
+      "question": "相比 CoT，在 24 点游戏上使用 ToT 大约需要预算多少倍的令牌？",
+      "options": [
+        "约 2 倍",
+        "约 10 倍",
+        "100 到 1000 倍",
+        "由于剪枝，比 CoT 更少"
+      ],
+      "correct": 2,
+      "explanation": "本课引用 ToT 在 24 点游戏上相比 CoT 的令牌成本为 100-1000 倍。"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "lesson": "03-direct-preference-optimization-family",
+  "title": "直接偏好优化家族",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么 DPO 可以跳过训练显式奖励模型？",
+      "options": [
+        "DPO 在第二个优化循环中隐式地训练自己的奖励模型",
+        "RLHF 的闭式最优解让你可以将奖励表达为策略的对数比率，这可以代入 Bradley-Terry 损失",
+        "偏好数据不需要标量奖励",
+        "Bradley-Terry 偏好恰好对奖励函数不变"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "IPO（Azar 等人，2024）主要解决了 DPO 中的哪个失败模式？",
+      "options": [
+        "需要成对数据",
+        "依赖参考策略",
+        "选中回复的长度偏差",
+        "微小的偏好概率导致的无界隐式奖励差距"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "在什么情况下你会选择 KTO 而不是 DPO？",
+      "options": [
+        "当必须保证零隐式奖励漂移时",
+        "当你有非配对的单标签（可取/不可取）并希望使用损失厌恶效用时",
+        "当你只有具有强边界的成对数据时",
+        "当你想完全移除 KL 惩罚时"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "与 DPO 相比，SimPO 的哪个属性是独有的？",
+      "options": [
+        "它移除了参考策略并按序列长度归一化对数似然",
+        "它将 Bradley-Terry 对数 sigmoid 替换为恒等映射",
+        "它使用带 NLL 的几率比损失",
+        "它保留参考策略并添加一个边界"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "BPO 所针对的 DPO 中的"降级选中回复"问题是什么？",
+      "options": [
+        "选中回复在参考策略的支持范围中缺失",
+        "选中回复在推理时以低概率被采样",
+        "DPO 可以使选中回复的绝对对数概率下降，只要拒绝的对数概率下降得更快",
+        "选中回复变得比拒绝回复更长"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "Rafailov 等人（NeurIPS 2024）关于直接对齐算法的缩放定律表明：",
+      "options": [
+        "DAA 表现出与 Gao 等人相同的黄金奖励上峰值-崩溃过度优化形状",
+        "DAA 通过设计消除了古德哈特定律",
+        "当成对数据超过 10 万个示例时，过度优化消失",
+        "DPO 过度优化但 IPO 和 SimPO 不"
+      ],
+      "correct": 0,
+      "explanation": ""
+    }
+  ]
+}

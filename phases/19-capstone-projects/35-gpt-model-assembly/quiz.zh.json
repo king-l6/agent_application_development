@@ -1,0 +1,78 @@
+{
+  "lesson": "35-gpt-model-assembly",
+  "title": "GPT 模型组装",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "本课复现的参考 GPT-2 small 配置是什么？",
+      "options": [
+        "词汇表 30000，上下文 512，d_model 512，6 个头，6 层",
+        "词汇表 50257，上下文 1024，d_model 768，12 个头，12 层，参数约 1.24 亿",
+        "词汇表 100000，上下文 2048，d_model 1024，16 个头，24 层",
+        "词汇表 50000，上下文 4096，d_model 4096，32 个头，32 层"
+      ],
+      "correct": 1,
+      "explanation": "GPT-2 small 是 124M 参数配置；与之匹配确认了连线正确。"
+    },
+    {
+      "stage": "check",
+      "question": "模型组装中权重绑定是什么意思？",
+      "options": [
+        "token 嵌入和 LM 头共享完全相同的参数张量；优化器更新一个同时服务于查找和输出投影的矩阵",
+        "两个形状相同但每步复制的不同张量",
+        "跨层共享的偏置项",
+        "对注意力头的约束"
+      ],
+      "correct": 0,
+      "explanation": "设置 lm_head.weight = tok_embed.weight 共享存储；复制则不会。节省词汇表乘以 d_model 个参数。"
+    },
+    {
+      "stage": "check",
+      "question": "生成过程如何滑动其上下文窗口？",
+      "options": [
+        "每步截断到一半上下文",
+        "每步取运行中序列（提示词加生成内容）的最后 context_length 个 token，并将其送入模型",
+        "用零填充到最大上下文",
+        "每步从提示词重新开始"
+      ],
+      "correct": 1,
+      "explanation": "滑动窗口在运行中序列溢出上下文长度时丢弃最老的 token。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么注意力输出投影和第二个 MLP 线性层使用比其他层更小的标准差初始化？",
+      "options": [
+        "节省内存",
+        "两者都直接馈入残差相加。将其标准差缩放为 1 除以 2 倍层数的平方根，使残差流在十二层中保持规模",
+        "数据集要求如此",
+        "Top-k 采样需要更小的权重"
+      ],
+      "correct": 1,
+      "explanation": "没有缩放，残差流会随深度增长，将最终 LayerNorm 推入激烈状态。"
+    },
+    {
+      "stage": "post",
+      "question": "温度在采样时有什么作用？",
+      "options": [
+        "选择优化器学习率",
+        "在 softmax 之前除以 logits。T 小于 1 使分布向贪心方向变尖锐，T 等于 1 保持自然模型分布，T 大于 1 使分布变平坦",
+        "向头添加 dropout",
+        "缩放嵌入"
+      ],
+      "correct": 1,
+      "explanation": "温度是最简单的旋钮；与 top-k 结合，它控制生成过程的探索程度。"
+    },
+    {
+      "stage": "post",
+      "question": "Top-k 过滤在采样前做什么？",
+      "options": [
+        "选择最低的 k 个 logits",
+        "保留值最高的 k 个 logits，将其他掩码为负无穷，然后对幸存者做 softmax，使多项式采样只看到 top k 个 token",
+        "移除所有低于零的 logits",
+        "将 logits 上限设为 k"
+      ],
+      "correct": 1,
+      "explanation": "Top-k 在 softmax 之前截断长尾；top_k=1 是贪心，更大的 k 保留更多多样性。"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "lesson": "11-multi-region-kv-locality",
+  "title": "多区域 LLM 服务与 KV 缓存局部性",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么轮询负载均衡对缓存 LLM 推理是有害的？",
+      "options": [
+        "没有落在持有其前缀的节点上的请求需要支付完整的预填充成本而不是缓存命中",
+        "轮询需要粘性会话",
+        "轮询会破坏 TLS",
+        "轮询仅对有状态数据库有效"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "缓存感知路由器消费哪两个输入？",
+      "options": [
+        "随机洗牌和请求大小",
+        "仅 user_id 和 tenant_id",
+        "轮询计数器和 TLS 密钥",
+        "来自副本的 KV 缓存事件和传入请求上的前缀哈希"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "对于 Llama 3.3 70B FP8 的 2K token 提示，缓存命中与冷预填充之间的 TTFT 差距大约是多少？",
+      "options": [
+        "相同",
+        "约 10 倍（约 80 ms 对比约 800 ms）",
+        "约 1.1 倍",
+        "约 1000 倍"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "为什么跨区域路由并不总是优于区域间路由以获得缓存命中？",
+      "options": [
+        "跨区域缓存感知路由是不可能的",
+        "GORGO 研究发现缓存命中对延迟没有帮助",
+        "所有超大规模云厂商都禁止跨区域路由",
+        "节省的预填充可能被网络 RTT 淹没，例如 440 ms 往返可能淹没 800 到 80 ms 的预填充节省"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "本节课引用的 32% LLM 灾难恢复失败驱动因素是什么？",
+      "options": [
+        "备份包含权重但缺少分词器文件或量化配置",
+        "区域配额耗尽",
+        "负载均衡器配置错误",
+        "未加密的备份"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "关于商用的跨区域推理产品（如 Bedrock CRI），本节课说了什么？",
+      "options": [
+        "它们是 KV 缓存感知的，可以替代应用层路由",
+        "它们只在 us-east-1 工作",
+        "它们优化可用性，而不是 TTFT，并将推理视为不透明——你仍然需要一个应用层缓存感知路由器",
+        "它们在 GDPR 下被禁止"
+      ],
+      "correct": 2,
+      "explanation": ""
+    }
+  ]
+}

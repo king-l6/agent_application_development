@@ -1,0 +1,78 @@
+{
+  "lesson": "phase-19/29-end-to-end-coding-task-demo",
+  "title": "框架上的端到端编码智能体",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "在阅读本课之前：为什么端到端演示用确定性策略替换LLM？",
+      "options": [
+        "LLM 在测试中运行太慢。",
+        "框架是本课测试的对象；策略是可替换的接缝。",
+        "确定性策略在编码任务上总是优于LLM。",
+        "本课负担不起推理成本。"
+      ],
+      "correct": 1,
+      "explanation": "框架契约不关心策略是LLM还是状态机。移除LLM移除了网络和方差，将课程转变为可重现的集成测试。"
+    },
+    {
+      "stage": "check",
+      "question": "智能体的状态机有五个状态。在正常通过时它以什么顺序执行它们？",
+      "options": [
+        "SURVEY -> FIX -> VERIFY -> RUN_TESTS -> INSPECT。",
+        "SURVEY -> RUN_TESTS -> INSPECT -> FIX -> VERIFY。",
+        "RUN_TESTS -> SURVEY -> INSPECT -> FIX -> VERIFY。",
+        "SURVEY -> INSPECT -> FIX -> RUN_TESTS -> VERIFY。"
+      ],
+      "correct": 1,
+      "explanation": "智能体调查项目、运行测试、检查失败的测试、修复错误、然后验证。RUN_TESTS 在 INSPECT 之前，因为测试失败是策略读取的信号。"
+    },
+    {
+      "stage": "check",
+      "question": "打包固定任务的错误是 src/fizz.py 中的差一错误：range(1, n) 应为 range(1, n + 1)。策略在哪里决定应用修复？",
+      "options": [
+        "在 SURVEY 状态内，通过读取文件头部。",
+        "在 INSPECT 状态内，在测试失败命名了预期输出之后。",
+        "在 VERIFY 状态内，在重新运行之后。",
+        "在状态机之外，在门链中。"
+      ],
+      "correct": 1,
+      "explanation": "INSPECT 是策略读取失败测试并了解预期形状的地方。修复在那里识别并在下一个 FIX 状态中写入。"
+    },
+    {
+      "stage": "check",
+      "question": "每个工具调用按顺序经过什么组件链？",
+      "options": [
+        "Sandbox -> GateChain -> SpanBuilder -> ObservationLedger。",
+        "GateChain -> SpanBuilder -> Sandbox -> ObservationLedger。",
+        "SpanBuilder -> GateChain -> Sandbox -> ObservationLedger。",
+        "ObservationLedger -> GateChain -> Sandbox -> SpanBuilder。"
+      ],
+      "correct": 1,
+      "explanation": "Gate 优先（允许/拒绝），span 其次（因此拒绝也被捕获），sandbox 第三（仅当允许时），ledger 最后（仅成功时）。课程代码以此方式接线。"
+    },
+    {
+      "stage": "post",
+      "question": "你用真实LLM替换确定性策略。哪个框架组件改变了？",
+      "options": [
+        "门链必须重写以处理LLM的随机性。",
+        "沙箱必须用 seccomp 加固。",
+        "框架中没有任何改变；策略是唯一替换的部分。",
+        "Prometheus 展示格式变得不兼容。"
+      ],
+      "correct": 2,
+      "explanation": "本课的关键点：框架是策略无关的。接缝是 next_action / observe 接口。LLM 在那里插入，无需触及门、沙箱、分类账或 span。"
+    },
+    {
+      "stage": "post",
+      "question": "演示断言智能体在少于12步内解决固定任务。确定性策略使用5步。真实LLM智能体可能做什么，框架如何处理？",
+      "options": [
+        "LLM 也使用5步；框架不变。",
+        "LLM 可能使用更多步；step_budget 限制循环，未解决的运行报告为带有 halted_reason 的失败。",
+        "LLM 无法在此框架内运行。",
+        "框架静默扩展预算。"
+      ],
+      "correct": 1,
+      "explanation": "步骤预算是指响亮的、确定性的停止标准。徘徊的LLM被上限限制，报告精确告诉你原因。"
+    }
+  ]
+}

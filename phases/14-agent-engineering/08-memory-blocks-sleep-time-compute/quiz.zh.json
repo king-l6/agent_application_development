@@ -1,0 +1,90 @@
+{
+  "lesson": "08-memory-blocks-sleep-time-compute",
+  "title": "记忆块与睡眠时间计算（Letta）",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Letta 的三个记忆层是什么？",
+      "options": [
+        "缓存、键值、归档",
+        "核心、回忆、归档",
+        "RAM、交换、磁盘",
+        "工作、情景、语义"
+      ],
+      "correct": 1,
+      "explanation": "Letta 使用核心（始终可见）、回忆（对话历史）和归档（外部）三层。"
+    },
+    {
+      "stage": "pre",
+      "question": "睡眠时间计算针对的是哪个生产问题？",
+      "options": [
+        "在关键路径上执行记忆整合导致的尾延迟",
+        "数学问题上的更高准确率",
+        "更低的嵌入成本",
+        "更快的 JSON 解析"
+      ],
+      "correct": 0,
+      "explanation": "睡眠时间将修剪/摘要/协调移出用户面对的关键路径，使主响应保持快速。"
+    },
+    {
+      "stage": "check",
+      "question": "以下哪个不是 Letta 中记忆块的字段？",
+      "options": [
+        "label",
+        "value",
+        "limit",
+        "embedding_model_version"
+      ],
+      "correct": 3,
+      "explanation": "块携带 id、label、value、limit、description；嵌入模型版本不是块模式的一部分。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么睡眠时间 Agent 可以比主 Agent 运行更强的模型？",
+      "options": [
+        "它收到一个私有的 API 密钥",
+        "它位于关键路径之外，因此不受延迟约束",
+        "它免于速率限制",
+        "记忆操作只需一半的 token"
+      ],
+      "correct": 1,
+      "explanation": "因为不阻塞用户响应，睡眠时间 Agent 可以更慢、更昂贵。"
+    },
+    {
+      "stage": "check",
+      "question": "Human 和 Persona 块泛化为什么模式？",
+      "options": [
+        "向量嵌入",
+        "任意用户定义的类型化可编辑块（Task、Project、Safety 等）",
+        "JSON-RPC 通道",
+        "OS 进程"
+      ],
+      "correct": 1,
+      "explanation": "Letta 将两个 MemGPT 块泛化为任意用户定义的块，包含 id、label、value、limit、description。"
+    },
+    {
+      "stage": "post",
+      "question": "此模式中的静默漂移是什么？",
+      "options": [
+        "主 Agent 从未察觉到睡眠时间 Agent 在其底层重写了块；通过版本控制和可见的差异来修复",
+        "慢速磁盘写入",
+        "嵌入模型升级",
+        "速率限制抖动"
+      ],
+      "correct": 0,
+      "explanation": "对块进行版本控制并在跟踪中显示差异，使睡眠时间重写对主循环可见。"
+    },
+    {
+      "stage": "post",
+      "question": "在 Letta V1 中，什么取代了内联 `Thought:` token 和 send_message/心跳模式？",
+      "options": [
+        "在独立通道上发出并在各轮次间传递的原生推理",
+        "专用于思考的第二个 LLM",
+        "更大的系统提示词",
+        "手动用户输入的想法"
+      ],
+      "correct": 0,
+      "explanation": "Letta V1（letta_v1_agent）使用提供商级别的原生推理，而非提示词形状的思考。"
+    }
+  ]
+}

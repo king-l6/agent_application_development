@@ -1,0 +1,78 @@
+{
+  "lesson": "76-collective-ops-from-scratch",
+  "title": "从头实现集合通信操作",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "对于 T 字节的张量在 N 个 rank 上，环形 allreduce 的每 rank 带宽成本是多少？",
+      "options": [
+        "T 字节",
+        "N * T 字节",
+        "2T(N-1)/N 字节",
+        "T log2(N) 字节"
+      ],
+      "correct": 2,
+      "explanation": "环形 allreduce 移动 N-1 个大小为 T/N 的块两次（reduce-scatter 然后 allgather）；每 rank 总计为 2T(N-1)/N，与集群大小无关。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么本课程中的队列网络是真实集群上 NCCL 的诚实替代？",
+      "options": [
+        "它运行在 CUDA 核心上",
+        "它硬件卸载归约操作",
+        "它实现了相同的线路模式（围绕环的有序点对点发送），只有介质不同",
+        "它压缩消息"
+      ],
+      "correct": 2,
+      "explanation": "算法正确性取决于线路模式，而不是介质；队列环暴露了与 NCCL 环形 allreduce 相同的竞争形状和块调度。"
+    },
+    {
+      "stage": "check",
+      "question": "在环形 allreduce 的 reduce-scatter 半场之后，rank r 拥有什么？",
+      "options": [
+        "没有东西",
+        "未归约的完整张量",
+        "一个块的归约后求和（张量的 1/N）",
+        "两个块的归约后求和"
+      ],
+      "correct": 2,
+      "explanation": "Reduce-scatter 将一个块的和放置在 rank 上；allgather 半场然后将这些完成的块在环上旋转。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么使用树形 broadcast 而不是从源发出 N-1 次直接发送？",
+      "options": [
+        "树使用更少的内存",
+        "树每轮翻倍持有者集；深度为 log2(N)，因此延迟按 log 而不是 N 缩放",
+        "PyTorch 中强制使用树",
+        "直接发送会丢包"
+      ],
+      "correct": 1,
+      "explanation": "当每跳延迟是瓶颈时，log2(N) 跳占主导；N-1 次顺序发送要付出 N 倍的延迟开销。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么要在相同输入上对照 torch.distributed gloo 进行验证？",
+      "options": [
+        "Gloo 更快",
+        "Gloo 是集合语义的法定参考；字节相等的输出证明你的算法在真实集群上运行之前就与规范一致",
+        "Gloo 自动写入 JSONL",
+        "Gloo 不需要设置"
+      ],
+      "correct": 1,
+      "explanation": "没有参考，原语看起来正确，直到真实训练运行的第 10000 步；gloo 在 CPU 上给出字节相等的真实结果。"
+    },
+    {
+      "stage": "post",
+      "question": "树形 allreduce 何时胜过环形 allreduce？",
+      "options": [
+        "总是",
+        "当消息很大时",
+        "小消息或高延迟链路；log2(N) 跳数在交叉点以下胜过带宽项 2T(N-1)/N",
+        "从不"
+      ],
+      "correct": 2,
+      "explanation": "NCCL 在约 1 MB 以上选择环，以下选择树；交叉点是给定集群拓扑上带宽与延迟的权衡。"
+    }
+  ]
+}

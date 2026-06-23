@@ -1,0 +1,78 @@
+{
+  "lesson": "37-loading-pretrained-weights",
+  "title": "加载预训练权重",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么加载器需要一个名称映射？",
+      "options": [
+        "预训练张量和本地参数共享相同的名称",
+        "已发布的 GPT-2 权重使用 wte、wpe、h.N.attn.c_attn 等名称；本地模型使用 tok_embed、pos_embed、blocks.N.attn.qkv；加载器将一组翻译到另一组",
+        "Safetensors 文件是加密的",
+        "Torch 要求如此"
+      ],
+      "correct": 1,
+      "explanation": "两种命名约定来自不同的历史；映射是一个按层展开的文字字典。"
+    },
+    {
+      "stage": "check",
+      "question": "什么是 conv1d 转置，哪些张量需要它？",
+      "options": [
+        "所有权重张量",
+        "已发布的 GPT-2 以 tensorflow conv1d 布局存储 c_attn、c_proj 和 c_fc 权重，这是 nn.Linear.weight 预期的转置；加载器在赋值时对这些张量调用 .t()",
+        "只有嵌入",
+        "只有 LayerNorm 尺度"
+      ],
+      "correct": 1,
+      "explanation": "三个后缀需要转置；偏置和 LayerNorm 的形状已经正确。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么 LM 头不在 safetensors 文件中？",
+      "options": [
+        "它在运行时从 logits 计算",
+        "权重绑定：LM 头与 token 嵌入（wte）共享存储，因此在加载 wte 后设置 lm_head.weight = tok_embed.weight 就能重建头",
+        "它太大了",
+        "它从另一个文件加载"
+      ],
+      "correct": 1,
+      "explanation": "在 wte 加载后设置 lm_head.weight = tok_embed.weight 恢复别名；复制会加倍参数数量。"
+    },
+    {
+      "stage": "check",
+      "question": "加载器在形状不匹配时做什么？",
+      "options": [
+        "填充较小的张量",
+        "将不匹配记录在 LoadReport.shape_mismatch 中并拒绝赋值，保持本地参数不变",
+        "使进程崩溃",
+        "截断较大的张量"
+      ],
+      "correct": 1,
+      "explanation": "半加载的模型是静默失败的机器；拒绝赋值使报告保持诚实。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么演示的测试夹具不是真实的 GPT-2 下载？",
+      "options": [
+        "真实文件不是 safetensors 格式",
+        "演示必须离线快速运行；测试夹具使用精确的预训练命名约定，因此加载器代码路径相同，换成真实文件不会改变加载器的任何内容",
+        "真实权重是加密的",
+        "Safetensors 无法存储大张量"
+      ],
+      "correct": 1,
+      "explanation": "相同的代码路径，更小的数据量；加载器对两者都有效。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么在加载前后各生成一个样本？",
+      "options": [
+        "衡量推理速度",
+        "如果加载后的样本与加载前的样本相同，说明加载没有改变模型，意味着映射静默地错过了每个张量",
+        "热身 GPU 缓存",
+        "设置随机种子"
+      ],
+      "correct": 1,
+      "explanation": "健全性生成是最廉价的门控：未能改变样本指纹暴露了 LoadReport 摘要自身无法捕捉到的加载问题。"
+    }
+  ]
+}

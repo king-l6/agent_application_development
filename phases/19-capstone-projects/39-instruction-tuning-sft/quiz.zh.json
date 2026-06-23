@@ -1,0 +1,78 @@
+{
+  "lesson": "phase-19/39-instruction-tuning-sft",
+  "title": "通过监督微调进行指令微调",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "阅读前：你给一个 vanilla 基础模型提示词 'What is the capital of France?'。它输出 'And what about Italy and Spain too?'。以下哪个最能诊断差距？",
+      "options": [
+        "模型缺少关于巴黎的事实。",
+        "模型有语言模型行为，但没有遵循指令的格式契约。",
+        "模型需要更大的词汇表。",
+        "基础模型必须被重置并重新预训练。"
+      ],
+      "correct": 1,
+      "explanation": "基础模型可以扩展文本，但从未被告知指令期望对应的响应。SFT 教授格式契约：看到指令，发出响应。"
+    },
+    {
+      "stage": "check",
+      "question": "Collate 函数在指令位置和填充位置上将 labels[i] 设为 -100。为什么 PyTorch 交叉熵能正确处理这些位置？",
+      "options": [
+        "交叉熵静默地丢弃任何负数目标。",
+        "ignore_index=-100 被 F.cross_entropy 尊重：这些位置贡献零损失和零梯度。",
+        "这些位置上的模型输出自动设为 NaN。",
+        "PyTorch 按序列长度归一化，因此掩码位置相互抵消。"
+      ],
+      "correct": 1,
+      "explanation": "ignore_index 是 F.cross_entropy 的一个文档化参数。等于它的目标贡献零损失和零梯度。-100 是约定俗成的默认值。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么 `shifted_loss` 切取 `logits[:, :-1, :]` 和 `labels[:, 1:]` 而不是在相同位置上使用它们？",
+      "options": [
+        "使张量在 collate 步骤后大小相同。",
+        "因为位置 i 的模型在因果下一个 token 目标下预测位置 i+1 的 token。",
+        "自动排除最终填充位置。",
+        "这是一个可选的优化；使用相同位置的标签也能工作。"
+      ],
+      "correct": 1,
+      "explanation": "因果 LM 训练位置 i 预测 token i+1。这个切片将位置 i 的预测与位置 i+1 的金标准标签对齐，这是标准的下一个 token 目标。"
+    },
+    {
+      "stage": "check",
+      "question": "你训练时没有掩码：labels 等于 input_ids，没有 -100。模型训练了，但响应的精确匹配比有掩码时更差。最可能的原因？",
+      "options": [
+        "优化器过拟合了响应 token。",
+        "大部分梯度信号被用于预测指令（本应最大的掩码区域在限制它）。",
+        "当损失包含特殊 token 时交叉熵不稳定。",
+        "没有掩码模型无法学习边界 token。"
+      ],
+      "correct": 1,
+      "explanation": "当指令位置计入损失时，它们主导梯度，因为通常它们的数量多于响应 token。你关心的部分（响应）的有效学习率下降，模型耗费容量重建用户总是提供的输入。"
+    },
+    {
+      "stage": "post",
+      "question": "在保留集上精确匹配为 0.85。一位评审者说模型对正确答案进行释义，精确匹配错过了这些。你添加哪个指标来捕捉这一点？",
+      "options": [
+        "保留集上的损失。",
+        "参考答案的 token 级 F1，它会在字符不同时仍计入重叠。",
+        "平均序列长度。",
+        "参考答案在模型下的交叉熵。"
+      ],
+      "correct": 1,
+      "explanation": "Token 级 F1（在归一化后在预测和参考 token 之间计数）在表面形式不同时为模型正确回答了大部分答案而认可。这是课程 41 的工作。"
+    },
+    {
+      "stage": "post",
+      "question": "你想在支持多轮对话的聊天机器人中使用 SFT 模型。对数据和掩码所需的最小更改是什么？",
+      "options": [
+        "不需要：SFT 模型总是开箱即用地处理多轮。",
+        "每轮添加 USER 和 ASSISTANT 标记，连接各轮，掩码除当前正在训练的 assistant 轮之外的所有内容。",
+        "将损失切换为均方误差。",
+        "增加词汇表。"
+      ],
+      "correct": 1,
+      "explanation": "多轮 SFT 推广了单轮模板。每轮有一个角色标记。掩码是所有非 assistant 位置加上填充的并集。训练目标不变。"
+    }
+  ]
+}

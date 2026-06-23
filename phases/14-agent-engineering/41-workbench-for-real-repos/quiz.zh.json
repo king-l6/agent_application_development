@@ -1,0 +1,90 @@
+{
+  "lesson": "41-workbench-for-real-repos",
+  "title": "真实仓库上的工作台",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "通过纯提示词和工作台引导两个流水线运行相同任务的目标是什么？",
+      "options": [
+        "比较模型",
+        "产生一份你可以递给怀疑者的前后报告，用数据而非论点说话",
+        "选择一个供应商",
+        "对 GPU 进行基准测试"
+      ],
+      "correct": 1,
+      "explanation": "数据自己说话；论据是通过真实感的任务建立的，而不是玩具。"
+    },
+    {
+      "stage": "pre",
+      "question": "下列哪一个不是测量的五个结果之一？",
+      "options": [
+        "tests_actually_run",
+        "acceptance_met",
+        "files_outside_scope",
+        "model_perplexity"
+      ],
+      "correct": 3,
+      "explanation": "五个结果是 tests_actually_run、acceptance_met、files_outside_scope、handoff_quality、reviewer_total。"
+    },
+    {
+      "stage": "check",
+      "question": "LangChain 的《智能体框架剖析》在 Terminal Bench 2.0 上测量了什么？",
+      "options": [
+        "所有模型收敛于前三名",
+        "相同模型仅通过改变框架从前 30 名之外跃升至第 5 名",
+        "顶级模型下降了 25 名",
+        "框架变更没有改变排名"
+      ],
+      "correct": 1,
+      "explanation": "相同模型上二十五名的差距是框架与模型的头条凭据。"
+    },
+    {
+      "stage": "check",
+      "question": "preprints.org 论文引用企业智能体项目的失败率是多少？",
+      "options": [
+        "8%",
+        "约 88% 未能进入生产，失败集中在运行时而非推理",
+        "约 50%",
+        "没有失败的"
+      ],
+      "correct": 1,
+      "explanation": "《语言智能体的框架工程》预印本将失败追溯到运行时问题（过期状态、脆弱的重试、膨胀的上下文）。"
+    },
+    {
+      "stage": "check",
+      "question": "WebAgent 基线准确率在长上下文条件下会怎样？",
+      "options": [
+        "保持平稳",
+        "从 40-50% 下降到 10% 以下，主要来自无限循环和目标丢失",
+        "上升 30%",
+        "减半但保持在 30% 以上"
+      ],
+      "correct": 1,
+      "explanation": "长上下文崩溃正是 Ralph 循环和交接数据包存在要吸收的。"
+    },
+    {
+      "stage": "post",
+      "question": "课程关于假阴性（纯提示词更快的情况）是怎么说的？",
+      "options": [
+        "它们不存在",
+        "单步事实任务、单行 lint、格式化程序运行用纯提示词更快；诚实地枚举它们，使工作台不会被描述为过度设计",
+        "它们证明工作台失败",
+        "它们使框架论点无效"
+      ],
+      "correct": 1,
+      "explanation": "诚实地枚举纯提示词最快的情况使框架论点保持可信。"
+    },
+    {
+      "stage": "post",
+      "question": "你在什么情况下引用本课程的报告？",
+      "options": [
+        "内部 HR 评审",
+        "当有人想要'只是这个冲刺'放弃验证门时，或者当新产品推出需要一个可移植的时间节省基准时",
+        "仅在营销宣传中",
+        "仅在黑客马拉松中"
+      ],
+      "correct": 1,
+      "explanation": "数字的传播力比解释更远；当压力试图走捷径时引用报告。"
+    }
+  ]
+}

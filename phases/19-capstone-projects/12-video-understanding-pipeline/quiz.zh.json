@@ -1,0 +1,90 @@
+{
+  "lesson": "12-video-understanding-pipeline",
+  "title": "综合项目 12 — 视频理解流水线（场景、问答、搜索）",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "即使长上下文 VLM 可以原生读取 2 小时视频，为什么仍然需要场景级索引？",
+      "options": [
+        "长上下文 VLM 无法流式输出",
+        "向量索引不支持视频文件",
+        "将 100 小时视频摄取到可查询语料库需要场景级检索，即使单个视频可以整体读取",
+        "场景切割是 VLM 唯一能理解的东西"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "pre",
+      "question": "多向量索引中每个场景获得哪三种向量类型？",
+      "options": [
+        "描述嵌入、关键帧嵌入和转录嵌入",
+        "音频波形、梅尔频谱图和 MFCC",
+        "哈希、gzip 和 CRC",
+        "姿态、深度和光流"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "查询时如何合并三个检索流的结果？",
+      "options": [
+        "仅选择描述命中",
+        "通过平均余弦相似度",
+        "通过三个排名列表的互惠排名融合",
+        "通过取并集而不评分"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "时间定位步骤在顶部场景内部细化什么？",
+      "options": [
+        "来自 Whisper 的转录单词时间戳",
+        "存储在 Qdrant 中的向量数量",
+        "包含答案的 (start, end) 时间戳窗口",
+        "关键帧嵌入维度"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "哪类问题被单独报告，因为它是已知的幻觉热点？",
+      "options": [
+        "关于风景的描述性问题",
+        "说话人识别问题",
+        "翻译问题",
+        "计数和动作类型问题，VLM 会数错或排序错误"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "评分标准在保留集上测量哪个定位指标？",
+      "options": [
+        "时间定位交并比 (IoU)",
+        "接受率",
+        "困惑度",
+        "MRR@10"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "为什么流水线要求在答案中引用时间戳？",
+      "options": [
+        "它们减少了嵌入维度",
+        "Whisper 输出要求时间戳",
+        "Qdrant 载荷要求时间戳",
+        "它们让观众可以跳转到精确的 (video_id, start, end)，以便用户可以验证声明"
+      ],
+      "correct": 3,
+      "explanation": ""
+    }
+  ]
+}

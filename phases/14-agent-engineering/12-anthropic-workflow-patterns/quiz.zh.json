@@ -1,0 +1,90 @@
+{
+  "lesson": "12-anthropic-workflow-patterns",
+  "title": "Anthropic 的工作流模式：简约优于复杂",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Anthropic 如何区分工作流和 Agent？",
+      "options": [
+        "工作流使用嵌入；Agent 使用工具",
+        "工作流是工程师拥有的预定义图；Agent 是模型拥有的动态工具指挥",
+        "工作流在 CPU 上运行；Agent 需要 GPU",
+        "工作流是无状态的；Agent 是有状态的"
+      ],
+      "correct": 1,
+      "explanation": "工作流 = 工程师拥有的预定义代码路径；Agent = 模型拥有图结构。"
+    },
+    {
+      "stage": "pre",
+      "question": "支撑所有五种模式的增强型 LLM 的三种能力是什么？",
+      "options": [
+        "搜索（检索）、工具（动作）、记忆（持久化）",
+        "嵌入、微调、RAG",
+        "向量、键值、图",
+        "计划、执行、反思"
+      ],
+      "correct": 0,
+      "explanation": "原子单元是一个配备了检索、工具和记忆的 LLM。"
+    },
+    {
+      "stage": "check",
+      "question": "以下哪个不是 Anthropic 的五种工作流模式之一？",
+      "options": [
+        "提示词链",
+        "路由",
+        "评估器-优化器",
+        "梯度蒸馏"
+      ],
+      "correct": 3,
+      "explanation": "五种模式是：提示词链、路由、并行化、编排器-工作者、评估器-优化器。梯度蒸馏是一个训练概念。"
+    },
+    {
+      "stage": "check",
+      "question": "并行化有哪两种形态？",
+      "options": [
+        "同步和异步",
+        "分段（不同块）和投票（相同提示词 N 次，汇总）",
+        "热和冷",
+        "有状态和无状态"
+      ],
+      "correct": 1,
+      "explanation": "并行化为分段或投票；两者都扇出 N 个调用并汇总。"
+    },
+    {
+      "stage": "check",
+      "question": "哪种工作流模式是 Self-Refine 的泛化形式？",
+      "options": [
+        "提示词链",
+        "路由",
+        "编排器-工作者",
+        "评估器-优化器"
+      ],
+      "correct": 3,
+      "explanation": "评估器-优化器是 Anthropic 对 Self-Refine / CRITIC 迭代模式的命名。"
+    },
+    {
+      "stage": "post",
+      "question": "根据本课，工作流何时胜过 Agent？",
+      "options": [
+        "总是",
+        "在可预测的、成本受限的或合规受限的任务上，图结构可以被枚举和审计",
+        "仅限聊天场景",
+        "仅在 GPU 上"
+      ],
+      "correct": 1,
+      "explanation": "工作流更便宜、更易调试、可审计；当步骤可知时选择它们。"
+    },
+    {
+      "stage": "post",
+      "question": "本课推荐的默认起点是什么？",
+      "options": [
+        "多 Agent 框架",
+        "直接 API 调用；仅当持久状态、参与者并发或角色模板值得其成本时才添加框架",
+        "微调模型",
+        "构建自定义 MCTS"
+      ],
+      "correct": 1,
+      "explanation": "Schluntz 和 Zhang：从简单开始；只有在合理时才增加框架复杂性。"
+    }
+  ]
+}

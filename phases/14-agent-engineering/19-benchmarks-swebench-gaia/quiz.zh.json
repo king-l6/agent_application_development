@@ -1,0 +1,90 @@
+{
+  "lesson": "19-benchmarks-swebench-gaia",
+  "title": "基准测试：SWE-bench、GAIA、AgentBench",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "SWE-bench的评估器在候选补丁上检查什么？",
+      "options": [
+        "与参考修复方案的BLEU分数",
+        "之前失败的测试现在通过（FAIL_TO_PASS），之前通过的测试仍然通过（PASS_TO_PASS）",
+        "补丁长度不超过200行",
+        "补丁通过单独的LLM评判"
+      ],
+      "correct": 1,
+      "explanation": "框架以测试转换作为门控条件：揭示bug的测试必须翻转，而回归测试必须保持绿色。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么存在SWE-bench Verified？",
+      "options": [
+        "它运行更快",
+        "OpenAI的500个人工筛选任务子集消除了模糊问题和不可靠的测试",
+        "它包含更多语言",
+        "它使用不同的补丁格式"
+      ],
+      "correct": 1,
+      "explanation": "Verified是用于可信报告的更干净子集。"
+    },
+    {
+      "stage": "check",
+      "question": "SWE-bench+在成功补丁中发现了什么？",
+      "options": [
+        "32.67%在问题中泄露了解决方案文本，31.08%的测试覆盖可疑地薄弱",
+        "所有补丁都是记忆的",
+        "不存在数据污染",
+        "补丁总是超过1000行"
+      ],
+      "correct": 0,
+      "explanation": "SWE-bench+标记了很大一部分成功补丁存在解决方案泄露和覆盖薄弱的问题。"
+    },
+    {
+      "stage": "check",
+      "question": "GAIA的设计理念是什么？",
+      "options": [
+        "对人类困难，对AI容易",
+        "对人类概念上简单（约92%），但对AI困难（早期带插件的GPT-4：约15%）",
+        "纯向量检索基准",
+        "只有单轮问题"
+      ],
+      "correct": 1,
+      "explanation": "GAIA有意设计为对人类容易、对AI困难，测试推理+工具+模态。"
+    },
+    {
+      "stage": "check",
+      "question": "以下哪个不是AgentBench的环境类别？",
+      "options": [
+        "代码（Bash、DB、KG）",
+        "游戏（Alfworld、LTP）",
+        "网络（WebShop、Mind2Web）",
+        "梯度（RL、IRL）"
+      ],
+      "correct": 3,
+      "explanation": "AgentBench涵盖代码、游戏、网络和开放生成。没有梯度类别。"
+    },
+    {
+      "stage": "post",
+      "question": "课程指出报告SWE-bench数字的错误方式是什么？",
+      "options": [
+        "报告按仓库的细分",
+        "报告一个聚合数字而不提及Verified或SWE-bench+上下文",
+        "报告步数",
+        "报告挂钟时间"
+      ],
+      "correct": 1,
+      "explanation": "单一数字迷恋掩盖了污染和成本；始终报告Verified和按分布区间的上下文。"
+    },
+    {
+      "stage": "post",
+      "question": "这些基准测试不衡量哪个维度？",
+      "options": [
+        "真实世界运营成本（token数、挂钟时间）、对抗性安全和你自己的领域",
+        "测试转换",
+        "每个任务的成功率",
+        "步数"
+      ],
+      "correct": 0,
+      "explanation": "基准测试取平均值；它们不捕捉成本、对抗稳健性或你的领域。"
+    }
+  ]
+}

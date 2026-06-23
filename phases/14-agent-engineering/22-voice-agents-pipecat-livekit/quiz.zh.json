@@ -1,0 +1,90 @@
+{
+  "lesson": "22-voice-agents-pipecat-livekit",
+  "title": "语音智能体：Pipecat 和 LiveKit",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Pipecat管道使用哪两个流向？",
+      "options": [
+        "读取和写入",
+        "DOWNSTREAM（源到汇）和UPSTREAM（反馈、取消、打断）",
+        "入站和出站",
+        "热和冷"
+      ],
+      "correct": 1,
+      "explanation": "帧沿下游方向从源到汇流动，沿上游方向用于控制和取消。"
+    },
+    {
+      "stage": "pre",
+      "question": "标准的Pipecat语音管道是什么？",
+      "options": [
+        "VAD -> STT -> LLM -> TTS -> 传输",
+        "TTS -> STT -> LLM -> VAD",
+        "LLM -> 嵌入 -> 检索 -> 回答",
+        "音频 -> JSON -> SQL -> 响应"
+      ],
+      "correct": 0,
+      "explanation": "VAD检测语音活动，STT转写，LLM响应，TTS说话，传输传送。"
+    },
+    {
+      "stage": "check",
+      "question": "LiveKit Agents提供了哪两个语音智能体类？",
+      "options": [
+        "MultimodalAgent（直接音频）和VoicePipelineAgent（STT/LLM/TTS级联）",
+        "BatchAgent和StreamAgent",
+        "TextAgent和SpeechAgent",
+        "LocalAgent和CloudAgent"
+      ],
+      "correct": 0,
+      "explanation": "MultimodalAgent使用直接音频（Realtime风格）；VoicePipelineAgent使用STT->LLM->TTS以获得文本级控制。"
+    },
+    {
+      "stage": "check",
+      "question": "什么是打断以及如何处理？",
+      "options": [
+        "LLM成本峰值；减少token数",
+        "用户在智能体说话时打断；UPSTREAM取消帧在TTS说话中途停止",
+        "提供商中断；切换区域",
+        "验证码失败；重试"
+      ],
+      "correct": 1,
+      "explanation": "打断是用户干预；UPSTREAM取消是Pipecat干净处理它的方式。"
+    },
+    {
+      "stage": "check",
+      "question": "课程描述的端到端延迟中什么是高级水平？",
+      "options": [
+        "约50毫秒",
+        "约450-600毫秒",
+        "约1500毫秒",
+        "约5000毫秒"
+      ],
+      "correct": 1,
+      "explanation": "高级堆栈在450-600毫秒左右；800-1200毫秒很常见；超过1500毫秒感觉是坏的。"
+    },
+    {
+      "stage": "post",
+      "question": "如果忽略STT置信度会发生什么问题？",
+      "options": [
+        "延迟改善",
+        "低置信度转录被当作真理输入给LLM，产生错误回答；在置信度上设门控或要求确认",
+        "TTS变快",
+        "通话更便宜"
+      ],
+      "correct": 1,
+      "explanation": "将低置信度STT当作真理是顶级语音智能体失败模式。"
+    },
+    {
+      "stage": "post",
+      "question": "课程为什么建议在发布前汇总组件延迟？",
+      "options": [
+        "提供商按延迟计费",
+        "每个组件增加50-200毫秒；总和决定体验是否感觉糟糕",
+        "它满足合规要求",
+        "延迟是WebRTC要求的"
+      ],
+      "correct": 1,
+      "explanation": "在发布前汇总链路（VAD + STT + LLM + TTS + 传输）；目标很严格。"
+    }
+  ]
+}

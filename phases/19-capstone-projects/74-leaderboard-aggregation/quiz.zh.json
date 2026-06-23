@@ -1,0 +1,78 @@
+{
+  "lesson": "74-leaderboard-aggregation",
+  "title": "排行榜聚合",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么聚合器要求每个输入分数在 [0, 1] 内？",
+      "options": [
+        "这是 ECE 的箱子范围",
+        "没有共同的尺度，一个 0-100 范围的单一度量会主导每个模型的均值",
+        "Numpy 要求它",
+        "Markdown 渲染期望两位小数"
+      ],
+      "correct": 1,
+      "explanation": "如果通过率在 [0,1] 而 BLEU 在 [0,100]，后者会淹没平均值。规范化属于度量层，在此处被检查。"
+    },
+    {
+      "stage": "pre",
+      "question": "均值分数隐藏了什么信息，而胜率能揭示它？",
+      "options": [
+        "模型是否校准良好",
+        "每个任务的获胜能抵抗异常值和尺度变化；均值对两者都敏感",
+        "完成的任务数量",
+        "bootstrap 区间"
+      ],
+      "correct": 1,
+      "explanation": "胜率统计逐任务获胜。一个模型可以因一个简单任务而有高均值，但仍然输掉大多数成对比较。"
+    },
+    {
+      "stage": "check",
+      "question": "bootstrap_mean_ci 如何估计置信区间？",
+      "options": [
+        "通过假设均值上的正态分布",
+        "通过放回重采样任务分数，在每个样本上计算均值，然后取 alpha/2 和 1 - alpha/2 分位数",
+        "通过解析计算标准差",
+        "通过调用 scipy.stats.bootstrap"
+      ],
+      "correct": 1,
+      "explanation": "基于每个任务分数的非参数百分位 bootstrap；无分布假设，无 scipy。"
+    },
+    {
+      "stage": "check",
+      "question": "成对差异 CI 何时报告 `significant`？",
+      "options": [
+        "当 CI 不包含零时",
+        "当均值差异大于 0.1 时",
+        "当两个模型都有超过三十个任务时",
+        "当胜率不等时"
+      ],
+      "correct": 0,
+      "explanation": "严格排除零的 CI 意味着差异在选定水平上不太可能为零；这是本课程使用的操作定义。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么配对 bootstrap 是配对的而不是独立的？",
+      "options": [
+        "独立 bootstrap 在 Python 中是非法的",
+        "配对 bootstrap 尊重同一个任务同时馈送两个模型的事实；在重采样之前，差异是按任务计算的",
+        "配对 bootstrap 运行更快",
+        "配对 bootstrap 是 numpy 唯一支持的"
+      ],
+      "correct": 1,
+      "explanation": "配对 bootstrap 减少噪声：我们对任务而非模型进行采样，因此每次迭代的比较都是在相同的任务集上进行的。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么聚合器在头条数字之外还返回每个类别的均值？",
+      "options": [
+        "JSON Schema 要求它",
+        "头条均值可能掩盖类别级弱点（总体良好，但代码差）；每个类别暴露了这一点",
+        "每个类别的均值比总体均值运行更快",
+        "Markdown 渲染要求它"
+      ],
+      "correct": 1,
+      "explanation": "一个模型可以通过在每个方面都还行或在一个类别中占主导来赢得总体排名。每个类别分解让消费者看到是哪种情况。"
+    }
+  ]
+}

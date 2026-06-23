@@ -1,0 +1,67 @@
+[
+  {
+    "id": "unsupervised-pre-1",
+    "stage": "pre",
+    "question": "无监督学习与监督学习有何区别？",
+    "options": [
+      "无监督学习使用更多数据",
+      "无监督学习没有标签输出——算法自己发现结构",
+      "无监督学习只适用于文本数据",
+      "无监督学习总是产生更好的结果"
+    ],
+    "correct": 1,
+    "explanation": "在无监督学习中，没有标签。算法发现数据中的模式、分组或结构，而无需被告知正确的输出应该是什么。"
+  },
+  {
+    "id": "unsupervised-pre-2",
+    "stage": "pre",
+    "question": "K-Means 要求你在训练前指定什么？",
+    "options": [
+      "确切的簇中心",
+      "簇的数量 K",
+      "每个数据点的标签",
+      "要使用的距离度量"
+    ],
+    "correct": 1,
+    "explanation": "K-Means 需要簇的数量 K 作为输入。然后它迭代地将点分配到最近的质心并重新计算质心，直到收敛。"
+  },
+  {
+    "id": "unsupervised-post-1",
+    "stage": "post",
+    "question": "K-Means 在两个交错的半月形上失败，但 DBSCAN 成功。为什么？",
+    "options": [
+      "DBSCAN 使用比 K-Means 更多的数据",
+      "DBSCAN 基于密度发现簇，因此可以找到任意形状，而 K-Means 假设球形簇",
+      "DBSCAN 在每个数据集上都优于 K-Means",
+      "K-Means 不能处理 2D 数据"
+    ],
+    "correct": 1,
+    "explanation": "K-Means 将点分配到最近的质心，产生球形（凸）簇。DBSCAN 从密集区域生长簇，只要簇通过密度连接，就能发现任何形状。"
+  },
+  {
+    "id": "unsupervised-post-2",
+    "stage": "post",
+    "question": "轮廓系数衡量什么？",
+    "options": [
+      "找到的簇的总数",
+      "每个点与其自身簇的相似度与最近的其他簇的相似度的比较",
+      "聚类算法的速度",
+      "数据中离群点的百分比"
+    ],
+    "correct": 1,
+    "explanation": "轮廓系数 = (b - a) / max(a, b)，其中 a 是平均簇内距离，b 是平均最近簇距离。范围从 -1（错误簇）到 +1（良好聚类）。"
+  },
+  {
+    "id": "unsupervised-post-3",
+    "stage": "post",
+    "question": "高斯混合模型在簇分配方面与 K-Means 有何不同？",
+    "options": [
+      "GMM 使用硬分配，每个点恰好属于一个簇",
+      "GMM 给出软（概率性）分配，每个点有属于每个簇的概率",
+      "GMM 完全不使用质心",
+      "GMM 只适用于一维数据"
+    ],
+    "correct": 1,
+    "explanation": "K-Means 将每个点分配到恰好一个簇（硬分配）。GMM 计算每个点属于每个高斯成分的概率（软分配），并且可以建模椭圆形的、重叠的簇。"
+  }
+]

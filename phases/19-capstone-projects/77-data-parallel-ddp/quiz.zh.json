@@ -1,0 +1,78 @@
+{
+  "lesson": "77-data-parallel-ddp",
+  "title": "从头实现数据并行 DDP",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么 DDP 在构造时广播参数，而不是依赖跨 rank 的相同种子？",
+      "options": [
+        "广播比种子设置更快",
+        "相同种子的初始化在 rank 之间会有 float epsilon 的差异；广播保证训练开始前字节相等的权重",
+        "PyTorch 禁止相同种子初始化",
+        "广播节省内存"
+      ],
+      "correct": 1,
+      "explanation": "在不同硬件上（甚至不同进程顺序）的浮点运算可能在位级别上有差异。从 rank 0 广播是在所有地方获得字节相等权重的唯一方法。"
+    },
+    {
+      "stage": "pre",
+      "question": "DDP 在反向传播之后、optimizer.step 之前做什么？",
+      "options": [
+        "什么也不做",
+        "保存检查点",
+        "对每个参数的梯度执行 Allreduce-SUM 并除以 world_size 得到均值梯度",
+        "广播 logits"
+      ],
+      "correct": 2,
+      "explanation": "均值梯度对 world_size 不变，因此一个 rank 上调优的学习率在 N 个 rank 上同样有效。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么在 allreduce-SUM 之后除以 world_size，而不是使用 allreduce-MEAN？",
+      "options": [
+        "Allreduce-MEAN 在 gloo 中不存在",
+        "在每个 rank 上除以 world_size 是一个本地操作；allreduce-MEAN 在底层也是同样的实现方式",
+        "除法产生 NaN",
+        "world_size 未知"
+      ],
+      "correct": 1,
+      "explanation": "两种方法产生相同的算术结果。NCCL 从 2.10 开始提供 allreduce-AVG；gloo 没有，所以在 SUM 之后本地除法。"
+    },
+    {
+      "stage": "check",
+      "question": "生产级 DDP 中的梯度分桶实现了什么？",
+      "options": [
+        "将梯度量化为 int8",
+        "将许多小 allreduce 合并为一个大 allreduce，分摊每次调用的延迟开销",
+        "释放梯度内存",
+        "跳过反向传播"
+      ],
+      "correct": 1,
+      "explanation": "一个 1B 参数的模型有数千个梯度张量；每个张量一次 allreduce 要付出数千次 gloo 或 NCCL 延迟开销。"
+    },
+    {
+      "stage": "check",
+      "question": "PyTorch DDP 中为什么存在 no_sync()？",
+      "options": [
+        "为了关闭 DDP",
+        "在 K 个微批次上的梯度累积需要跳过其中 K-1 个微批次的反向传播后 allreduce；no_sync 包装了这个暂停",
+        "为了切换后端",
+        "为了调试"
+      ],
+      "correct": 1,
+      "explanation": "没有 no_sync，allreduce 在每个累积步骤中触发 K 次，吞吐量降至地板。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么本课程的参考实现在一个进程中顺序地走每个 rank 的微批次？",
+      "options": [
+        "单进程更快",
+        "它给出了字节相等的基线：顺序均值梯度在每个步骤必须等于 DDP 的 allreduce 均值梯度",
+        "这是使用 gloo 的唯一方式",
+        "它节省内存"
+      ],
+      "correct": 1,
+      "explanation": "与参考循环的等价性是承载负载的正确性测试；没有它，梯度同步错误会隐藏到第 10000 步。"
+    }
+  ]
+}

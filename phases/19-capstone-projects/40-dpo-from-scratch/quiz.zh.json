@@ -1,0 +1,78 @@
+{
+  "lesson": "phase-19/40-dpo-from-scratch",
+  "title": "从头构建直接偏好优化",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "阅读前：在 Bradley-Terry 偏好模型下，人类偏好补全 y_w 而非 y_l（给定提示词 x）的概率是 sigmoid(r(x, y_w) - r(x, y_l))。这意味着什么？",
+      "options": [
+        "你必须在训练策略之前拟合 r。",
+        "只有奖励的差异重要；任何同时加到 r(x, y_w) 和 r(x, y_l) 上的函数都会抵消。",
+        "Bradley-Terry 需要一个不会消失的归一化常数 Z(x)。",
+        "Sigmoid 与最大似然不兼容。"
+      ],
+      "correct": 1,
+      "explanation": "Bradley-Terry 偏好仅取决于奖励差异。两个补全共有的任何内容都会抵消。这是 DPO 能够避免显式奖励模型的结构性原因：最优策略公式中仅提示词的项会抵消。"
+    },
+    {
+      "stage": "check",
+      "question": "单个三元组的 DPO 损失是 -log sigmoid( beta * ( (logp_w_pol - logp_w_ref) - (logp_l_pol - logp_l_ref) ) )。如果 logp_w_pol = logp_w_ref 且 logp_l_pol = logp_l_ref，损失等于？",
+      "options": [
+        "0。",
+        "log(2)。",
+        "beta。",
+        "-1。"
+      ],
+      "correct": 1,
+      "explanation": "两个差异都为零，所以 sigmoid 参数为零，sigmoid 值为 0.5，-log(0.5) = log(2)。这是策略完全没有偏离参考时的损失。"
+    },
+    {
+      "stage": "check",
+      "question": "在 DPO 训练期间，参考模型下选择的 log-probability 在 epochs 之间会变化，因为策略偏离了参考。对还是错？",
+      "options": [
+        "对：参考随策略更新而漂移。",
+        "错：参考被冻结；参考 log-probs 被计算一次并重用。",
+        "只有在 beta 非零时为真。",
+        "除非用 no_grad 显式禁用梯度，否则为假。"
+      ],
+      "correct": 1,
+      "explanation": "参考在整个 DPO 运行中冻结。其参数从不更新。实现要么一次性快照参考 log-probs，要么将参考的前向传播包裹在 no_grad 中并在其参数上设置 requires_grad=False。"
+    },
+    {
+      "stage": "check",
+      "question": "取 L_DPO 对 logp_w_pol（策略对选择补全的对数概率）的梯度，其符号是？",
+      "options": [
+        "正（损失随着选择 log-prob 增加而增加）。",
+        "负（损失随着选择 log-prob 增加而减小）。",
+        "零（损失独立于策略 log-probs）。",
+        "不确定（依赖于参考）。"
+      ],
+      "correct": 1,
+      "explanation": "梯度是 -beta * (1 - sigmoid(z))，这是非正的。增加选择 log-probability 减小损失，这正是我们想要的训练信号。"
+    },
+    {
+      "stage": "post",
+      "question": "在测试夹具上 DPO 损失下降了，但策略开始全面偏好更短的补全，即使短的是更差的。最可能的原因？",
+      "options": [
+        "beta 太低了。",
+        "长度偏差：更长的序列累积更多对数概率项（每个为负），因此 log-probs 之和在结构上惩罚长度。",
+        "参考没有正确冻结。",
+        "优化器使用了错误的学习率。"
+      ],
+      "correct": 1,
+      "explanation": "对数概率之和对较短序列有偏差，因为每个额外的 token 都会增加一个负的对数概率项。标准修复是在训练和评估时按补全长度归一化 log-probs。"
+    },
+    {
+      "stage": "post",
+      "question": "你想用 IPO 变体 (z - 1)^2 替换 sigmoid + log 损失。对训练动态的实际影响是什么？",
+      "options": [
+        "它不像 sigmoid 损失那样饱和，这能在噪声偏好标签下保持得更好。",
+        "它在所有点上数学等价。",
+        "它完全消除了对参考模型的需求。",
+        "它不需要 beta 参数。"
+      ],
+      "correct": 0,
+      "explanation": "IPO 的平方损失不像 sigmoid 那样饱和，这有助于在偏好标签有噪声或某些三元组被误标时。实验上，它减少了对小偏好数据集的过度优化。"
+    }
+  ]
+}

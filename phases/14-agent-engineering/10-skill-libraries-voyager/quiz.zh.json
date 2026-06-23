@@ -1,0 +1,90 @@
+{
+  "lesson": "10-skill-libraries-voyager",
+  "title": "技能库与终身学习（Voyager）",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Voyager 将什么视为动作空间？",
+      "options": [
+        "原始的 Minecraft 命令",
+        "可执行代码（JavaScript 函数），存储、检索和组合",
+        "仅文本提示词",
+        "强化学习 Q 值"
+      ],
+      "correct": 1,
+      "explanation": "Voyager 的贡献在于将代码作为动作：技能是程序，而非原始命令。"
+    },
+    {
+      "stage": "pre",
+      "question": "哪三个组件定义了一个 Voyager Agent？",
+      "options": [
+        "编码器、解码器、价值头",
+        "自动课程、技能库、迭代提示",
+        "规划器、执行器、评判者",
+        "检索器、生成器、排序器"
+      ],
+      "correct": 1,
+      "explanation": "Voyager 围绕课程、技能库和迭代提示来构建 Agent。"
+    },
+    {
+      "stage": "check",
+      "question": "技能执行尝试可以返回哪三个信号？",
+      "options": [
+        "通过、失败、重试",
+        "成功、错误（含堆栈跟踪）、自我验证失败",
+        "绿、黄、红",
+        "心跳、确认、否定确认"
+      ],
+      "correct": 1,
+      "explanation": "Voyager 的迭代提示机制由这三个信号驱动，反馈到下一版本。"
+    },
+    {
+      "stage": "check",
+      "question": "自动课程如何选择下一个任务？",
+      "options": [
+        "在动作空间上均匀随机选择",
+        "略高于当前能力，基于环境状态和技能库存（探索的最佳点）",
+        "总是选择最困难的任务",
+        "仅限用户提供的列表"
+      ],
+      "correct": 1,
+      "explanation": "提议者瞄准略高于当前能力的任务，以便稳定进步。"
+    },
+    {
+      "stage": "check",
+      "question": "本课中哪个 2026 年产品与 Voyager 技能最为匹配？",
+      "options": [
+        "OpenAI 微调",
+        "Claude Agent SDK 技能：命名的、可检索的代码加指令，按需加载",
+        "Pinecone 索引",
+        "AWS Lambda 层"
+      ],
+      "correct": 1,
+      "explanation": "Agent SDK 技能与 Voyager 的命名-可检索-可组合代码模式相匹配。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么本课建议在技能库的写入时进行去重？",
+      "options": [
+        "磁盘很贵",
+        "没有去重，同一技能会以略微不同的描述被多次添加；检索应返回一个规范版本",
+        "提供商拒绝重复",
+        "Git 阻止重复"
+      ],
+      "correct": 1,
+      "explanation": "接近重复的描述折叠为一个规范技能，使检索保持干净。"
+    },
+    {
+      "stage": "post",
+      "question": "组合技能漂移描述的是什么问题？",
+      "options": [
+        "Python 升级后技能停止编译",
+        "父技能静默地拾取了它从未测试过的改进版子技能；通过固定技能版本来修复",
+        "技能在存储中被加密",
+        "检索返回空结果"
+      ],
+      "correct": 1,
+      "explanation": "没有版本固定，子技能的改进会静默地改变父技能的行为。"
+    }
+  ]
+}

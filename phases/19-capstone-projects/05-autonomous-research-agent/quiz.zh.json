@@ -1,0 +1,90 @@
+{
+  "lesson": "05-autonomous-research-agent",
+  "title": "Capstone 05 — 自主研究 Agent（AI-Scientist 类）",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "AI-Scientist 类 Agent 使用什么搜索形态来探索实验？",
+      "options": [
+        "对 token 输出的束搜索",
+        "实验节点上的最佳优先树搜索，使用新颖性 x 质量 x 预算评分",
+        "来自人类反馈的纯强化学习",
+        "广度优先扩展，随机评分"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "pre",
+      "question": "为什么沙盒配置了 --network=none 和有界资源上限？",
+      "options": [
+        "迫使 Agent 使用提示缓存",
+        "强制确定性浮点运算",
+        "默认允许 GPU 透传",
+        "防止网络出口并将实验副作用限制在可复现的范围内"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "编写器循环中视觉评审步骤的作用是什么？",
+      "options": [
+        "将图形翻译为条形图",
+        "将 LaTeX 草稿编译为 PDF，然后让 VLM 评审布局、图形可读性和声明-证据对齐",
+        "从截图中生成新的实验想法",
+        "在渲染时替换 matplotlib"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "评审集成如何控制管道门？",
+      "options": [
+        "单个评审者基于二进制标志接受或拒绝",
+        "评审者匿名投票，多数胜出",
+        "评审仅在发表后运行",
+        "五个评审者使用 NeurIPS 风格评分标准评分，加权聚合必须超过阈值，否则草稿返回编写器"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "综合项目对每篇论文强制执行的成本纪律是什么？",
+      "options": [
+        "通过 Langfuse 计数器和运行前估计追踪的 30 美元硬预算",
+        "仅成本优化，无质量检查",
+        "无限计算，仅硬性挂钟时间",
+        "追踪 GPU 小时但从不设上限"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "哪个评分函数对树节点进行排序以供进一步扩展？",
+      "options": [
+        "新颖性 x 质量 x 剩余预算",
+        "相关论文的引用计数",
+        "随机均匀优先级",
+        "输出长度和 token 数量"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "红队报告对系统做什么测试？",
+      "options": [
+        "系统提示的缓存命中率",
+        "向量数据库中的多租户数据泄露",
+        "丢包下的延迟尾部",
+        "沙盒逃逸尝试，如 fork 炸弹、网络外泄和文件系统逃逸"
+      ],
+      "correct": 3,
+      "explanation": ""
+    }
+  ]
+}

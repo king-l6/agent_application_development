@@ -1,0 +1,78 @@
+{
+  "lesson": "81-end-to-end-distributed-train",
+  "title": "端到端分布式训练",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "当每门课程已经有自己的测试时，为什么顶点项目很重要？",
+      "options": [
+        "装饰性",
+        "组合是一个独立的属性：组件可能通过单元测试，但集成时死锁、损失发散或内存增长",
+        "更慢",
+        "更容易评分"
+      ],
+      "correct": 1,
+      "explanation": "端到端测试捕获了单独组件测试无法捕获的布线缺陷：会合、屏障顺序、收集契约。"
+    },
+    {
+      "stage": "pre",
+      "question": "演示验证了哪四个不变量？",
+      "options": [
+        "速度",
+        "(a) 损失运行到第 20 步没有 NaN，(b) 每个 rank 的参数范数一致，(c) 每 rank 优化器内存等于 ZeRO-1 公式，(d) 第 10 步检查点重新加载字节相等",
+        "每秒词元数",
+        "硬件"
+      ],
+      "correct": 1,
+      "explanation": "每个不变量捕获不同的组合缺陷：NaN 捕获发散，范数一致捕获同步漂移，内存捕获分片错误，检查点捕获写入原子性。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么模型是迷你 GPT 而不是 MLP？",
+      "options": [
+        "看起来高级",
+        "GPT 添加了 LayerNorm 运行统计、嵌入梯度形状和 softmax+交叉熵边界情况，MLP 会隐藏这些",
+        "更快",
+        "必需"
+      ],
+      "correct": 1,
+      "explanation": "MLP 梯度同步已在课程 77 中验证；顶点项目需要一个有更多边界情况的模型来证明组合在真实操作下的正确性。"
+    },
+    {
+      "stage": "check",
+      "question": "在这种上下文中，自动终止是什么意思？",
+      "options": [
+        "进程自杀死",
+        "固定步数（20），完成时退出码 0，循环中无人参与；如果任何组件死锁，演示永远不会返回，CI 会捕获它",
+        "崩溃恢复",
+        "手动"
+      ],
+      "correct": 1,
+      "explanation": "有界运行加退出码 0 让测试框架断言终止；while-True 循环掩盖死锁。"
+    },
+    {
+      "stage": "check",
+      "question": "演示如何组合 DDP 和 ZeRO？",
+      "options": [
+        "同时使用两者",
+        "DDP 风格的广播在初始化时用于参数同步，ZeRO-1 的 reduce_scatter+allgather 替换 optimizer.step；DDP 梯度 allreduce 被融入 ZeRO 的 reduce_scatter",
+        "仅 DDP",
+        "仅 ZeRO"
+      ],
+      "correct": 1,
+      "explanation": "ZeRO-1 通过 reduce_scatter 拥有梯度同步，因此 DDP 单独的 allreduce 不再需要；初始化时的广播是唯一保留下来的 DDP 特定调用。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么生产中使用挂钟检查点节奏而不是步数？",
+      "options": [
+        "看起来更整洁",
+        "步长时间随序列长度和微批次数量变化；10 分钟的节奏捕获相同的计算量，与模型大小无关",
+        "更快",
+        "NCCL 要求"
+      ],
+      "correct": 1,
+      "explanation": "本课程为了清晰使用基于步数；生产运行通常每 5-15 分钟挂钟时间保存一次。"
+    }
+  ]
+}

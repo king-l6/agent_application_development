@@ -1,0 +1,78 @@
+{
+  "lesson": "87-end-to-end-safety-gate",
+  "title": "顶点项目 87 — 端到端安全门",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "三个检查点在请求生命周期中的位置？",
+      "options": [
+        "三个都在模型完成后运行",
+        "Pre-gen 在模型之前在提示上运行，during-gen 过滤流，post-gen 在完成的输出上运行",
+        "三个都在模型被调用之前运行",
+        "只有 post-gen 运行；pre-gen 和 during-gen 是别名"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "pre",
+      "question": "生成中过滤的目标是什么？",
+      "options": [
+        "将输出翻译为另一种语言",
+        "缓冲块，并在出现已知有害续写时提前终止流，在用户看到之前",
+        "增加词元吞吐量",
+        "用拒绝替换提示"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "聚合器如何决定最终动作？",
+      "options": [
+        "通过平均每个信号的置信度",
+        "通过在检测器、词元过滤器、分类器和规则信号中取最大严重性，并映射到 block、redact、warn 或 allow",
+        "通过第二次调用模型",
+        "通过只看规则引擎"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "为什么门为每个请求发出结构化的 RequestTrace？",
+      "options": [
+        "为了减慢系统速度",
+        "为了给审阅者提供每个检查点的审计追踪，以便任何层的回归可以追溯到正确的模块",
+        "为了替换日志",
+        "为了将追踪复制到提示中"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "当 pre-gen 置信度超过阻止阈值时会发生什么？",
+      "options": [
+        "仍然调用模型以保持完整性",
+        "门返回策略拒绝并完全跳过 during-gen 和 post-gen",
+        "门引发异常",
+        "门降低阈值并重试"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "为什么演示故意让一些编码技巧提示到达 during-gen？",
+      "options": [
+        "因为编码技巧不是真正的攻击",
+        "因为输入管道并不总能及时规范化它们；during-gen 过滤器是捕获泄露续写的纵深防御",
+        "因为模型无论如何会拒绝它们",
+        "因为规则引擎处理编码"
+      ],
+      "correct": 1,
+      "explanation": ""
+    }
+  ]
+}

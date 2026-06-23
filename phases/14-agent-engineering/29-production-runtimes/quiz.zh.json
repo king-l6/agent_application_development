@@ -1,0 +1,90 @@
+{
+  "lesson": "29-production-runtimes",
+  "title": "生产运行时：队列、事件、Cron",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "本课程列出了哪六种运行时形态？",
+      "options": [
+        "请求-响应、流式、持久执行、基于队列、事件驱动、定时调度",
+        "读、写、执行、分叉、退出、等待",
+        "REST、gRPC、GraphQL、WebSocket、SSE、MQTT",
+        "映射、过滤、归约、折叠、扫描、分组"
+      ],
+      "correct": 0,
+      "explanation": "这是六种运行时形态；在选择框架之前先选择形态。"
+    },
+    {
+      "stage": "pre",
+      "question": "什么时候请求-响应是不合适的选择？",
+      "options": [
+        "在 1 秒的分类任务上",
+        "当任务耗时超过约 30 秒，用户挂断而工作者堆积时",
+        "在 REST API 上",
+        "在内部服务上"
+      ],
+      "correct": 1,
+      "explanation": "同步 HTTP 仅适用于短任务；长任务需要队列/持久/事件形态。"
+    },
+    {
+      "stage": "check",
+      "question": "持久执行的核心特性是什么？",
+      "options": [
+        "更快的推理",
+        "每一步后状态被检查点保存，因此运行时可以在失败时从最后成功的一步恢复",
+        "更低的令牌成本",
+        "原生语音支持"
+      ],
+      "correct": 1,
+      "explanation": "检查点加恢复是差异化优势；LangGraph 是课程的参考实现。"
+    },
+    {
+      "stage": "check",
+      "question": "Anthropic 的哪个观察结果证明了长周期智能体使用基于队列的运行时的合理性？",
+      "options": [
+        "任务总是在 5 秒内完成",
+        "计算机使用公告：每任务数十到数百步是正常的",
+        "任务必须同步运行",
+        "Cron 解决一切"
+      ],
+      "correct": 1,
+      "explanation": "Anthropic 指出每任务数十到数百步是正常的；这种工作负载需要队列或持久运行时。"
+    },
+    {
+      "stage": "check",
+      "question": "本课程所说的"可观测性是承重结构"意味着什么？",
+      "options": [
+        "日志很好看",
+        "没有 OTel GenAI 跨度和 Langfuse/Phoenix/Opik 后端，您无法调试在第 40 步失败的多步骤智能体",
+        "磁盘会满",
+        "供应商需要它来计费"
+      ],
+      "correct": 1,
+      "explanation": "可观测性对于多步骤智能体不是可选的；它是调试和从头重放之间的区别。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么队列工作者必须有死信队列（DLQ）？",
+      "options": [
+        "没有 DLQ，失败的任务会悄悄消失",
+        "AWS 要求有 DLQ",
+        "DLQ 使任务更快",
+        "DLQ 是加密的"
+      ],
+      "correct": 0,
+      "explanation": "没有 DLQ 的失败任务会消失；DLQ 是失败任务的停车场。"
+    },
+    {
+      "stage": "post",
+      "question": "本课程推荐将 Cron 形态的智能体与什么搭配？",
+      "options": [
+        "GPU 自动缩放器",
+        "持久执行，使失败的夜间运行在下一次调度时恢复",
+        "流式 SSE",
+        "WebRTC"
+      ],
+      "correct": 1,
+      "explanation": "Cron + 持久执行可从失败的定时运行中干净恢复。"
+    }
+  ]
+}

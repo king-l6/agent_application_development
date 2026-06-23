@@ -1,0 +1,102 @@
+{
+  "lesson": "11-machine-translation",
+  "title": "机器翻译",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "BLEU 测量什么？",
+      "options": [
+        "语言识别准确率",
+        "假设与参考之间的 n-gram 精确率（通常 1-4），带简短惩罚",
+        "字符级别 F 分数",
+        "嵌入余弦相似度"
+      ],
+      "correct": 1,
+      "explanation": "BLEU 是 1-4 元组精确率相对于参考的几何平均，加上简短惩罚。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么要使用 sacrebleu 而不是自己实现 BLEU？",
+      "options": [
+        "它更准确",
+        "它在 GPU 上运行",
+        "它标准化词元化，使分数在论文和运行之间可比",
+        "它支持流式处理"
+      ],
+      "correct": 2,
+      "explanation": "sacrebleu 冻结了词元化，消除了 BLEU 数值不可比的一个常见原因。"
+    },
+    {
+      "stage": "check",
+      "question": "哪个 NLLB 特定的设置在解码时控制目标语言？",
+      "options": [
+        "length_penalty",
+        "forced_bos_token_id 设置为目标语言代码的 token id",
+        "num_beams",
+        "src_lang"
+      ],
+      "correct": 1,
+      "explanation": "NLLB 通过 forced_bos_token_id 强制第一个解码词元为目标语言代码。"
+    },
+    {
+      "stage": "check",
+      "question": "对于存在标注数据的生产环境 MT 质量，2026 年的默认评估度量族是哪个？",
+      "options": [
+        "仅 BLEU",
+        "词元编辑距离",
+        "在人类判断上训练的学习型度量，如 COMET（以及 BERTScore/BLEURT）",
+        "延迟"
+      ],
+      "correct": 2,
+      "explanation": "像 COMET 这样的学习型度量与人类判断的相关性比单独的 BLEU/chrF 更强。"
+    },
+    {
+      "stage": "check",
+      "question": "什么时候 chrF 比 BLEU 更有信息量？",
+      "options": [
+        "对于形态丰富的语言，字符级别匹配能捕获 BLEU 遗漏的词形变化变体",
+        "使用束搜索时",
+        "在非常短的句子上",
+        "只要有参考译文时"
+      ],
+      "correct": 0,
+      "explanation": "字符级 F 分数捕获词级 BLEU 低估的部分形态匹配。"
+    },
+    {
+      "stage": "post",
+      "question": "多语言 MT 中的脱靶生成是什么？",
+      "options": [
+        "输出丢失命名实体",
+        "输出缺少标点",
+        "模型解码为错误的目标语言（例如 NLLB 在要求法语时输出西班牙语）",
+        "输出太短"
+      ],
+      "correct": 2,
+      "explanation": "脱靶生成在稀有语言对上很常见；翻译后的语言 ID 检查可以捕获它。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么在几千个高质量领域对上微调通常优于大得多的噪声网络数据？",
+      "options": [
+        "更大的数据溢出 GPU 内存",
+        "更小的数据集训练更快",
+        "网络数据使用是非法的",
+        "质量和领域匹配主导数量；噪声平行数据引入漂移和幻觉"
+      ],
+      "correct": 3,
+      "explanation": "干净的领域对齐对是生产中最大的杠杆；噪声数据会降低适配效果。"
+    },
+    {
+      "stage": "post",
+      "question": "2026 年，什么时候 LLM（如 GPT-4）可能优于专门的 MT 模型？",
+      "options": [
+        "最高吞吐量的批量翻译",
+        "延迟关键的浏览器翻译",
+        "习语内容、长上下文、通过提示进行风格适配或需要语气控制的内容",
+        "拥有数百万平行句子的稀有语言对"
+      ],
+      "correct": 2,
+      "explanation": "LLM 在习语性、长上下文或风格受控翻译上胜出；专门 MT 在吞吐量和延迟上胜出。"
+    }
+  ]
+}

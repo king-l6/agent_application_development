@@ -1,0 +1,78 @@
+{
+  "lesson": "45-gradient-clipping-amp",
+  "title": "梯度裁剪与混合精度",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "全局 L2 梯度裁剪解决了什么问题？",
+      "options": [
+        "训练速度慢",
+        "单个糟糕的批次可能使梯度范数飙升数个数量级；裁剪限制了最坏情况下的优化器步骤，使一个批次不会重置数小时的学习成果",
+        "词汇漂移",
+        "随机重启"
+      ],
+      "correct": 1,
+      "explanation": "裁剪是防止嘈杂批次破坏损失曲线的安全带。"
+    },
+    {
+      "stage": "check",
+      "question": "一个步骤中 GradScaler 操作的正确顺序是什么？",
+      "options": [
+        "step, scale, unscale, backward, update",
+        "scaler.scale(loss).backward(); scaler.unscale_(optimizer); clip_grad_norm_; scaler.step(optimizer); scaler.update()",
+        "backward, step, scale, update",
+        "任意顺序；缩放器会在内部重新排序"
+      ],
+      "correct": 1,
+      "explanation": "在 unscale_ 和 step 之间对未缩放的梯度进行裁剪；update 始终运行。"
+    },
+    {
+      "stage": "check",
+      "question": "scaler.update() 在跳过的步骤上做什么？",
+      "options": [
+        "什么也不做",
+        "将缩放因子减半并重置无 Inf 计数器；在跳过路径上忘记调用它是导致"缩放因子从未改变"的 bug",
+        "将缩放因子加倍",
+        "结束运行"
+      ],
+      "correct": 1,
+      "explanation": "缩放器根据最近步骤的跳过/干净比率调整其因子。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么即使有 GradScaler，损失有限性检查也是必要的？",
+      "options": [
+        "因为 GradScaler 很慢",
+        "GradScaler 处理反向传播溢出，但非有限损失不会产生有用的梯度；在反向传播前跳过可节省计算并避免污染缩放器的状态",
+        "它是装饰性的",
+        "PyTorch 要求这样做"
+      ],
+      "correct": 1,
+      "explanation": "损失检查覆盖前向传播失败；缩放器覆盖反向传播失败。"
+    },
+    {
+      "stage": "post",
+      "question": "滚动跳过率中的生产信号是什么？",
+      "options": [
+        "任何跳过都始终发出警报",
+        "每次运行少量跳过是健康的；每 epoch 数百次跳过（约 5% 以上的滚动率）是硬警报，表明模型处于 FP16 无法维持的状态",
+        "跳过率不相关",
+        "仅在连续跳过时发出警报"
+      ],
+      "correct": 1,
+      "explanation": "基于率的警报能够捕获偶尔跳过页面不会捕获的静默故障模式。"
+    },
+    {
+      "stage": "post",
+      "question": "当跳过频繁时，为什么从 FP16 切换到 BF16 autocast？",
+      "options": [
+        "BF16 更新",
+        "BF16 的指数范围比 FP16 更宽，很少需要损失缩放；相同模型上的跳过率通常降至零",
+        "BF16 较慢，因此跳过较少",
+        "随机传统"
+      ],
+      "correct": 1,
+      "explanation": "FP16 倾向于尾数精度而非范围；BF16 反之，完全消除了溢出类别。"
+    }
+  ]
+}

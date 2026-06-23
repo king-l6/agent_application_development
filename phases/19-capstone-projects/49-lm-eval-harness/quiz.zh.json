@@ -1,0 +1,78 @@
+{
+  "lesson": "49-lm-eval-harness",
+  "title": "语言模型评估框架",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "哪四个字段定义了评估框架 JSONL 格式中的一个任务示例？",
+      "options": [
+        "name, score, payload, vendor",
+        "id, prompt, targets, metric，以及一个可选的 extras 字典用于指标需要的辅助数据",
+        "input 和 output",
+        "weights 和 bias"
+      ],
+      "correct": 1,
+      "explanation": "JSONL 行就是合约。extras 字段让 code_exec 指标可以传递 io_pairs 而不会污染 prompt。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么指标函数签名是 (prediction, targets, extras) -> float？",
+      "options": [
+        "随机选择",
+        "它是最小的签名，能同时处理单目标字符串匹配、多参考 rouge-l 和带辅助数据的 code_exec，同时将分数保持在可比较的 [0.0, 1.0] 范围内",
+        "它返回一个整数",
+        "它需要模型对象"
+      ],
+      "correct": 1,
+      "explanation": "[0,1] 范围内的浮点数意味着每个任务和总体分数是可解释的平均值。extras 插槽是 code_exec 获取其 io_pairs 的方式。"
+    },
+    {
+      "stage": "check",
+      "question": "code_exec 指标如何抵抗恶意预测？",
+      "options": [
+        "它不抵抗",
+        "它使用剥离的 __builtins__ 字典运行预测，使命名空间只暴露少数安全名称；import 语句会失败，因为导入器不在作用域内",
+        "它使用沙箱容器",
+        "它拒绝任何包含 def 的内容"
+      ],
+      "correct": 1,
+      "explanation": "本课程的安全命名空间将 builtins 缩减为少数几个名称。测试断言 import os 返回 0.0 分数而不是执行。"
+    },
+    {
+      "stage": "check",
+      "question": "模型适配器抽象能带来什么好处？",
+      "options": [
+        "什么都没有",
+        "它是评估框架中唯一的模型特定代码；更换适配器指向新的供应商，任务、指标、运行器和排行榜格式保持不变",
+        "它使模型更快",
+        "torch 要求这样做"
+      ],
+      "correct": 1,
+      "explanation": "本课程中的 ToyAdapter 是一个确定性模式匹配器。真实供应商的 HttpAdapter 具有相同的 generate(prompts) -> list[str] 接口。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么排行榜 JSON 携带像 leaderboard.v1 这样的 schema 字符串？",
+      "options": [
+        "为了搜索引擎优化",
+        "这样未来的格式变更可以更新版本号，下游仪表盘可以据此分发而不是静默破坏",
+        "这是随机的",
+        "它压缩文件"
+      ],
+      "correct": 1,
+      "explanation": "与第47课检查点负载相同的技巧。schema 字段就是迁移钩子。"
+    },
+    {
+      "stage": "post",
+      "question": "阅读排行榜时，overall_score 是如何计算的，比较两次运行时应注意什么？",
+      "options": [
+        "正确计数的总和",
+        "每个任务分数（每个在 [0,1] 内）的均值；比较时，还要 diff 分数变化的任务的每个示例预测，因为仅分数本身隐藏了哪些示例回归了",
+        "最佳任务分数",
+        "随机样本"
+      ],
+      "correct": 1,
+      "explanation": "任务均值平均值的均值平等地对每个任务加权。使用 --include-per-example 在分数旁边保留预测级别的证据，使回归可见。"
+    }
+  ]
+}

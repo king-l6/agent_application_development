@@ -1,0 +1,78 @@
+{
+  "lesson": "17-disaggregated-prefill-decode",
+  "title": "分离式预填充/解码 —— NVIDIA Dynamo 和 llm-d",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么预填充和解码需要不同的最佳 GPU 配置？",
+      "options": [
+        "预填充必须在 AMD 上运行，解码必须在 NVIDIA 上运行",
+        "预填充是计算密集型（matmul 吞吐量）；解码是内存密集型（HBM 带宽），因此共置两者会浪费一种资源",
+        "它们使用不同的模型权重",
+        "解码需要更多网络带宽"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "NVIDIA Dynamo 使用什么传输方式在预填充池和解码池之间移动 KV 缓存？",
+      "options": [
+        "普通 HTTP",
+        "仅 gRPC 双向流",
+        "NFS 上的共享文件系统",
+        "NIXL（可用时使用 RDMA/InfiniBand，TCP 回退）"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "根据本课程，分离式在什么情况下不划算？",
+      "options": [
+        "Blackwell 上的 MoE 工作负载",
+        "共享系统提示的多租户服务",
+        "带有8K+前缀的 RAG",
+        "提示少于512 tokens 且输出少于200 tokens，此时 KV 传输成本高于收益"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "Dynamo 和 llm-d 之间的核心架构差异是什么？",
+      "options": [
+        "Dynamo 是开源的；llm-d 是闭源的",
+        "Dynamo 运行在 CPU 上；llm-d 运行在 GPU 上",
+        "Dynamo 是 vLLM/SGLang/TRT-LLM 之上的栈上层编排器；llm-d 是 Kubernetes 原生的，预填充/解码/路由器作为独立的 Service",
+        "Dynamo 需要 AMD；llm-d 需要 NVIDIA"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "哪个 Dynamo 组件自动调整预填充:解码比率以满足 SLO？",
+      "options": [
+        "Sidecar 代理和 Envoy 过滤器",
+        "Planner Profiler 和 SLA Planner",
+        "集群自动缩放器",
+        "Marlin 内核"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "分离式如何与第17阶段·11中的缓存感知路由交互？",
+      "options": [
+        "分离式完全禁用 KV 缓存复用",
+        "缓存感知路由器可以将请求落在已持有其前缀的解码池上；未命中时走预填充→解码流程，两者相辅相成",
+        "它们是互斥的",
+        "缓存感知路由仅适用于共置服务"
+      ],
+      "correct": 1,
+      "explanation": ""
+    }
+  ]
+}

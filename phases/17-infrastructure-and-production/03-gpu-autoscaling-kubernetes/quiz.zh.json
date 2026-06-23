@@ -1,0 +1,78 @@
+{
+  "lesson": "03-gpu-autoscaling-kubernetes",
+  "title": "Kubernetes 上的 GPU 自动扩缩容 — Karpenter、KAI Scheduler、Gang Scheduling",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "HPA 默认通常基于哪个信号进行扩缩，而本课称其对 vLLM 风格的服务是有缺陷的？",
+      "options": [
+        "队列深度",
+        "P99 TTFT",
+        "KV 缓存利用率",
+        "DCGM_FI_DEV_GPU_UTIL 占空比"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "KAI Scheduler 中的 gang scheduling 主要防止哪个问题？",
+      "options": [
+        "GPU 内存碎片化",
+        "Tokenizer GIL 竞争",
+        "部分分配陷阱：7/8 的 GPU 空闲等待第 8 个",
+        "冷启动延迟"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "为什么 Karpenter 的默认 consolidationPolicy WhenEmptyOrUnderutilized 对推理 GPU 池有危险？",
+      "options": [
+        "它在突发时拒绝扩容",
+        "它只整合 Spot 实例",
+        "它终止正在运行的 GPU 节点以迁移 pod，这会驱逐正在运行的请求并重新加载权重",
+        "它阻止 Karpenter 配置新节点"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "Karpenter 配置 GPU 节点的速度大约比 Cluster Autoscaler 快多少？",
+      "options": [
+        "约快 40%（~45-60s vs ~90-120s）",
+        "约慢 10 倍",
+        "相同",
+        "约快 5%"
+      ],
+      "correct": 0,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "对于分离式预填充/解码 pod（阶段 17 · 17），本课推荐使用哪些扩缩信号？",
+      "options": [
+        "仅手动扩缩",
+        "覆盖两种 pod 类别的单个占空比 HPA",
+        "预填充 pod 用队列深度，解码 pod 用 KV 缓存压力，作为独立的按角色 HPA",
+        "两者都使用 Cluster Autoscaler"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "本课为推理 GPU 池推荐的 Karpenter 中断设置是什么，以避免驱逐正在运行的任务？",
+      "options": [
+        "consolidationPolicy: WhenEmptyOrUnderutilized 且 consolidateAfter: 0s",
+        "consolidationPolicy: WhenEmpty 且 consolidateAfter: 1h",
+        "始终使用 Spot 实例且不进行整合",
+        "完全禁用 Karpenter"
+      ],
+      "correct": 1,
+      "explanation": ""
+    }
+  ]
+}

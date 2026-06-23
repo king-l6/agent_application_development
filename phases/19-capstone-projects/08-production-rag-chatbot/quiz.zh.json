@@ -1,0 +1,90 @@
+{
+  "lesson": "08-production-rag-chatbot",
+  "title": "Capstone 08 — 受监管领域的生产级 RAG 聊天机器人",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么提示缓存在受监管领域的 RAG 聊天机器人中如此重要？",
+      "options": [
+        "它消除了对向量数据库的需求",
+        "在 60-80% 命中率下，通过折扣稳定前缀 token，每次查询成本降低 3-5 倍",
+        "它消除了幻觉",
+        "它提高了重排序阶段的召回率"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "pre",
+      "question": "每次请求的缓存头部和未缓存后缀中各有什么？",
+      "options": [
+        "达到缓存大小的随机文本填充",
+        "仅检索到的文档",
+        "用户问题优先，系统提示最后",
+        "系统提示和静态策略在缓存头部，重排序上下文作为缓存扩展，用户问题作为未缓存后缀"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "检索层如何尊重 GDPR 或 HIPAA 等管辖区域标签？",
+      "options": [
+        "每个国家运行一个单独的索引",
+        "仅在生成后阻止响应",
+        "按地区重写用户问题",
+        "角色和管辖区域过滤器在混合搜索合并前应用，因此用户范围外的块永远不会被重排序"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "综合阶段将输出通过哪些分层防护组合？",
+      "options": [
+        "仅在输入上使用 Llama Guard 4",
+        "Llama Guard 4、NeMo Guardrails 策略规则和 Presidio PII 擦除，加上引用强制",
+        "仅一个输出 PII 正则表达式",
+        "单个 LLM 评判的忠实度检查"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "漂移仪表盘在什么情况下发出警报？",
+      "options": [
+        "底层 LLM 提供商变更",
+        "延迟超过 200ms",
+        "检索质量下降，例如 nDCG 或引用分数周环比下降 5%",
+        "索引中添加任何新文档"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "用于门控交付物正确性评分的黄金集有多大？",
+      "options": [
+        "5 个演示查询",
+        "200 个专家标记的问答对，带有引用",
+        "20 个问题",
+        "2000 个合成问题"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "哪些 RAGAS 评分每轮在线跟踪？",
+      "options": [
+        "吞吐量、GPU 利用率和队列深度",
+        "BLEU、ROUGE 和 METEOR",
+        "忠实度、答案相关性和上下文精确度",
+        "token 数量和美元成本"
+      ],
+      "correct": 2,
+      "explanation": ""
+    }
+  ]
+}

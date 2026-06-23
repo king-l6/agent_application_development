@@ -1,0 +1,78 @@
+{
+  "lesson": "48-distributed-fsdp-ddp",
+  "title": "从零实现分布式数据并行和 FSDP",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "哪两个集合通信操作是从零实现 DDP 包装器的核心？",
+      "options": [
+        "send 和 recv",
+        "构造时 broadcast 使每个 rank 从相同的参数开始，反向传播后 all_reduce 使每个 rank 得到平均后的梯度",
+        "仅 reduce_scatter",
+        "barrier 和 barrier"
+      ],
+      "correct": 1,
+      "explanation": "初始化时的 broadcast 使各 rank 在第零步保持同步。反向传播后的 all-reduce 使它们在随后的每一步保持同步。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么本课程在 CPU 上工作而不需要 CUDA？",
+      "options": [
+        "它是一个存根",
+        "torch.distributed 附带一个 gloo 后端，可以在普通 socket 上运行集合通信，因此 CPU 上的 torch.multiprocessing 工作进程形成一个真实的进程组；在 GPU 机器上只需更改设备标签",
+        "它使用模拟张量",
+        "它根本不使用 torch.distributed"
+      ],
+      "correct": 1,
+      "explanation": "Gloo 是 CPU 集合通信后端。相同的调用点在 GPU 上的 nccl 上工作；API 接口完全相同。"
+    },
+    {
+      "stage": "check",
+      "question": "manual_all_reduce_matches_single_process 测试证明了什么？",
+      "options": [
+        "什么都没有",
+        "对每个 rank 的梯度求和并除以 world_size，可以恢复单进程在拼接输入上计算的梯度，误差在浮点噪声范围内",
+        "优化器收敛",
+        "CUDA 是不必要的"
+      ],
+      "correct": 1,
+      "explanation": "全批次上的交叉熵 mean reduction 等于每个 rank 均值的平均值。求和再除法是正确操作；测试使其可见。"
+    },
+    {
+      "stage": "check",
+      "question": "本课程中的 FSDP 草稿在每个前向传播中对每个参数做了什么？",
+      "options": [
+        "什么都没做",
+        "将扁平参数填充到 world_size 的倍数，切分，在每个 rank 上 all_gather 这些分片，去掉填充，并验证重建结果与原始结果匹配",
+        "重新初始化参数",
+        "计算哈希"
+      ],
+      "correct": 1,
+      "explanation": "每个 rank 拥有每个参数的 1/world_size。Gather 重建完整张量用于计算；生产 FSDP 将 gather 与前一层的计算重叠。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么即使参数长度不能被 world_size 整除，gloo 的 all_gather 也要分成 world_size 个等大小的分片？",
+      "options": [
+        "Gloo 的 all_gather 要求每个 rank 的输出张量大小相同，因此扁平参数在切分前右填充到 world_size 的倍数，填充在 gather 后丢弃",
+        "这是一个 bug",
+        "它加快了网络速度",
+        "随机选择"
+      ],
+      "correct": 0,
+      "explanation": "Gloo（和 nccl）的 all_gather 期望相同大小的输出。填充是最便宜的修复；草稿将结果修剪回原始长度。"
+    },
+    {
+      "stage": "post",
+      "question": "阅读演示输出，各 rank 间的 param_sum_spread 接近零告诉了你什么？",
+      "options": [
+        "损失很低",
+        "每个 rank 在运行结束时具有相同的参数值，这意味着构造时的 broadcast 和每次反向传播后的 all-reduce 都正常工作；如果任何一个被破坏，扩散会随着步数增长",
+        "网络很快",
+        "没有有意义的内容"
+      ],
+      "correct": 1,
+      "explanation": "DDP 的不变量是各 rank 间的参数一致性。扩散是审计指标；演示断言它保持在 1e-3 以下。"
+    }
+  ]
+}

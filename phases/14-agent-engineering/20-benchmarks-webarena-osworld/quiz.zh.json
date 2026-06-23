@@ -1,0 +1,90 @@
+{
+  "lesson": "20-benchmarks-webarena-osworld",
+  "title": "基准测试：WebArena 和 OSWorld",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么WebArena要自托管其四个目标应用？",
+      "options": [
+        "为了省钱",
+        "为了固定可重现的版本，使评估基于执行且不会波动",
+        "为了在GPU上运行",
+        "为了避免TLS"
+      ],
+      "correct": 1,
+      "explanation": "固定的自托管应用使基于执行的评估可靠且随时间可比。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么OSWorld使用真实操作系统截图而不是无障碍API？",
+      "options": [
+        "无障碍API太快",
+        "截图迫使智能体在1920x1080中做真正的GUI定位，匹配生产约束",
+        "无障碍API泄露PII",
+        "截图成本更低"
+      ],
+      "correct": 1,
+      "explanation": "截图驱动的评估迫使像素到元素的定位，这是真实的生产约束。"
+    },
+    {
+      "stage": "check",
+      "question": "OSWorld揭示了哪两种主要失败模式？",
+      "options": [
+        "延迟和带宽",
+        "GUI定位和操作知识",
+        "嵌入漂移和token泄露",
+        "幻觉和拒绝"
+      ],
+      "correct": 1,
+      "explanation": "定位（像素到元素）和操作知识（菜单、快捷键）是主要障碍。"
+    },
+    {
+      "stage": "check",
+      "question": "OSWorld-Human在基础基准之上增加了什么？",
+      "options": [
+        "更多任务",
+        "人工策划的黄金动作轨迹，揭示了1.4-2.7倍的智能体步数低效差距",
+        "更大的屏幕分辨率",
+        "一个新的操作系统"
+      ],
+      "correct": 1,
+      "explanation": "黄金轨迹使得轨迹效率可衡量，而不仅仅是成功率。"
+    },
+    {
+      "stage": "check",
+      "question": "课程引用的WebArena发布时数字是什么？",
+      "options": [
+        "最佳GPT-4智能体14.41%成功率 vs 人类78.24%",
+        "最佳智能体99% vs 人类100%",
+        "最佳智能体50% vs 人类50%",
+        "最佳智能体在所有方面都是0%"
+      ],
+      "correct": 0,
+      "explanation": "14.41% vs 78.24%的差距是WebArena发布时的数字。"
+    },
+    {
+      "stage": "post",
+      "question": "课程警告当使用DOM或无障API的智能体在仅限截图的评估上测试时会发生什么？",
+      "options": [
+        "什么都不会改变",
+        "你会错过OSWorld设计要衡量的定位挑战",
+        "你会超过速率限制",
+        "测试会轻易通过"
+      ],
+      "correct": 1,
+      "explanation": "在仅限截图的基准上评估使用无障碍API的智能体会跳过定位测试。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么忽略轨迹长度是一个基准测试失败？",
+      "options": [
+        "它掩盖了成功率的单一数字所遗漏的成本和低效（OSWorld-Human揭示的1.4-2.7倍差距）",
+        "轨迹长度总是匹配黄金轨迹",
+        "轨迹不可衡量",
+        "长度是唯一重要的指标"
+      ],
+      "correct": 0,
+      "explanation": "两个成功率60%的智能体可能在步数上相差2-3倍；只有衡量轨迹长度才能看到成本和效率。"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "lesson": "12-text-summarization",
+  "title": "文本摘要",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "抽取式和生成式摘要之间的关键行为区别是什么？",
+      "options": [
+        "抽取式使用 TF-IDF；生成式使用 Word2Vec",
+        "抽取式逐字从源返回句子；生成式生成新文本并可能产生幻觉",
+        "抽取式仅用于多语言",
+        "抽取式比生成式慢"
+      ],
+      "correct": 1,
+      "explanation": "抽取式逐字取用句子；生成式重写并面临幻觉风险。"
+    },
+    {
+      "stage": "pre",
+      "question": "ROUGE 测量什么？",
+      "options": [
+        "嵌入相似度",
+        "系统摘要和参考摘要之间的 n-gram 和最长公共子序列重叠",
+        "阅读时间",
+        "词元级别的困惑度"
+      ],
+      "correct": 1,
+      "explanation": "ROUGE-1/2/L 测量与参考的一元组、二元组和 LCS 重叠。"
+    },
+    {
+      "stage": "check",
+      "question": "TextRank 如何对抽取式摘要中的句子进行打分？",
+      "options": [
+        "按原始词数",
+        "通过比较参考摘要",
+        "通过在边为句子相似度权重的图上运行 PageRank 式迭代",
+        "通过与问题的嵌入余弦相似度"
+      ],
+      "correct": 2,
+      "explanation": "TextRank 在句子相似度图上使用 PageRank；连接度高的句子得分最高。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么在计算 ROUGE 时需要启用词干还原？",
+      "options": [
+        "没有词干还原时，'running' 和 'run' 被计为不同的词元，ROUGE 低估了真正的重叠",
+        "为了加速 ROUGE",
+        "词干还原标准化大小写",
+        "rouge-score 包要求词干还原"
+      ],
+      "correct": 0,
+      "explanation": "词干还原合并形态变体，使 ROUGE 认可语义等价的形式。"
+    },
+    {
+      "stage": "check",
+      "question": "哪个 2026 年的度量是通过 NLI 蕴含关系专门检测摘要幻觉而构建的？",
+      "options": [
+        "BLEU",
+        "ROUGE-L",
+        "忠实度检查（如 FactCC 或 RAGAS 忠实度），使用源和摘要声明之间的 NLI",
+        "chrF"
+      ],
+      "correct": 2,
+      "explanation": "基于 NLI 的忠实度评分标记摘要中不被源蕴含的声明。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么合规相关内容偏好使用抽取式摘要？",
+      "options": [
+        "输出逐字取自源，消除了生成式幻觉类别",
+        "它更快",
+        "抽取式支持更长的输出",
+        "ROUGE 分数更高"
+      ],
+      "correct": 0,
+      "explanation": "逐字提取不能编造内容，这对于事实性受到监管的内容很重要。"
+    },
+    {
+      "stage": "post",
+      "question": "以下哪项是需要监控的生成式幻觉类型？",
+      "options": [
+        "标点漂移",
+        "停用词移除",
+        "长句子",
+        "实体替换（例如 'John Smith' 被呈现为 'John Brown'）、数字漂移、极性翻转或事实编造"
+      ],
+      "correct": 3,
+      "explanation": "实体替换、数字漂移、极性翻转和事实编造是典型的生成式失败模式。"
+    },
+    {
+      "stage": "post",
+      "question": "什么时候你会选择 Pegasus 检查点而不是 BART-large-CNN？",
+      "options": [
+        "评估 BLEU 时",
+        "输入较短时",
+        "需要抽取式输出时",
+        "对于科学摘要等领域，Pegasus 的间隙句子预训练目标更接近"
+      ],
+      "correct": 3,
+      "explanation": "Pegasus 的间隙句子目标在长篇领域摘要（如 PubMed）中表现出色。"
+    }
+  ]
+}

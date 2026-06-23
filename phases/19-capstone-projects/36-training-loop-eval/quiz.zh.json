@@ -1,0 +1,78 @@
+{
+  "lesson": "36-training-loop-eval",
+  "title": "训练循环与评估",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么目标张量必须是输入张量偏移一位？",
+      "options": [
+        "交叉熵需要相同张量",
+        "下一个 token 预测是训练目标：在每个位置模型预测下一个出现的 token；忘记偏移会训练模型预测自身，这学不到任何有用的东西",
+        "它加速了优化器",
+        "AdamW 要求如此"
+      ],
+      "correct": 1,
+      "explanation": "输入是 token 0..T-1；目标是 token 1..T；损失在展平的 (batch*seq, vocab) 和 (batch*seq,) 形状上计算。"
+    },
+    {
+      "stage": "pre",
+      "question": "evaluate_model 做了哪些训练步骤不做的事情？",
+      "options": [
+        "它运行优化器",
+        "它在 no_grad 下并禁用 dropout 的情况下运行固定数量的验证批次，返回可复现的平均损失",
+        "它改变模型权重",
+        "它计算两次梯度"
+      ],
+      "correct": 1,
+      "explanation": "保留评估不需要梯度、dropout 和可变的验证数据切片，才能跨运行可复现。"
+    },
+    {
+      "stage": "check",
+      "question": "哪些 AdamW 参数获得权重衰减？",
+      "options": [
+        "每个参数均等",
+        "矩阵形状的张量（线性权重、嵌入表）接收权重衰减；尺度、偏移和偏置张量接收零衰减",
+        "只有 LM 头",
+        "只有 LayerNorm 尺度"
+      ],
+      "correct": 1,
+      "explanation": "将衰减放在 LayerNorm 尺度上会将尺度推向零并破坏归一化；分组是标准生产模式。"
+    },
+    {
+      "stage": "check",
+      "question": "预热加余弦调度从第 0 步到最后一步追踪什么形状？",
+      "options": [
+        "常数",
+        "从零到最大值在 warmup_steps 上线性上升，然后从最大值到 min_lr 在剩余步数上余弦衰减",
+        "指数增长",
+        "阶梯函数"
+      ],
+      "correct": 1,
+      "explanation": "预热填充优化器状态；余弦衰减逐渐减小步长，使最终阶段微调权重。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么在 optimizer.step() 之前裁剪梯度范数？",
+      "options": [
+        "它加速了矩阵乘法",
+        "一个坏批次可能产生巨大的梯度，抹掉数小时的训练；裁剪到 max_norm=1.0 使优化器保持在安全范围内，而不会扭曲正常更新",
+        "它减少了内存使用",
+        "它消除了预热需求"
+      ],
+      "correct": 1,
+      "explanation": "梯度裁剪是防止发散的最廉价保险；1.0 是能适应大多数设置的默认值。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么将每步记录记录为 JSONL 而不是 pickled 状态？",
+      "options": [
+        "JSONL 是优化器要求的",
+        "JSONL 记录跨重构持久、可 grep、可用三十行代码绘图，并且能承受崩溃；pickled 状态使你绑定到产生它的模块布局",
+        "JSONL 训练更快",
+        "JSONL 使用更少的 GPU 内存"
+      ],
+      "correct": 1,
+      "explanation": "任何崩溃都会留下可读的产物；恢复时读取最后一步；在此基础上构建工具微不足道。"
+    }
+  ]
+}

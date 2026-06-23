@@ -1,0 +1,90 @@
+{
+  "lesson": "02-rewoo-plan-and-execute",
+  "title": "ReWOO 与 Plan-and-Execute：解耦规划",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么 ReAct 的提示随深度呈二次方增长？",
+      "options": [
+        "模型每一步都重新分词",
+        "每一步都携带完整的先前上下文，包括每个先前的思考和观察",
+        "工具模式每次调用都被重复",
+        "提供商按字节而不是按令牌收费"
+      ],
+      "correct": 1,
+      "explanation": "ReAct 每一步都重新包含先前的思考和观察，使总提示长度随深度的平方增长。"
+    },
+    {
+      "stage": "pre",
+      "question": "定义 ReWOO 的三角色拆分是什么？",
+      "options": [
+        "Reader、Writer、Reviewer",
+        "Planner、Workers、Solver",
+        "Actor、Evaluator、Reflector",
+        "Generator、Critic、Optimizer"
+      ],
+      "correct": 1,
+      "explanation": "ReWOO 分离了发出 DAG 的 Planner、获取证据的 Workers 和组合最终答案的 Solver。"
+    },
+    {
+      "stage": "check",
+      "question": "论文报告了 ReWOO 相比 ReAct 在 HotpotQA 上的哪些关键数据？",
+      "options": [
+        "约 5 倍更少的令牌和 +4 绝对准确率",
+        "约 2 倍更多的令牌和 +10 准确率",
+        "相同令牌和 +1 准确率",
+        "10 倍更少的令牌和 -2 准确率"
+      ],
+      "correct": 0,
+      "explanation": "ReWOO 报告相比 ReAct 在 HotpotQA 上约减少 5 倍令牌并提高 +4 绝对准确率。"
+    },
+    {
+      "stage": "check",
+      "question": "ReWOO 规划节点中的占位符如 #E1 是什么意思？",
+      "options": [
+        "worker 1 返回的错误码",
+        "一个引用，在调度时替换为早期 worker 节点的输出",
+        "证据获取的重试计数器",
+        "规划器版本标识符"
+      ],
+      "correct": 1,
+      "explanation": "规划节点使用证据引用如 #E1、#E2，执行器在调度时将其替换为上游 worker 的输出。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么 ReWOO 比 ReAct 更好地定位失败？",
+      "options": [
+        "出错时 worker 会崩溃运行",
+        "worker 中的错误成为 Solver 在原规划旁看到的字符串，因此降级是按节点而非按步骤的",
+        "ReWOO 每次失败调用最多重试十次",
+        "Planner 在每次错误后重新发出一个新的 DAG"
+      ],
+      "correct": 1,
+      "explanation": "按节点失败且原始规划在上下文中，让 Solver 能够优雅地降级，而不是在执行过程中推理错误。"
+    },
+    {
+      "stage": "post",
+      "question": "哪种任务形态最适合 Plan-and-Act 而非普通 ReWOO？",
+      "options": [
+        "两步的事实查找",
+        "40 步的 Web 或移动导航轨迹",
+        "单轮分类",
+        "纯算术问题"
+      ],
+      "correct": 1,
+      "explanation": "Plan-and-Act 专为长周期（超过 30 步）的 Web 和移动 agent 设计，在这些场景中单条 ReAct 轨迹会失去连贯性。"
+    },
+    {
+      "stage": "post",
+      "question": "ReWOO 的规划器蒸馏结果对生产 agent 意味着什么？",
+      "options": [
+        "每一步都必须使用前沿模型",
+        "小规划器（约 7B）可以匹敌大教师模型，因为规划器从不看到观察结果",
+        "规划质量在 7B 参数以下下降",
+        "蒸馏需要基于梯度的 RL 数据"
+      ],
+      "correct": 1,
+      "explanation": "因为规划器看不到观察结果，来自大教师的规划轨迹可以干净地迁移到微调后的小规划器。"
+    }
+  ]
+}

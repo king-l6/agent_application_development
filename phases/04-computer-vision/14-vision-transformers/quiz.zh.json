@@ -1,0 +1,39 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "ViT 如何将图像转换为 token 序列？",
+      "options": ["将整个图像展平为一个向量", "应用 kernel_size = stride = patch_size 的卷积，将图像分割为非重叠块并在线性投影中一步将每个块映射到 token 嵌入", "先运行 CNN，然后将其特征图用作 token", "对像素强度进行排序"],
+      "correct": 1,
+      "explanation": "ViT 的第一层是一个 kernel_size = stride = 16 的卷积，将 224x224 图像转换为 16x16 块的 14x14 网格，每个投影到 dim=768。这一个卷积同时完成了分块和投影。结果是标准 transformer 编码器可以处理的 196 个 token。"
+    },
+    {
+      "stage": "pre",
+      "question": "ViT 中的 [CLS] token 是什么，为什么需要它？",
+      "options": ["一个前置到 token 序列的学习向量；经过 N 个 transformer 层后，其输出聚合了整个图像并馈送给分类器头部", "一个特殊的像素值", "缺失数据的占位符", "一个 dropout 掩码"],
+      "correct": 0,
+      "explanation": "ViT 遵循 BERT 的约定：将一个学习向量（CLS token）前置到块序列之前。自注意力使每个 token 可以看到其他 token，所以 CLS token 从所有块中聚合全局信息。分类器只读取 CLS 输出。替代设计使用所有块 token 的平均池化（由 ConvNeXt 和许多后 ViT 模型使用）。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么原始的 ViT 论文需要 JFT-300M 预训练才能击败 ResNet，而 DeiT 不需要？",
+      "options": ["ViT 没有 JFT-300M 就是坏的", "ViT 的归纳偏差比 CNN 弱；没有足够的数据它会过拟合。DeiT 表明，使用强增强（RandAugment、Mixup、CutMix）、随机深度和可选的 CNN 蒸馏，ViT 仅用 ImageNet-1k 就能很好地训练", "DeiT 使用了不同的注意力", "ViT 论文错了"],
+      "correct": 1,
+      "explanation": "ViT 缺乏归纳偏差（没有内置的局部性、平移等变性）意味着网络必须从数据中学习这些。用 100 万张 ImageNet 图像很难；用 3 亿张 JFT 图像很容易。DeiT 用训练配方的改进取代了数据：强增强、随机深度和来自 CNN 教师的蒸馏，所有这些都弥补了先验的缺失。"
+    },
+    {
+      "stage": "post",
+      "question": "Pre-LayerNorm (`x = x + sublayer(LN(x))`) vs post-LayerNorm (`x = LN(x + sublayer(x))`)——现代 transformer 使用哪种，为什么？",
+      "options": ["Post-LN；它更简单", "Pre-LN；它在不需要学习率预热的情况下稳定地训练更深的网络，并避免了 post-LN 在大约 6 层之后遭受的梯度不稳定性", "它们是相同的", "都不是；现代 transformer 跳过了 LayerNorm"],
+      "correct": 1,
+      "explanation": "Post-LN 是原始的 transformer（2017 年），需要仔细预热 + 超过 6-8 层后的小学习率。Pre-LN（Xiong 等人，2020；由 ViT、GPT-2+、每个现代 LLM 使用）在数值上更稳定：残差流在没有经过 LN 的情况下累积，每个子层在归一化的输入上操作。每个深度超过 12 层的 transformer 都使用 pre-LN。"
+    },
+    {
+      "stage": "post",
+      "question": "Swin Transformer 引入了窗口注意力。它解决了什么问题？",
+      "options": ["梯度消失", "完全注意力的代价为 O((H*W)^2)；Swin 将注意力限制在 7x7 块的局部窗口内，将代价降低到 O(H*W * window^2)。交替的块将窗口移动一半大小，使信息最终在整个图像中混合", "不支持 BatchNorm", "对纹理的过拟合"],
+      "correct": 1,
+      "explanation": "224x224 图像使用 4x4 块有 56*56 = 3136 个 token；完全注意力是 3136^2 = 每层约 1000 万对。Swin 仅在 7x7 窗口内进行注意力，给出 49^2 = 2401 对每窗口（加上窗口数）。交替块中的移位窗口在几层内跨窗口混合信息。这在不放弃注意力的前提下，将类似 CNN 的局部性先验带回了 transformer。"
+    }
+  ]
+}

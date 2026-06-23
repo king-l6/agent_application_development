@@ -1,0 +1,90 @@
+{
+  "lesson": "03-reflexion-verbal-rl",
+  "title": "Reflexion：语言强化学习",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Reflexion 用什么替代了标准强化学习中的什么？",
+      "options": [
+        "用恒定奖励替代奖励塑造",
+        "用试验间存储的自然语言反思替代梯度更新",
+        "用随机搜索替代策略网络",
+        "用参数化记忆替代情景记忆"
+      ],
+      "correct": 1,
+      "explanation": "Reflexion 使用情景记忆中的自然语言反思替代权重更新。"
+    },
+    {
+      "stage": "pre",
+      "question": "定义 Reflexion 系统的三个组件是什么？",
+      "options": [
+        "Planner、Worker、Solver",
+        "Actor、Evaluator、Self-Reflector",
+        "Generator、Critic、Optimizer",
+        "Selector、Expander、Backpropagator"
+      ],
+      "correct": 1,
+      "explanation": "Reflexion 将 agent 分解为运行轨迹的 Actor、评分轨迹的 Evaluator 和编写经验教训的 Self-Reflector。"
+    },
+    {
+      "stage": "check",
+      "question": "哪种评估器类型使用外部二元信号，如单元测试或已知正确答案？",
+      "options": [
+        "Heuristic",
+        "Scalar",
+        "Self-evaluated",
+        "Vote-based"
+      ],
+      "correct": 1,
+      "explanation": "标量评估器从真实答案读取通过/失败信号（ALFWorld 成功、HumanEval 测试）。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么自评估是比标量反馈更弱的信号？",
+      "options": [
+        "计算速度较慢",
+        "自我评判的模型没有外部基础，所以可能对自己的答案走过场认可",
+        "总是需要更大的模型",
+        "无法在工具上运行"
+      ],
+      "correct": 1,
+      "explanation": "自评估缺乏外部检查，因此自信的幻觉也能得到高分；应搭配基于工具的验证。"
+    },
+    {
+      "stage": "check",
+      "question": "本课列出的哪种情况是 Reflexion 无法帮助的？",
+      "options": [
+        "代码生成且测试可以评分",
+        "外部瞬时故障，如网络断开",
+        "ALFWorld 导航任务",
+        "HotpotQA 多跳问题"
+      ],
+      "correct": 1,
+      "explanation": "反思短暂的外部中断产生的反思对未来运行没有帮助。"
+    },
+    {
+      "stage": "post",
+      "question": "Reflexion 模式中的记忆腐烂是什么？",
+      "options": [
+        "进程重启时丢失反思",
+        "情景缓冲区充满过时或错误的反思，降低未来试验的速度或引入偏见",
+        "提供商加密了反思",
+        "反思提示超出上下文窗口"
+      ],
+      "correct": 1,
+      "explanation": "累积的过时或错误反思会降低行为质量；通过压缩或 TTL 缓解。"
+    },
+    {
+      "stage": "post",
+      "question": "哪种生产模式与本课的 Reflexion 最匹配？",
+      "options": [
+        "Cursor 的 apply-edits 流",
+        "Claude Code 预置到未来会话的 CLAUDE.md 学习",
+        "OpenAI 的批处理 API",
+        "Anthropic 的提示缓存"
+      ],
+      "correct": 1,
+      "explanation": "CLAUDE.md 学习、pro-workflow 的 learn-rule 和 Letta 的睡眠时间计算都将情景反思缓冲区外部化了。"
+    }
+  ]
+}

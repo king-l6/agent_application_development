@@ -1,0 +1,90 @@
+{
+  "lesson": "24-plan-execute-control-flow",
+  "title": "规划-执行控制流",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "在规划-执行智能体中，规划器的职责是什么？",
+      "options": [
+        "在每一步调用调度器",
+        "生成执行器将要运行的类型化步骤的有序列表",
+        "强制执行超时",
+        "处理 JSON-RPC 传输"
+      ],
+      "correct": 1,
+      "explanation": "规划器发出结构化计划。执行器运行它们。将两者混在一起正是本课所要避免的思维链陷阱。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么 expected_outcome 是 Step 形状的一部分，尽管执行器不检查它？",
+      "options": [
+        "因为调度器将其用作缓存键",
+        "因为它为重规划器和追踪器提供了可读的成功条件",
+        "因为注册表要求它",
+        "因为模型在其上训练"
+      ],
+      "correct": 1,
+      "explanation": "重规划器在修订时读取它。追踪器在时间线上呈现它。它是步骤上的人类可读契约。"
+    },
+    {
+      "stage": "check",
+      "question": "当步骤失败且重规划器返回新计划时，执行器在事件流上发出什么？",
+      "options": [
+        "什么也不发——重新规划是静默的",
+        "session.complete 且 status=failed",
+        "plan.diff 包含 removed/added/revised 步骤ID",
+        "tool.error 后接 session.start"
+      ],
+      "correct": 2,
+      "explanation": "plan.diff 使修订可见。静默重写正是我们要避免的错误。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么将 max_steps 和 max_replans 作为独立的预算？",
+      "options": [
+        "因为它们测量不同的单位。Steps 限制总执行次数；replans 限制规划器的调用次数。",
+        "因为 asyncio 两者都需要",
+        "因为调度器拒绝无界计划",
+        "因为注册表计数重新规划"
+      ],
+      "correct": 0,
+      "explanation": "max_replans 捕获总是返回相同破损计划的规划器。max_steps 捕获不断增长失控的计划。"
+    },
+    {
+      "stage": "check",
+      "question": "当规划器在第一次调用时返回空列表，返回什么原因？",
+      "options": [
+        "step_budget",
+        "replan_budget",
+        "goal_met",
+        "no_plan"
+      ],
+      "correct": 3,
+      "explanation": "没有计划，就没有执行。会话以 reason=no_plan 和 status=failed 结束。"
+    },
+    {
+      "stage": "post",
+      "question": "PlanDiff.revised 中包含什么？",
+      "options": [
+        "旧计划中有但新计划中没有的步骤ID",
+        "新计划中有但旧计划中没有的步骤ID",
+        "修订间 tool_name 或 args 发生变化的步骤ID",
+        "规划器要求跳过的步骤ID"
+      ],
+      "correct": 2,
+      "explanation": "revised 是那些 (tool_name, args) 签名在修订间发生变化的 ID 集合。"
+    },
+    {
+      "stage": "post",
+      "question": "当执行器耗尽 max_replans 时，SessionResult.reason 是什么？",
+      "options": [
+        "goal_met",
+        "step_budget",
+        "replan_budget",
+        "no_plan"
+      ],
+      "correct": 2,
+      "explanation": "replan_budget。status 为 failed。History 包含运行的每一步，包括触发重新规划的失败步骤。"
+    }
+  ]
+}

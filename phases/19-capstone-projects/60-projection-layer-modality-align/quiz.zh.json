@@ -1,0 +1,78 @@
+{
+  "lesson": "60-projection-layer-modality-align",
+  "title": "模态对齐的投影层",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么视觉编码器产生的 token 文本解码器不能直接消费？",
+      "options": [
+        "它们是不同的文件格式",
+        "图像 token 存在于编码器在视觉预训练期间学习的基中，与解码器的词向量没有对应关系",
+        "图像 token 是加密的",
+        "图像 token 太短"
+      ],
+      "correct": 1,
+      "explanation": "两个编码器学习独立的基；需要一个桥梁模块在共享空间中对齐它们。"
+    },
+    {
+      "stage": "pre",
+      "question": "为什么在实践中两层 MLP 足以进行模态对齐？",
+      "options": [
+        "PyTorch 需要两层",
+        "两个线性投影之间的一次非线性弯曲（GELU）经验上足以将 CLIP 风格的特征与文本嵌入对齐",
+        "单层投影是被禁止的",
+        "更深的投影是非法的"
+      ],
+      "correct": 1,
+      "explanation": "LLaVA 及其衍生模型使用这种两层 MLP，因为非线性修复了单层线性无法处理的曲率不匹配。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么在此对齐阶段视觉编码器是冻结的？",
+      "options": [
+        "冻结意味着更快的墙钟时间",
+        "8600 万参数的编码器无法在小型模拟语料库上重新训练；130 万参数的投影层足够轻量，可以在几分钟内完成对齐",
+        "PyTorch 不支持训练编码器",
+        "编码器是空的"
+      ],
+      "correct": 1,
+      "explanation": "冻结编码器和文本表使投影层成为唯一学习的内容，这是每个基于适配器的 VLM 的操作形态。"
+    },
+    {
+      "stage": "check",
+      "question": "当两个向量指向相反方向时，cosine_alignment_loss(image_emb, text_emb) 返回什么？",
+      "options": [
+        "0.0",
+        "2.0",
+        "1.0",
+        "无穷大"
+      ],
+      "correct": 1,
+      "explanation": "损失是 1 - cos(angle)。反平行向量的 cos = -1，因此损失为 1 - (-1) = 2.0。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么使用 CLS 池化从 197 个 token 中产生单个图像级向量？",
+      "options": [
+        "PyTorch 自动求和 token",
+        "标语每个样本是一个向量，因此图像侧也需要一个向量；CLS token 是编码器内置的图像摘要",
+        "它节省磁盘空间",
+        "图像块 token 未被使用"
+      ],
+      "correct": 1,
+      "explanation": "对齐是一个图像向量对应一个标语向量；CLS 池化不需要额外参数即可产生该图像向量。"
+    },
+    {
+      "stage": "post",
+      "question": "哪个生产系统最直接映射到课程 60 的模式？",
+      "options": [
+        "PaLM",
+        "LLaVA 1.5：冻结视觉编码器，冻结 LLM，仅训练两层 MLP 投影",
+        "AlphaFold",
+        "Stable Diffusion"
+      ],
+      "correct": 1,
+      "explanation": "LLaVA 的阶段一训练正是如此：冻结的编码器和 LM，使用两层 MLP 桥梁作为唯一可训练的组件。"
+    }
+  ]
+}

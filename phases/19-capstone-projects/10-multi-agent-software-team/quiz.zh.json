@@ -1,0 +1,90 @@
+{
+  "lesson": "10-multi-agent-software-team",
+  "title": "Capstone 10 — 多 Agent 软件工程团队",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "为什么即使有 20 万 token 的上下文，单 Agent 框架在大型任务上也会遇到瓶颈？",
+      "options": [
+        "单 Agent 无法进行工具调用",
+        "沙盒拒绝承载多个进程",
+        "上下文无法同时容纳架构计划、四个并行代码库切片、评审者评论和测试输出",
+        "模型缺乏对 git 的支持"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "pre",
+      "question": "在这个工厂形态中，架构师角色拥有什么？",
+      "options": [
+        "评审合并后的差异是否有幻觉",
+        "阅读问题并生成具有显式接口的子任务的计划",
+        "在干净沙盒中运行测试套件",
+        "当编码员意见不一致时强制合并分支"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "为什么每个编码员在自己的 git worktree 加 Daytona 沙盒中工作？",
+      "options": [
+        "Worktrees 比分支克隆更快",
+        "Daytona 是唯一支持 SSH 的沙盒",
+        "隔离的工作树让 N 个编码员并行实现子任务而不会踩到共享文件",
+        "架构师需要 worktree ID"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "评审者受什么约束以保持诚实？",
+      "options": [
+        "只能在测试者签字后才能运行",
+        "不能批准自己编写或提出的差异",
+        "必须批准它读取的每个差异",
+        "必须与架构师使用相同的模型"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "为什么评分标准看重 token 效率与单 Agent 基线的对比？",
+      "options": [
+        "多 Agent 总是更便宜",
+        "角色边界增加了摘要和交接上下文，所以真正的问题是工厂每美元是否获胜",
+        "单 Agent 没有可观测性故事",
+        "Token 成本与性能无关"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "事后分析中对每个失败的问题产生了什么产物？",
+      "options": [
+        "新的架构师计划模板",
+        "更新的 A2A 协议规范",
+        "强制推送日志",
+        "交接失败直方图，识别哪个角色边界出问题（计划、合并、评审、测试）"
+      ],
+      "correct": 3,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "综合项目使用哪个评估集来评分跨角色的 pass@1？",
+      "options": [
+        "SWE-bench Pro 50 问题子集",
+        "HumanEval-Java",
+        "MT-Bench-v2",
+        "MigrationBench"
+      ],
+      "correct": 0,
+      "explanation": ""
+    }
+  ]
+}

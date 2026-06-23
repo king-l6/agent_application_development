@@ -1,0 +1,90 @@
+{
+  "lesson": "11-planning-htn-and-evolutionary",
+  "title": "使用 HTN 与进化搜索进行规划",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "HTN 相比自由形式的 LLM 计划增加了什么？",
+      "options": [
+        "当操作符前置条件和效果被强制执行时的可证明正确性",
+        "更便宜的推理",
+        "更短的提示词",
+        "更好的嵌入"
+      ],
+      "correct": 0,
+      "explanation": "HTN 的符号操作符带有前置条件和效果，从构造上保证了正确性。"
+    },
+    {
+      "stage": "pre",
+      "question": "AlphaEvolve 针对哪类问题而构建？",
+      "options": [
+        "自由形式的散文生成",
+        "具有可机器检查的确定性适应度函数的优化",
+        "多轮聊天记忆",
+        "向量搜索排序"
+      ],
+      "correct": 1,
+      "explanation": "进化搜索需要一个确定性评估器；AlphaEvolve 针对存在此类评估器的领域。"
+    },
+    {
+      "stage": "check",
+      "question": "ChatHTN 如何在使用 LLM 的同时保持计划的正确性？",
+      "options": [
+        "它不能；正确性只是尽力而为",
+        "LLM 建议只作为候选分解进入，需对照操作符模式进行验证；符号层拥有正确性",
+        "它在 HTN 轨迹上微调 LLM",
+        "它使用向量数据库"
+      ],
+      "correct": 1,
+      "explanation": "LLM 扩展方法库，但不能绕过操作符的前置条件和效果。"
+    },
+    {
+      "stage": "check",
+      "question": "本课引用了哪项 AlphaEvolve 成果？",
+      "options": [
+        "56 年来首次对 Strassen 4x4 复数矩阵乘法进行改进",
+        "Gemini 推理速度提升 10 倍",
+        "在 HumanEval 上击败 GPT-4",
+        "首次证明 P=NP"
+      ],
+      "correct": 0,
+      "explanation": "AlphaEvolve 找到了 4x4 复数矩阵乘法的 48 次标量乘法方案，是 56 年来对 Strassen 的首次改进。"
+    },
+    {
+      "stage": "check",
+      "question": "HTN 中哪个元素是带有前置条件和效果的原始可执行动作？",
+      "options": [
+        "任务",
+        "方法",
+        "操作符",
+        "状态"
+      ],
+      "correct": 2,
+      "explanation": "操作符是原语；方法分解复合任务；状态是一组事实。"
+    },
+    {
+      "stage": "post",
+      "question": "本课关于没有真正评估器的 AlphaEvolve 的警告是什么？",
+      "options": [
+        "它很慢",
+        "询问 LLM 代码是否更好不是适应度函数；评估器必须是确定性的且快速的",
+        "它违反 Apache 2.0",
+        "它无法在 GPU 上运行"
+      ],
+      "correct": 1,
+      "explanation": "没有确定性评估器，搜索就没有可以收敛的信号。"
+    },
+    {
+      "stage": "post",
+      "question": "何时应该选择 ReAct 或 ReWOO 而非 HTN 或 AlphaEvolve？",
+      "options": [
+        "从不；HTN 严格更好",
+        "当你不需要形式化正确性或可机器检查的适应度时；大多数 Agent 任务属于此类",
+        "当你有 GPU 集群可用时",
+        "当延迟低于 100 ms 时"
+      ],
+      "correct": 1,
+      "explanation": "本课明确警告不要过度工程化：大多数任务不需要形式化规划或进化搜索。"
+    }
+  ]
+}

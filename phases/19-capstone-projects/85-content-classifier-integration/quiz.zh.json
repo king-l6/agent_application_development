@@ -1,0 +1,78 @@
+{
+  "lesson": "85-content-classifier-integration",
+  "title": "顶点项目 85 — 内容分类器集成",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "如果输入已经被检查过，为什么还要运行输出侧分类器？",
+      "options": [
+        "故意让系统变慢",
+        "因为任何输入绕过都会产生用户会看到的输出，而输出是捕获它的最后机会",
+        "因为输入分类器已被弃用",
+        "因为标准库要求两者都有"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "pre",
+      "question": "本课程中连接了哪三个分类器？",
+      "options": [
+        "情感、语言、长度",
+        "有害性、PII、指令泄露",
+        "OCR、ASR、TTS",
+        "质量、事实性、引用"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "当一个判决是高而另一个是中时，路由器做什么？",
+      "options": [
+        "只运行中等动作",
+        "按顺序运行两个动作",
+        "取最大严重性并应用那个动作；block 支配 redact",
+        "丢弃两个判决并发送原始内容"
+      ],
+      "correct": 2,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "为什么在 PII 分类器内部使用 Luhn 检查？",
+      "options": [
+        "将数字翻译为字母",
+        "以低假正例区分信用卡形状的数字串和任意数字序列",
+        "计算 SSN",
+        "压缩正则表达式"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "check",
+      "question": "指令泄露分类器如何做决定？",
+      "options": [
+        "通过检测输出中的花括号",
+        "通过计算输出与已知系统提示之间的三元组余弦，带有一个阈值",
+        "通过调用另一个模型",
+        "通过计数词元"
+      ],
+      "correct": 1,
+      "explanation": ""
+    },
+    {
+      "stage": "post",
+      "question": "为什么有害性分类器在一个小的左窗口中检查否定？",
+      "options": [
+        "为了减慢正则表达式",
+        "为了跳过像'you are not stupid'这样的匹配，使分类器不过度编辑常见的安慰话语",
+        "为了增加假正例率",
+        "因为 Unicode 需要否定"
+      ],
+      "correct": 1,
+      "explanation": ""
+    }
+  ]
+}

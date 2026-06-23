@@ -1,0 +1,90 @@
+{
+  "lesson": "32-minimal-agent-workbench",
+  "title": "最小 Agent 工作台",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "哪三个文件构成了最小的有用工作台？",
+      "options": [
+        "AGENTS.md（路由器）、agent_state.json（状态）、task_board.json（队列）",
+        "README.md、CHANGELOG.md、LICENSE",
+        "model.py、prompts.py、tools.py",
+        "Dockerfile、Makefile、.gitignore"
+      ],
+      "correct": 0,
+      "explanation": "一个短路由器、持久状态和一个任务队列是基础。"
+    },
+    {
+      "stage": "pre",
+      "question": "课程对 AGENTS.md 的定位是什么？",
+      "options": [
+        "一本 3000 行的入职手册",
+        "一个指向深层文档以及状态和板的短路由器",
+        "一个纯提示缓存键",
+        "一个保存在仓库外的秘密"
+      ],
+      "correct": 1,
+      "explanation": "AGENTS.md 是路由器，不是手册；长手册会被忽略。"
+    },
+    {
+      "stage": "check",
+      "question": "Augment Code 的数据关于好的 AGENTS.md 说了什么？",
+      "options": [
+        "它没有可衡量的效果",
+        "好的 AGENTS.md 提供的质量提升相当于从 Haiku 升级到 Opus；差的比没有文件更糟",
+        "长度总是有帮助",
+        "只有 Claude 读取它"
+      ],
+      "correct": 1,
+      "explanation": "Augment Code 的测量：最好的文件带来模型升级级别的提升，最差的情况比什么都没有更糟。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么课程推荐基于文件的状态而不是基于聊天历史的状态？",
+      "options": [
+        "磁盘更便宜",
+        "聊天历史是易变的；文件在会话死亡、对话修剪和工具重置后仍然存在",
+        "文件更小",
+        "SOC 2 要求如此"
+      ],
+      "correct": 1,
+      "explanation": "会话会消亡，聊天会被修剪；文件是持久的记录系统。"
+    },
+    {
+      "stage": "check",
+      "question": "课程说冲突的指令出现在 AGENTS.md 中会发生什么？",
+      "options": [
+        "延迟降低",
+        "冲突指令会静默地将 Agent 从交互模式降级到贪婪模式（AMBIG-SWE：48.8% 到 28% 解决率）",
+        "成本略有上升",
+        "什么也不会发生"
+      ],
+      "correct": 1,
+      "explanation": "AMBIG-SWE 测量到矛盾出现时解决率大幅下降；应使用编号优先级。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么课程推荐像 CLAUDE.md -> AGENTS.md 这样的跨工具符号链接？",
+      "options": [
+        "节省字节",
+        "使单一事实来源自动扩展到每个编码 Agent，无需分支",
+        "通过审计",
+        "满足 MIT 要求"
+      ],
+      "correct": 1,
+      "explanation": "符号链接（或 Nx 风格的生成器）在 Claude Code、Codex、Cursor、Copilot 等之间保持一个规范来源。"
+    },
+    {
+      "stage": "post",
+      "question": "嵌套的 AGENTS.md 文件遵循什么模式？",
+      "options": [
+        "只读取根文件",
+        "从工作文件向仓库根目录行走，连接沿途找到的每个 AGENTS.md（最近优先；子目录扩展根目录）",
+        "随机选择",
+        "按字母顺序合并"
+      ],
+      "correct": 1,
+      "explanation": "OpenAI 在其主仓库中发布了 88 个 AGENTS.md 文件；工具从最近的上层路径开始拼接。"
+    }
+  ]
+}

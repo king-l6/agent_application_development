@@ -1,0 +1,90 @@
+{
+  "lesson": "37-runtime-feedback-loops",
+  "title": "运行时反馈循环",
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "反馈运行器强制智能体做什么？",
+      "options": [
+        "对想象出来的输出做出反应",
+        "对事实做出反应：每次命令执行时捕获的结构化标准输出/标准错误/退出码/耗时记录",
+        "跳过验证",
+        "使用不同的模型"
+      ],
+      "correct": 1,
+      "explanation": "运行器消除了"测试通过"（想象的）和"测试实际运行并退出码为零"（记录的）之间的差距。"
+    },
+    {
+      "stage": "pre",
+      "question": "反馈与遥测有何不同？",
+      "options": [
+        "遥测是付费的",
+        "反馈供本次运行的下一轮使用；遥测供操作员跨时间审查运行情况（不同的文件，不同的保留策略）",
+        "遥测使用 OTel；反馈使用 GraphQL",
+        "它们是同一回事"
+      ],
+      "correct": 1,
+      "explanation": "两者共享字段，但存在于不同的文件中，具有不同的保留策略；反馈是运行内的，遥测是跨运行的。"
+    },
+    {
+      "stage": "check",
+      "question": "哪个字段必须出现在每条反馈记录中？",
+      "options": [
+        "model_id",
+        "exit_code（且空值退出必须拒绝推进循环）",
+        "embedding_vector",
+        "prompt_cache_token"
+      ],
+      "correct": 1,
+      "explanation": "exit_code 是明确无误的成功信号；空值退出意味着没有进展。"
+    },
+    {
+      "stage": "check",
+      "question": "运行器如何截断大输出？",
+      "options": [
+        "随机采样",
+        "确定性的头 + 尾，带有'truncated N lines'标记，使相同的输出总是产生相同的记录",
+        "仅前 10 行",
+        "用 gzip 压缩"
+      ],
+      "correct": 1,
+      "explanation": "确定性截断使记录可重放，同时限制 Token 成本；尾部包含失败摘要。"
+    },
+    {
+      "stage": "check",
+      "question": "为什么在写入时编校而不是读取时编校？",
+      "options": [
+        "压缩",
+        "磁盘上的文件才是攻击者能接触到的；仅在读取时编校会在 JSONL 文件中留下密钥",
+        "读取时编校会破坏 JSON",
+        "这样更快"
+      ],
+      "correct": 1,
+      "explanation": "在追加之前编校匹配 Bearer、password=、api_key=、AKIA...、xox[baprs]- 的行；每季度审计模式。"
+    },
+    {
+      "stage": "post",
+      "question": "parent_command_id 给工作台带来了什么？",
+      "options": [
+        "更便宜的推理",
+        "重试链接到其父尝试，使审查者和审计看到失败链；没有它，重试看起来像独立的成功",
+        "更快的文件 I/O",
+        "更低的内存"
+      ],
+      "correct": 1,
+      "explanation": "父链接使重试链对审查者（课程 39）和验证门可见。"
+    },
+    {
+      "stage": "post",
+      "question": "为什么将 feedback_record.jsonl 限制为 1 MB 并轮换？",
+      "options": [
+        "JSON 无法处理更大的文件",
+        "智能体只读取当前文件；轮换使运行时成本有界，同时 CI 工件捕获完整集合",
+        "磁盘太慢",
+        "提供商按字节收费"
+      ],
+      "correct": 1,
+      "explanation": "有界当前文件 + 轮换历史是 logrotate 使用的相同模式；热路径中的可预测成本。"
+    }
+  ]
+}
