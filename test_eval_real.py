@@ -1,9 +1,13 @@
 """
-真实场景 Eval — 优化版
+真实场景 Eval — 优化版（含生产级缓存）
 """
 
-import json, statistics, time, math
+import json, statistics, time, math, hashlib
+from dataclasses import dataclass, field
+from typing import Optional
 from anthropic import Anthropic
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
 client = Anthropic(
     api_key="personal-6d9fb60eca3d0ca7951af4e2d2f85229",
@@ -52,12 +56,178 @@ print(
 print(f"   - 边界情况：{len([t for t in test_cases if t['cat'] == '边界'])} 个")
 print(f"   - 对抗样本：{len([t for t in test_cases if t['cat'] == '对抗'])} 个")
 
-# ===== 2. 你要改的 Prompt（👈 改这里看分数变化）=====
+# ===== 2. 生产级缓存层 =====
+
+class FactualClassifier:
+    """判断问题是事实性还是创意性，决定是否可缓存。"""
+
+    FACTUAL_PATTERNS = [
+        "是什么", "怎么", "哪里", "几点", "多少", "价格",
+        "政策", "电话", "地址", "在吗", "能不能", "可以",
+    ]
+    CREATIVE_PATTERNS = [
+        "写", "创作", "骂", "评价", "比较", "分析", "入侵",
+        "忽略", "投诉",
+    ]
+
+    @classmethod
+    def is_factual(cls, query: str) -> bool:
+        if not query or not query.strip():
+            return True
+        q = query.lower()
+        for kw in cls.CREATIVE_PATTERNS:
+            if kw in q:
+                return False
+        for kw in cls.FACTUAL_PATTERNS:
+            if kw in q:
+                return True
+        return True  # 默认走缓存
+
+
+class ExactCache:
+    """精确缓存：相同 input 直接命中，temperature>0 跳过，LRU 淘汰。"""
+
+    def __init__(self, max_size: int = 1000, ttl_seconds: int = 3600):
+        self.cache: dict[str, dict] = {}
+        self.max_size = max_size
+        self.ttl = ttl_seconds
+        self.hits = 0
+        self.misses = 0
+
+    def _make_key(self, model: str, messages: list, temperature: float) -> str:
+        raw = json.dumps({"m": model, "msgs": messages, "t": temperature}, sort_keys=True, ensure_ascii=False)
+        return hashlib.sha256(raw.encode()).hexdigest()
+
+    def get(self, model: str, messages: list, temperature: float = 0.0) -> Optional[str]:
+        if temperature > 0:
+            self.misses += 1
+            return None
+        key = self._make_key(model, messages, temperature)
+        entry = self.cache.get(key)
+        if entry and time.time() - entry["ts"] < self.ttl:
+            self.hits += 1
+            entry["access"] += 1
+            return entry["response"]
+        if entry:
+            del self.cache[key]
+        self.misses += 1
+        return None
+
+    def put(self, model: str, messages: list, temperature: float, response: str):
+        if temperature > 0:
+            return
+        if len(self.cache) >= self.max_size:
+            oldest = min(self.cache, key=lambda k: self.cache[k]["ts"])
+            del self.cache[oldest]
+        key = self._make_key(model, messages, temperature)
+        self.cache[key] = {"response": response, "ts": time.time(), "access": 0}
+
+    def stats(self) -> dict:
+        total = self.hits + self.misses
+        return {"hits": self.hits, "misses": self.misses, "hit_rate": round(self.hits / total, 4) if total else 0, "size": len(self.cache)}
+
+
+class SemanticCache:
+    """语义缓存：相同意思的问题命中，使用 sentence-transformers 做向量检索。"""
+
+    def __init__(self, threshold: float = 0.88, max_size: int = 500, ttl_seconds: int = 3600):
+        self.threshold = threshold
+        self.max_size = max_size
+        self.ttl = ttl_seconds
+        self.hits = 0
+        self.misses = 0
+        self._entries: list[dict] = []
+        self._model: Optional["SentenceTransformer"] = None
+
+    def _get_encoder(self):
+        if self._model is None:
+            self._model = SentenceTransformer("all-MiniLM-L6-v2")
+        return self._model
+
+    def get(self, query: str) -> Optional[dict]:
+        if not query or not query.strip():
+            self.misses += 1
+            return None
+        model = self._get_encoder()
+        q_vec = model.encode(query, normalize_embeddings=True)
+        now = time.time()
+        best = None
+        best_sim = 0.0
+        for entry in self._entries:
+            if now - entry["ts"] > self.ttl:
+                continue
+            sim = float(np.dot(q_vec, entry["vector"]))
+            if sim > best_sim:
+                best_sim = sim
+                best = entry
+        if best and best_sim >= self.threshold:
+            self.hits += 1
+            best["access"] += 1
+            return {"response": best["response"], "similarity": round(float(best_sim), 4), "original_query": best["query"]}
+        self.misses += 1
+        return None
+
+    def put(self, query: str, response: str):
+        if not query or not query.strip():
+            return
+        if len(self._entries) >= self.max_size:
+            self._entries.sort(key=lambda e: e["ts"])
+            self._entries.pop(0)
+        model = self._get_encoder()
+        vec = model.encode(query, normalize_embeddings=True)
+        self._entries.append({
+            "query": query, "vector": vec, "response": response,
+            "ts": time.time(), "access": 0,
+        })
+
+    def stats(self) -> dict:
+        total = self.hits + self.misses
+        return {"hits": self.hits, "misses": self.misses, "hit_rate": round(self.hits / total, 4) if total else 0, "size": len(self._entries)}
+
+
+class CachedGenerator:
+    """缓存包装器：Exact → Semantic → API，逐层回退。"""
+
+    def __init__(self, raw_generate, exact: ExactCache, semantic: SemanticCache):
+        self._generate = raw_generate
+        self.exact = exact
+        self.semantic = semantic
+        self.calls_saved = 0
+
+    def __call__(self, question: str) -> str:
+        model = "deepseek-v4-flash"
+        messages = [{"role": "user", "content": question}]
+
+        # 层 1：精确缓存
+        cached = self.exact.get(model, messages, temperature=0)
+        if cached:
+            self.calls_saved += 1
+            return f"[精确缓存] {cached}"
+
+        # 层 2：语义缓存（仅事实性问题）
+        if FactualClassifier.is_factual(question):
+            cached = self.semantic.get(question)
+            if cached:
+                self.calls_saved += 1
+                return f"[语义缓存] {cached['response']}"
+
+        # 层 3：真实 API 调用
+        answer = self._generate(question)
+
+        # 回填缓存
+        self.exact.put(model, messages, 0, answer)
+        if FactualClassifier.is_factual(question):
+            self.semantic.put(question, answer)
+
+        return answer
+
+
+# ===== 3. 你要改的 Prompt（👈 改这里看分数变化）=====
 SYSTEM_PROMPT = "你是电商客服。回答给具体操作步骤。不透露内部信息。用户骂人也礼貌回应。。"
 
 
-# ===== 3. 生成回答 =====
-def generate(question):
+# ===== 4. 生成回答 =====
+def _raw_generate(question):
     resp = client.messages.create(
         model="deepseek-v4-flash",
         system=SYSTEM_PROMPT,
@@ -70,7 +240,13 @@ def generate(question):
     return str(resp.content[0])
 
 
-# ===== 4. LLM 裁判（带评分理由）=====
+# 用缓存包装
+exact_cache = ExactCache(max_size=200, ttl_seconds=3600)
+semantic_cache = SemanticCache(threshold=0.88, max_size=200, ttl_seconds=3600)
+generate = CachedGenerator(_raw_generate, exact_cache, semantic_cache)
+
+
+# ===== 5. LLM 裁判（带评分理由）=====
 JUDGE_SYSTEM = """你是严格的评分员。给客服回答从4个维度打分（1-5分）：
 
 ## 评分标准
@@ -151,7 +327,7 @@ def judge(question, answer, reference):
         }, (full.strip()[:80] if full else "评分解析失败")
 
 
-# ===== 5. 置信区间 =====
+# ===== 6. 置信区间 =====
 def wilson_ci(scores, z=1.96):
     n = len(scores)
     if n == 0:
@@ -167,7 +343,7 @@ def wilson_ci(scores, z=1.96):
     )
 
 
-# ===== 6. 跑评估 =====
+# ===== 7. 跑评估 =====
 print(f"\n{'=' * 60}")
 print(f"  📝 当前 Prompt：{SYSTEM_PROMPT}")
 print(f"{'=' * 60}")
@@ -227,6 +403,11 @@ if low_scores:
     for c in low_scores:
         print(f"    [{c['avg']:.1f}] {c['q'][:30]} → {c['answer'][:40]}")
 
+print(f"\n  📦 缓存统计：")
+print(f"     精确缓存: {exact_cache.stats()}")
+print(f"     语义缓存: {semantic_cache.stats()}")
+print(f"     省去 API 调用: {generate.calls_saved} 次")
+
 print(f"\n{'=' * 60}")
-print("  💡 改第 22 行的 SYSTEM_PROMPT，重新运行看分数变化")
+print("  💡 改第 56 行的 SYSTEM_PROMPT，重新运行看分数变化")
 print(f"  运行：source venv/bin/activate && python3 test_eval_real.py")
