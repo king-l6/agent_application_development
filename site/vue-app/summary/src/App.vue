@@ -35,12 +35,10 @@ import DayContent from './components/DayContent.vue'
 import PracticeView from './components/PracticeView.vue'
 
 const days = siteData.days
-const currentTab = ref(3)
+const currentTab = ref(days[days.length - 1].id)
 
 const tabs = [
-  { id: 1, label: 'Day 1' },
-  { id: 2, label: 'Day 2' },
-  { id: 3, label: 'Day 3' },
+  ...days.map(d => ({ id: d.id, label: d.label })),
   { id: 'practice', label: '实践' }
 ]
 </script>
