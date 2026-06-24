@@ -471,6 +471,7 @@ function reset() {
 }
 .ctrl-btn.primary:hover:not(:disabled) {
   opacity: 0.9;
+  color: #fff;
 }
 
 .empty-state {
