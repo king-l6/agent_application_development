@@ -114,3 +114,54 @@ export function runPlaygroundModule(
     body: JSON.stringify({ name, inputs }),
   })
 }
+
+// ──── 检查点数据库查看器（独立页面）──────────────────────────────
+
+export interface CheckpointDb {
+  key: string
+  label: string
+  filename: string
+  exists: boolean
+}
+
+export interface CheckpointMessage {
+  kind: string
+  role: string
+  content: string
+  tool_call: { name: string; args: any } | null
+}
+
+export interface CheckpointStep {
+  index: number
+  thread_id: string
+  checkpoint_id: string
+  message_count: number | null
+  last_message: CheckpointMessage | null
+  messages: CheckpointMessage[]
+}
+
+export interface CheckpointInspectResult {
+  ok: boolean
+  error?: string
+  db_filename?: string
+  tables?: string[]
+  all_threads?: string[]
+  thread_filter?: string
+  checkpoint_count?: number
+  steps?: CheckpointStep[]
+  full_conversation?: CheckpointMessage[]
+}
+
+export function fetchCheckpointDbs(): Promise<{ dbs: CheckpointDb[] }> {
+  return request('/checkpoints/dbs')
+}
+
+export function inspectCheckpoints(
+  preset: string,
+  thread_id = '',
+): Promise<CheckpointInspectResult> {
+  return request<CheckpointInspectResult>('/checkpoints/inspect', {
+    method: 'POST',
+    body: JSON.stringify({ preset, thread_id }),
+  })
+}

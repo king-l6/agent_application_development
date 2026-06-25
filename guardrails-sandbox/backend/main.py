@@ -377,6 +377,32 @@ def playground_run(req: PlaygroundRunRequest):
     return playground_registry.run(req.name, req.inputs)
 
 
+# ── 检查点数据库查看器（独立页面）──────────────────────────────────
+from playground import checkpoint_db
+
+
+class CheckpointInspectRequest(BaseModel):
+    preset: str
+    thread_id: str = ""
+
+
+@app.get("/api/checkpoints/dbs")
+def checkpoint_dbs():
+    """列出可用的预置检查点库。"""
+    return {"dbs": checkpoint_db.list_dbs()}
+
+
+@app.post("/api/checkpoints/inspect")
+def checkpoint_inspect(req: CheckpointInspectRequest):
+    """只读读取并解码一个检查点库，返回结构化数据供前端排版。"""
+    try:
+        return checkpoint_db.inspect(req.preset, req.thread_id)
+    except (ValueError, FileNotFoundError) as e:
+        return {"ok": False, "error": str(e)}
+    except Exception as e:
+        return {"ok": False, "error": f"读取出错：{e}"}
+
+
 # ── 静态文件服务 ────────────────────────────────────────────────
 frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 if os.path.isdir(frontend_dir):

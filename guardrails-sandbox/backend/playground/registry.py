@@ -22,6 +22,7 @@ from playground.modules.function_call_simulator import FunctionCallSimulator
 from playground.modules.cache_friendliness import CacheFriendliness
 from playground.modules.langgraph_simulator import LangGraphSimulator
 from playground.modules.checkpoint_viewer import CheckpointViewer
+from playground.modules.framework_picker import FrameworkPicker
 
 
 # phase 显示名与图标
@@ -85,6 +86,7 @@ _MODULES = [
     CacheFriendliness(),
     LangGraphSimulator(),
     CheckpointViewer(),
+    FrameworkPicker(),
 ]
 for _m in _MODULES:
     registry.register(_m)

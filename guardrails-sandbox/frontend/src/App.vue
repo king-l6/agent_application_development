@@ -7,6 +7,7 @@ import ChatPanel from '@/components/ChatPanel.vue'
 import BlockHistory from '@/components/BlockHistory.vue'
 import McpPanel from '@/components/McpPanel.vue'
 import PlaygroundPanel from '@/components/PlaygroundPanel.vue'
+import CheckpointDbPanel from '@/components/CheckpointDbPanel.vue'
 
 const data = ref<GuardrailsData>({
   guardrails: [],
@@ -20,7 +21,7 @@ const compareResult = ref<{ without: ChatResponse; with_: ChatResponse } | null>
 const loading = ref(false)
 const compareLoading = ref(false)
 const error = ref('')
-const activeTab = ref<'normal' | 'compare' | 'mcp' | 'playground'>('normal')
+const activeTab = ref<'normal' | 'compare' | 'mcp' | 'playground' | 'checkpoints'>('normal')
 
 async function loadData() {
   try {
@@ -101,6 +102,10 @@ onMounted(loadData)
           :class="['tab-btn', { active: activeTab === 'playground' }]"
           @click="activeTab = 'playground'"
         >🧪 课程实验</button>
+        <button
+          :class="['tab-btn', { active: activeTab === 'checkpoints' }]"
+          @click="activeTab = 'checkpoints'"
+        >🗄 数据库</button>
       </div>
     </header>
 
@@ -108,6 +113,11 @@ onMounted(loadData)
       <!-- 课程实验台自带左右布局，占满整行 -->
       <main v-if="activeTab === 'playground'" class="panel-full">
         <PlaygroundPanel />
+      </main>
+
+      <!-- 检查点数据库查看器，独立页面占满整行 -->
+      <main v-else-if="activeTab === 'checkpoints'" class="panel-full">
+        <CheckpointDbPanel />
       </main>
 
       <template v-else>
