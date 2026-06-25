@@ -22,6 +22,7 @@ Run:
 
 from __future__ import annotations
 
+import os
 from typing import Annotated, TypedDict
 
 from langchain_anthropic import ChatAnthropic
@@ -76,7 +77,18 @@ TOOLS = [calculator, web_lookup]
 
 def build_app() -> tuple:
     """Wire the four-node ReAct graph and return (compiled_app, llm_with_tools)."""
-    llm = ChatAnthropic(model="claude-sonnet-4-5", temperature=0).bind_tools(TOOLS)
+    # 显式传 api_key / base_url，走 B 站内部网关（与 guardrails-sandbox 同一套配置）。
+    # 注意：本机 shell 里 ANTHROPIC_API_KEY 为空、只有无效的 ANTHROPIC_AUTH_TOKEN，
+    # 两者都会导致 401。网关认的是下面这个 personal- 开头的 api_key，直接写死。
+    os.environ.pop("ANTHROPIC_AUTH_TOKEN", None)
+    api_key = "personal-6d9fb60eca3d0ca7951af4e2d2f85229"
+    base_url = os.environ.get("ANTHROPIC_BASE_URL") or "http://llmapi.bilibili.co"
+    llm = ChatAnthropic(
+        model="claude-opus-4-8",
+        temperature=0,
+        api_key=api_key,
+        base_url=base_url,
+    ).bind_tools(TOOLS)
 
     def agent_node(state: State) -> dict:
         response = llm.invoke(state["messages"])

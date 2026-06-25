@@ -37,6 +37,7 @@ def register_all_adapters():
     from adapters.rag_groundedness import RAGGroundedness
     from adapters.format_validator import FormatValidator
     from adapters.context_engine import ContextEngine
+    from adapters.prompt_cache_planner import PromptCachePlanner
 
     pipeline.register(RateLimiter())
     pipeline.register(InjectionDetector())
@@ -53,6 +54,7 @@ def register_all_adapters():
     pipeline.register(RAGGroundedness())
     pipeline.register(FormatValidator())
     pipeline.register(ContextEngine())
+    pipeline.register(PromptCachePlanner())
 
 
 register_all_adapters()
@@ -280,17 +282,115 @@ def run_benchmark(req: BenchmarkRequest = None):
     return result
 
 
+# ── MCP 工具代理 ──────────────────────────────────────────────────
+
+
+class McpToolRequest(BaseModel):
+    tool: str
+    arguments: dict = {}
+
+
+def _run_async(coro):
+    """在已有事件循环的线程中安全运行协程"""
+    import asyncio
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    # 已有运行中的 loop → 用 concurrent.futures
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        fut = asyncio.run_coroutine_threadsafe(coro, loop)
+        return fut.result()
+
+
+def _call_mcp(tool: str, arguments: dict) -> str:
+    """通过 SDK 调用 MCP 服务器"""
+    from mcp.client.stdio import StdioServerParameters, stdio_client
+    from mcp import ClientSession
+
+    async def _call():
+        params = StdioServerParameters(
+            command="/Users/bilibili/Desktop/ai工程/ai-engineering-from-scratch/venv/bin/python",
+            args=["/Users/bilibili/Desktop/ai工程/ai-engineering-from-scratch/phases/11-llm-engineering/14-model-context-protocol/code/real_server.py"],
+        )
+        async with stdio_client(params) as (r, w):
+            async with ClientSession(r, w) as s:
+                await s.initialize()
+                result = await s.call_tool(tool, arguments)
+                return result.content[0].text
+
+    return _run_async(_call())
+
+
+@app.post("/api/mcp/call")
+def mcp_call(req: McpToolRequest):
+    try:
+        result = _call_mcp(req.tool, req.arguments)
+        return {"ok": True, "tool": req.tool, "result": result}
+    except Exception as e:
+        return {"ok": False, "tool": req.tool, "error": str(e)}
+
+
+@app.get("/api/mcp/tools")
+def mcp_tools_list():
+    try:
+        from mcp.client.stdio import StdioServerParameters, stdio_client
+        from mcp import ClientSession
+
+        async def _list():
+            params = StdioServerParameters(
+                command="/Users/bilibili/Desktop/ai工程/ai-engineering-from-scratch/venv/bin/python",
+                args=["/Users/bilibili/Desktop/ai工程/ai-engineering-from-scratch/phases/11-llm-engineering/14-model-context-protocol/code/real_server.py"],
+            )
+            async with stdio_client(params) as (r, w):
+                async with ClientSession(r, w) as s:
+                    await s.initialize()
+                    tools = await s.list_tools()
+                    return [
+                        {"name": t.name, "description": t.description, "inputSchema": t.inputSchema}
+                        for t in tools.tools
+                    ]
+
+        tools = _run_async(_list())
+        return {"ok": True, "tools": tools}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ── 课程实验台（Playground）────────────────────────────────────────
+from playground.registry import registry as playground_registry
+
+
+class PlaygroundRunRequest(BaseModel):
+    name: str
+    inputs: dict = {}
+
+
+@app.get("/api/playground/modules")
+def playground_modules():
+    """返回按 phase 分组的实验模块列表（含 input_schema）"""
+    return {"groups": playground_registry.list_grouped()}
+
+
+@app.post("/api/playground/run")
+def playground_run(req: PlaygroundRunRequest):
+    """执行一个实验模块，返回通用渲染块结果"""
+    return playground_registry.run(req.name, req.inputs)
+
+
 # ── 静态文件服务 ────────────────────────────────────────────────
 frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 if os.path.isdir(frontend_dir):
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+
 
 # ── 启动 ────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
 
     print("=" * 55)
-    print("  🛡 Guardrails 交互式沙箱")
+    print("  🧪 AI 工程学习实验台")
     print("  http://localhost:8000")
     print("=" * 55)
     uvicorn.run(app, host="0.0.0.0", port=8000)

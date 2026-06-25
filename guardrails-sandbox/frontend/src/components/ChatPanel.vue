@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
 import type { ChatResponse, AdapterInfo } from '@/types'
 
 const props = defineProps<{
@@ -19,6 +19,31 @@ const emit = defineEmits<{
 
 const input = ref('')
 const messages = ref<{ role: string; content: string; blocked?: boolean }[]>([])
+
+const ADAPTER_NAMES: Record<string, { cn: string; en: string; abbr?: string }> = {
+  factual_classifier:  { cn: '事实性分类',   en: 'Factual Classifier' },
+  rate_limiter:        { cn: '速率限制',     en: 'Rate Limiter' },
+  injection_detector:  { cn: '注入检测',     en: 'Injection Detector' },
+  semantic_detector:   { cn: '语义检测',     en: 'Semantic Detector' },
+  pii_detector:        { cn: 'PII 检测',     en: 'PII Detector', abbr: 'PII' },
+  length_checker:      { cn: '长度检查',     en: 'Length Checker' },
+  toxicity_filter:     { cn: '毒性过滤',     en: 'Toxicity Filter' },
+  topic_classifier:    { cn: '话题分类',     en: 'Topic Classifier' },
+  output_scrubber:     { cn: '输出脱敏',     en: 'Output Scrubber' },
+  relevance_checker:   { cn: '相关性检查',   en: 'Relevance Checker' },
+  cot_judge:           { cn: 'CoT 裁决',     en: 'CoT Judge', abbr: 'CoT' },
+  prompt_leak:         { cn: 'Prompt 泄露',  en: 'Prompt Leak Detector' },
+  rag_groundedness:    { cn: 'RAG 真实性',   en: 'RAG Groundedness', abbr: 'RAG' },
+  format_validator:    { cn: '格式校验',     en: 'Format Validator' },
+}
+
+function displayAdapterName(name: string): string {
+  const info = ADAPTER_NAMES[name]
+  if (!info) return name
+  let label = `${info.cn}（${info.en}）`
+  if (info.abbr) label += ` ${info.abbr}`
+  return label
+}
 
 function sendMessage() {
   const text = input.value.trim()
@@ -93,7 +118,7 @@ function getLogBg(log: any): string {
             :style="{ borderLeftColor: getLogColor(log), background: getLogBg(log) }"
           >
             <div class="log-header">
-              <span class="log-name">{{ log.name }}</span>
+              <span class="log-name">{{ displayAdapterName(log.name) }}</span>
               <span :class="['log-status', log.passed ? 'passed' : 'blocked']">
                 {{ log.passed ? '✓ 通过' : '✗ 拦截' }}
               </span>
@@ -147,10 +172,11 @@ function getLogBg(log: any): string {
         v-model="input"
         :placeholder="activeTab === 'normal' ? '输入消息...' : '输入消息（对比模式）...'"
         rows="3"
-        @keydown.ctrl.enter="activeTab === 'normal' ? sendMessage() : sendCompare()"
+        @keydown.enter.exact="($event) => { $event.preventDefault(); activeTab === 'normal' ? sendMessage() : sendCompare() }"
+        @keydown.shift.enter="($event) => { /* allow default newline */ }"
       ></textarea>
       <div class="input-actions">
-        <span class="input-hint">Ctrl + Enter 发送</span>
+        <span class="input-hint">Enter 发送 / Shift+Enter 换行</span>
         <div class="input-btns">
           <button class="btn-secondary" @click="clearChat">清空</button>
           <button

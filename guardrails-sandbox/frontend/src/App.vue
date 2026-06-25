@@ -5,6 +5,8 @@ import { fetchGuardrails, toggleAdapter, sendChat, sendCompare, resetStats, runB
 import AdapterTree from '@/components/AdapterTree.vue'
 import ChatPanel from '@/components/ChatPanel.vue'
 import BlockHistory from '@/components/BlockHistory.vue'
+import McpPanel from '@/components/McpPanel.vue'
+import PlaygroundPanel from '@/components/PlaygroundPanel.vue'
 
 const data = ref<GuardrailsData>({
   guardrails: [],
@@ -18,7 +20,7 @@ const compareResult = ref<{ without: ChatResponse; with_: ChatResponse } | null>
 const loading = ref(false)
 const compareLoading = ref(false)
 const error = ref('')
-const activeTab = ref<'normal' | 'compare'>('normal')
+const activeTab = ref<'normal' | 'compare' | 'mcp' | 'playground'>('normal')
 
 async function loadData() {
   try {
@@ -81,7 +83,7 @@ onMounted(loadData)
 <template>
   <div class="app-container">
     <header class="app-header">
-      <h1>🛡 Guardrails 交互式沙箱</h1>
+      <h1>🧪 AI 工程学习实验台</h1>
       <div class="header-tabs">
         <button
           :class="['tab-btn', { active: activeTab === 'normal' }]"
@@ -91,41 +93,58 @@ onMounted(loadData)
           :class="['tab-btn', { active: activeTab === 'compare' }]"
           @click="activeTab = 'compare'"
         >对比模式</button>
+        <button
+          :class="['tab-btn', { active: activeTab === 'mcp' }]"
+          @click="activeTab = 'mcp'"
+        >🔌 MCP 工具</button>
+        <button
+          :class="['tab-btn', { active: activeTab === 'playground' }]"
+          @click="activeTab = 'playground'"
+        >🧪 课程实验</button>
       </div>
     </header>
 
     <div class="app-body">
-      <aside class="panel-left">
-        <AdapterTree
-          :tree="data.tree"
-          :stats="data.stats"
-          :block-history="data.block_history"
-          @toggle="handleToggle"
-          @reset="handleReset"
-          @benchmark="handleBenchmark"
-        />
-      </aside>
-
-      <main class="panel-center">
-        <ChatPanel
-          :active-tab="activeTab"
-          :loading="loading"
-          :compare-loading="compareLoading"
-          :chat-response="chatResponse"
-          :compare-result="compareResult"
-          :guardrails="data.guardrails"
-          :error="error"
-          @send="handleSend"
-          @compare="handleCompare"
-        />
+      <!-- 课程实验台自带左右布局，占满整行 -->
+      <main v-if="activeTab === 'playground'" class="panel-full">
+        <PlaygroundPanel />
       </main>
 
-      <aside class="panel-right">
-        <BlockHistory
-          :history="data.block_history"
-          @refresh="loadData"
-        />
-      </aside>
+      <template v-else>
+        <aside class="panel-left">
+          <AdapterTree
+            :tree="data.tree"
+            :stats="data.stats"
+            :block-history="data.block_history"
+            @toggle="handleToggle"
+            @reset="handleReset"
+            @benchmark="handleBenchmark"
+          />
+        </aside>
+
+        <main class="panel-center">
+          <McpPanel v-if="activeTab === 'mcp'" />
+          <ChatPanel
+            v-else
+            :active-tab="activeTab"
+            :loading="loading"
+            :compare-loading="compareLoading"
+            :chat-response="chatResponse"
+            :compare-result="compareResult"
+            :guardrails="data.guardrails"
+            :error="error"
+            @send="handleSend"
+            @compare="handleCompare"
+          />
+        </main>
+
+        <aside class="panel-right">
+          <BlockHistory
+            :history="data.block_history"
+            @refresh="loadData"
+          />
+        </aside>
+      </template>
     </div>
   </div>
 </template>
@@ -236,6 +255,13 @@ html, body {
 }
 
 .panel-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-full {
   flex: 1;
   display: flex;
   flex-direction: column;

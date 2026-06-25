@@ -102,3 +102,60 @@ export interface AdapterGroup {
     adapters: AdapterInfo[]
   }[]
 }
+
+// ──── 课程实验台（Playground）────────────────────────────────────
+
+export interface PlaygroundField {
+  name: string
+  label: string
+  type: 'text' | 'textarea' | 'number' | 'select'
+  default: any
+  placeholder?: string
+  help?: string
+  options?: string[]
+}
+
+export interface PlaygroundModuleMeta {
+  name: string
+  display_name: string
+  description: string
+  phase: string
+  lesson: string
+  order: number
+  input_schema: PlaygroundField[]
+}
+
+export interface PlaygroundGroup {
+  phase: string
+  label: string
+  icon: string
+  modules: PlaygroundModuleMeta[]
+}
+
+export interface RenderBlock {
+  type: 'text' | 'score' | 'table' | 'json' | 'keyvalue' | 'list'
+  label?: string
+  // text
+  content?: string
+  // score
+  value?: number
+  max?: number
+  hint?: string
+  // table
+  headers?: string[]
+  rows?: any[][]
+  // json
+  data?: any
+  // keyvalue
+  items?: Record<string, any> | any[]
+  // list
+  ordered?: boolean
+}
+
+export interface ModuleResult {
+  ok: boolean
+  summary: string
+  blocks: RenderBlock[]
+  latency_ms: number
+  error: string
+}

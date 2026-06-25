@@ -10,6 +10,31 @@ const emit = defineEmits<{
   refresh: []
 }>()
 
+const ADAPTER_NAMES: Record<string, { cn: string; en: string; abbr?: string }> = {
+  factual_classifier:  { cn: '事实性分类',   en: 'Factual Classifier' },
+  rate_limiter:        { cn: '速率限制',     en: 'Rate Limiter' },
+  injection_detector:  { cn: '注入检测',     en: 'Injection Detector' },
+  semantic_detector:   { cn: '语义检测',     en: 'Semantic Detector' },
+  pii_detector:        { cn: 'PII 检测',     en: 'PII Detector', abbr: 'PII' },
+  length_checker:      { cn: '长度检查',     en: 'Length Checker' },
+  toxicity_filter:     { cn: '毒性过滤',     en: 'Toxicity Filter' },
+  topic_classifier:    { cn: '话题分类',     en: 'Topic Classifier' },
+  output_scrubber:     { cn: '输出脱敏',     en: 'Output Scrubber' },
+  relevance_checker:   { cn: '相关性检查',   en: 'Relevance Checker' },
+  cot_judge:           { cn: 'CoT 裁决',     en: 'CoT Judge', abbr: 'CoT' },
+  prompt_leak:         { cn: 'Prompt 泄露',  en: 'Prompt Leak Detector' },
+  rag_groundedness:    { cn: 'RAG 真实性',   en: 'RAG Groundedness', abbr: 'RAG' },
+  format_validator:    { cn: '格式校验',     en: 'Format Validator' },
+}
+
+function displayAdapterName(name: string): string {
+  const info = ADAPTER_NAMES[name]
+  if (!info) return name
+  let label = `${info.cn}（${info.en}）`
+  if (info.abbr) label += ` ${info.abbr}`
+  return label
+}
+
 async function handleClear() {
   await clearBlockHistory()
   emit('refresh')
@@ -47,7 +72,7 @@ function adapterColor(name: string): string {
           <span class="history-stage">{{ stageIcon(item.stage) }} {{ item.stage }}</span>
         </div>
         <div class="history-adapter" :style="{ color: adapterColor(item.adapter) }">
-          {{ item.adapter }}
+          {{ displayAdapterName(item.adapter) }}
         </div>
         <div class="history-input" :title="item.input">
           {{ item.input.slice(0, 80) }}{{ item.input.length > 80 ? '...' : '' }}

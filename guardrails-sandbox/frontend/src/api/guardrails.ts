@@ -4,19 +4,35 @@ import type {
   CompareResponse,
   BenchmarkResult,
   BlockHistoryItem,
+  PlaygroundGroup,
+  ModuleResult,
 } from '@/types'
 
 const BASE = '/api'
+const TIMEOUT_MS = 60_000  // 聊天请求超时 60 秒
 
-async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${url}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`)
+async function request<T>(url: string, options?: RequestInit, timeout?: number): Promise<T> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeout ?? TIMEOUT_MS)
+
+  try {
+    const res = await fetch(`${BASE}${url}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status} ${res.statusText}`)
+    }
+    return res.json()
+  } catch (e: any) {
+    if (e.name === 'AbortError') {
+      throw new Error('请求超时，请检查后端服务是否正常')
+    }
+    throw e
+  } finally {
+    clearTimeout(timer)
   }
-  return res.json()
 }
 
 export function fetchGuardrails(): Promise<GuardrailsData> {
@@ -80,5 +96,21 @@ export function runBenchmark(category?: string): Promise<BenchmarkResult> {
   return request<BenchmarkResult>('/benchmark', {
     method: 'POST',
     body: category ? JSON.stringify({ category }) : undefined,
+  })
+}
+
+// ──── 课程实验台（Playground）────────────────────────────────────
+
+export function fetchPlaygroundModules(): Promise<{ groups: PlaygroundGroup[] }> {
+  return request('/playground/modules')
+}
+
+export function runPlaygroundModule(
+  name: string,
+  inputs: Record<string, any>,
+): Promise<ModuleResult> {
+  return request<ModuleResult>('/playground/run', {
+    method: 'POST',
+    body: JSON.stringify({ name, inputs }),
   })
 }
