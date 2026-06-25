@@ -42,6 +42,8 @@ Thumbs.db
 *.log
 
 data/
+!site/vue-app/**/data/
+site/vue-app/**/node_modules/
 models/
 checkpoints/
 wandb/
@@ -63,3 +65,8 @@ catalog.json
 site/sitemap.xml
 site/llms.txt
 site/build-meta.js
+
+# LangGraph 本地检查点数据库（实验产物，不提交）
+*.db
+*.db-shm
+*.db-wal

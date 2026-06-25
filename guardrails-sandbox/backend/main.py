@@ -37,7 +37,6 @@ def register_all_adapters():
     from adapters.rag_groundedness import RAGGroundedness
     from adapters.format_validator import FormatValidator
     from adapters.context_engine import ContextEngine
-    from adapters.prompt_cache_planner import PromptCachePlanner
 
     pipeline.register(RateLimiter())
     pipeline.register(InjectionDetector())
@@ -54,7 +53,6 @@ def register_all_adapters():
     pipeline.register(RAGGroundedness())
     pipeline.register(FormatValidator())
     pipeline.register(ContextEngine())
-    pipeline.register(PromptCachePlanner())
 
 
 register_all_adapters()

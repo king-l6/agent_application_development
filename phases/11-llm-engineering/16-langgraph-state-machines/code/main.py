@@ -23,6 +23,13 @@ Run:
 from __future__ import annotations
 
 import os
+
+# 关键：本机 shell 里有另一套网关配置（ANTHROPIC_BASE_URL=ai-b23d.bilibili.co，
+# 只支持 deepseek、不支持 claude），ChatAnthropic 会自动读取它导致连错网关 401/400。
+# 在导入 langchain 之前清掉这些变量，强制使用下面 build_app() 里显式指定的可用网关。
+for _k in ("ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_API_KEY"):
+    os.environ.pop(_k, None)
+
 from typing import Annotated, TypedDict
 
 from langchain_anthropic import ChatAnthropic
@@ -77,12 +84,10 @@ TOOLS = [calculator, web_lookup]
 
 def build_app() -> tuple:
     """Wire the four-node ReAct graph and return (compiled_app, llm_with_tools)."""
-    # 显式传 api_key / base_url，走 B 站内部网关（与 guardrails-sandbox 同一套配置）。
-    # 注意：本机 shell 里 ANTHROPIC_API_KEY 为空、只有无效的 ANTHROPIC_AUTH_TOKEN，
-    # 两者都会导致 401。网关认的是下面这个 personal- 开头的 api_key，直接写死。
-    os.environ.pop("ANTHROPIC_AUTH_TOKEN", None)
+    # 锁定可用网关：llmapi.bilibili.co + personal- key（已验证 claude-opus-4-8 工具调用可用）。
+    # 不读任何环境变量，因为本机 shell 的 ANTHROPIC_* 指向另一个不支持 claude 的网关。
     api_key = "personal-6d9fb60eca3d0ca7951af4e2d2f85229"
-    base_url = os.environ.get("ANTHROPIC_BASE_URL") or "http://llmapi.bilibili.co"
+    base_url = "http://llmapi.bilibili.co"
     llm = ChatAnthropic(
         model="claude-opus-4-8",
         temperature=0,
@@ -117,64 +122,118 @@ def build_app() -> tuple:
 # Driver ---------------------------------------------------------------------
 
 
-def pretty(msg: AnyMessage) -> str:
-    kind = msg.__class__.__name__
-    content = msg.content if isinstance(msg.content, str) else str(msg.content)[:200]
+# 节点名 → 中文标签
+NODE_LABEL = {"agent": "🤖 模型思考", "tools": "🔧 执行工具", "__start__": "▶ 开始"}
+# 消息类型 → 中文标签
+MSG_LABEL = {
+    "HumanMessage": "👤 用户",
+    "AIMessage": "🤖 模型",
+    "ToolMessage": "🔧 工具结果",
+}
+
+
+def line(char="─", n=60):
+    print(char * n)
+
+
+def title(text):
+    print()
+    line("═")
+    print(f"  {text}")
+    line("═")
+
+
+def show_message(msg: AnyMessage, indent="    "):
+    """美观打印一条消息。"""
+    kind = MSG_LABEL.get(msg.__class__.__name__, msg.__class__.__name__)
+    # content 可能是 str，也可能是 list（含 tool_use/thinking 块）——列表时不直接打印原始结构
+    raw = msg.content
+    content = raw.strip() if isinstance(raw, str) else ""
     tool_calls = getattr(msg, "tool_calls", None) or []
-    tcs = " | ".join(f"{t['name']}({t['args']})" for t in tool_calls)
-    return f"[{kind}] {content} {('-> ' + tcs) if tcs else ''}".strip()
+
+    if content:
+        print(f"{indent}{kind}：{content[:300]}")
+    for tc in tool_calls:
+        args = "，".join(f"{k}={v!r}" for k, v in tc["args"].items())
+        print(f"{indent}{kind} → 想调用工具：{tc['name']}（{args}）")
+
+
+def stream_turn(app, payload, config, header):
+    """跑一轮并美观打印每个节点的更新。"""
+    print(f"\n{header}")
+    for event in app.stream(payload, config, stream_mode="updates"):
+        for node, update in event.items():
+            # 中断事件：值是 tuple（Interrupt 对象），不是 dict，单独处理
+            if node == "__interrupt__":
+                print("  ┌─ ⏸ 触发中断（执行在进入工具节点前暂停）")
+                print("  └─")
+                continue
+            if not isinstance(update, dict):
+                continue
+            print(f"  ┌─ 节点 {NODE_LABEL.get(node, node)}")
+            for m in update.get("messages", []):
+                show_message(m, indent="  │   ")
+            print("  └─")
 
 
 def run() -> None:
     app, _llm = build_app()
     config = {"configurable": {"thread_id": "demo-42"}}
 
-    # Turn 1: ask a question that should hit web_lookup.
-    user = HumanMessage("Where is Anthropic headquartered?")
-    for event in app.stream({"messages": [user]}, config, stream_mode="updates"):
-        for node, update in event.items():
-            print(f"<<{node}>>")
-            for m in update.get("messages", []):
-                print("   ", pretty(m))
+    # ── 第一幕：人工审批中断 ──────────────────────────────────
+    # 用算术题，模型必须调 calculator，从而触发 interrupt_before=["tools"]。
+    title("第一幕：ReAct 循环 + 人工审批中断")
+    print("  问题：请计算 (17 * 23 + 100) 等于多少？")
 
-    # We are now paused at interrupt_before=['tools'].
+    user = HumanMessage("请用 calculator 工具计算 (17 * 23 + 100) 等于多少？只能用工具，不要心算。")
+    stream_turn(app, {"messages": [user]}, config, "▶ 启动图，模型开始思考……")
+
+    # 此刻已停在 interrupt_before=["tools"]：工具还没执行
     pending = app.get_state(config)
-    print("\nPAUSED. Pending tool calls:")
+    print("\n  ⏸  执行已暂停（interrupt_before=['tools']）")
+    print("     工具尚未运行，等待人工审批。待批准的工具调用：")
+    found_tool = False
     for m in pending.values["messages"][-1:]:
         for tc in getattr(m, "tool_calls", []) or []:
-            print(f"  - {tc['name']}({tc['args']})")
+            found_tool = True
+            args = "，".join(f"{k}={v!r}" for k, v in tc["args"].items())
+            print(f"       • {tc['name']}（{args}）")
+    if not found_tool:
+        print("       （模型这次没调工具，直接回答了）")
 
-    # Approve and resume.
-    for event in app.stream(Command(resume=True), config, stream_mode="updates"):
-        for node, update in event.items():
-            print(f"<<{node}>>")
-            for m in update.get("messages", []):
-                print("   ", pretty(m))
+    # 人工批准 → 恢复执行
+    if found_tool:
+        print("\n  ✅ 人工批准 → Command(resume=True) 恢复执行")
+        stream_turn(app, Command(resume=True), config, "▶ 工具执行 + 模型给出最终答案……")
 
-    # Checkpoint history.
+    # ── 第二幕：检查点历史 ────────────────────────────────────
+    title("第二幕：检查点历史（每一步都自动存档）")
     history = list(app.get_state_history(config))
-    print(f"\nCheckpoint history: {len(history)} snapshots")
+    print(f"  共 {len(history)} 个检查点快照（从新到旧）：\n")
     for i, snap in enumerate(history):
         last = snap.values["messages"][-1] if snap.values.get("messages") else None
-        tag = last.__class__.__name__ if last else "?"
-        print(f"  {i:>2}  {tag:<15}  next={snap.next}")
+        tag = MSG_LABEL.get(last.__class__.__name__, "—") if last else "—"
+        nxt = "（结束）" if not snap.next else " → ".join(snap.next)
+        print(f"   #{i}  最后消息：{tag:<10}  下一步：{nxt}")
+    print("\n  💡 用相同 thread_id 再次调用即可从任意检查点恢复——这就是检查点的价值。")
 
-    # Time-travel: fork from the earliest snapshot and ask a different question.
-    if len(history) >= 3:
+    # ── 第三幕：时光回溯 ──────────────────────────────────────
+    title("第三幕：时光回溯（回到起点，改问另一个问题）")
+    if len(history) >= 1:
         earliest = history[-1].config
-        print("\nTime-travel: forking from earliest checkpoint and asking a math question.")
-        fork = {"messages": [HumanMessage("What is 17 * 23?")]}
-        for event in app.stream(fork, earliest, stream_mode="updates"):
-            for node, update in event.items():
-                print(f"<<{node}>>")
-                for m in update.get("messages", []):
-                    print("   ", pretty(m))
-        # Resume past the interrupt for the math tool.
-        for event in app.stream(Command(resume=True), earliest, stream_mode="updates"):
-            for node, update in event.items():
-                print(f"<<{node}>>")
-                for m in update.get("messages", []):
-                    print("   ", pretty(m))
+        print("  从最早的检查点分叉，改问：100 / 4 等于多少？\n")
+        fork = {"messages": [HumanMessage("请用 calculator 工具计算 100 / 4 等于多少？")]}
+        stream_turn(app, fork, earliest, "▶ 从历史检查点重新跑一条新分支……")
+        # 这条分支同样会停在工具中断处，批准放行
+        pend2 = app.get_state(earliest)
+        if pend2.next and "tools" in pend2.next:
+            print("\n  ✅ 同样停在工具中断处 → 批准放行")
+            stream_turn(app, Command(resume=True), earliest, "▶ 执行工具 + 给出答案……")
+        print("\n  💡 同一张图、同一份历史，从旧检查点叉出全新执行——调试和回归测试全靠它。")
+
+    title("演示结束 · 你刚刚见证了 LangGraph 的四大超能力")
+    print("  ① 检查点  ② 中断（人工审批）  ③ 流式输出  ④ 时光回溯")
+    print()
 
 
 if __name__ == "__main__":

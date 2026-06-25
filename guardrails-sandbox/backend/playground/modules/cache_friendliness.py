@@ -4,7 +4,7 @@
   - 检测会破坏前缀匹配的动态内容（时间戳、会话 ID、随机值）
   - 估算 token 是否达到最小可缓存块
   - 给出盈亏平衡表与缓存友好布局建议
-复用 guardrails 的 prompt_cache_planner adapter 逻辑，本地运行，不调 LLM。
+本地运行，不调 LLM。模块自包含（不依赖 guardrails adapter）。
 """
 import re
 import time
@@ -14,9 +14,42 @@ from playground.base import (
     block_score, block_keyvalue, block_table, block_list,
 )
 
-from adapters.prompt_cache_planner import (
-    DYNAMIC_PATTERNS, CACHE_FRIENDLY_LAYOUT, breakeven_table,
-)
+
+# 会破坏前缀缓存的"动态内容"特征：出现在系统提示顶部就每次未命中
+DYNAMIC_PATTERNS = [
+    (r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}", "时间戳 (YYYY-MM-DD HH:MM)"),
+    (r"\d{2}:\d{2}:\d{2}", "时钟时间 (HH:MM:SS)"),
+    (r"当前时间|current time|now\(\)|datetime\.now|时间戳|timestamp", "动态时间字段"),
+    (r"会话 ?ID|session[_ ]?id|request[_ ]?id|trace[_ ]?id|uuid", "随请求变化的 ID"),
+    (r"随机|random|nonce", "随机值"),
+]
+
+# 缓存友好布局：稳定的放上面，可变的放下面
+CACHE_FRIENDLY_LAYOUT = [
+    ("系统提示", "稳定 → 缓存"),
+    ("工具定义", "稳定 → 缓存"),
+    ("少样本示例", "稳定 → 缓存"),
+    ("检索到的文档", "复用才缓存，否则不缓存"),
+    ("对话历史", "缓存到最近一轮"),
+    ("当前用户消息", "永远不缓存（每次不同）"),
+]
+
+
+def breakeven_table():
+    """Anthropic 25% 写入溢价下，不同复用次数的平均成本倍数。"""
+    rows = []
+    write_cost = 1.25  # 写入按 1.25x
+    read_cost = 0.10   # 读取按 0.10x
+    for reads in [1, 2, 3, 5, 10]:
+        total = write_cost + read_cost * reads
+        requests = 1 + reads
+        avg = total / requests
+        rows.append({
+            "复用读取次数": reads,
+            "平均成本倍数": round(avg, 3),
+            "节省": f"{round((1 - avg) * 100)}%",
+        })
+    return rows
 
 
 class CacheFriendliness(PlaygroundModule):

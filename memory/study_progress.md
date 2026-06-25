@@ -5,7 +5,7 @@
 
 ## 当前进度
 
-- **正在学**：Phase 11 · 第 16 课 `16-langgraph-state-machines`（LangGraph 状态机）
+- **正在学**：Phase 11 · 第 17 课 `17-agent-framework-tradeoffs`（代理框架权衡）
 - **最后更新**：2026/06/25
 
 ## Phase 11 · LLM 工程（课程清单）
@@ -27,8 +27,8 @@
 | 13 | 13-production-app | ❓ 待确认 | — |
 | 14 | 14-model-context-protocol | ❓ 待确认 | — |
 | 15 | 15-prompt-caching | ✅ 已完成 | cache_friendliness |
-| 16 | 16-langgraph-state-machines | 🔄 进行中 | （待补） |
-| 17 | 17-agent-framework-tradeoffs | ⬜ 未开始 | — |
+| 16 | 16-langgraph-state-machines | ✅ 已完成 | langgraph_simulator（模拟）+ checkpoint_viewer（解码真实库） |
+| 17 | 17-agent-framework-tradeoffs | 🔄 进行中 | （待补） |
 
 > ❓ 待确认：这几课缺独立 playground 模块，无法从代码倒推是否学过，需用户确认。
 
