@@ -1048,14 +1048,14 @@ mcp.run(transport="stdio")` }
     {
       id: 6,
       label: 'Day 6',
-      date: '2026年6月29日 · Agent 工程 · ReAct 循环',
-      footer: 'Day 6 · 2026-06-29 · Phase 14 启程',
+      date: '2026年6月29日 · Agent 工程 · ReAct 循环 + ReWOO',
+      footer: 'Day 6 · 2026-06-29 · Phase 14-01/02',
       progress: {
         label: '当前进度',
-        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 1 课',
-        percent: 52,
-        text: 'Phase 14 · 01 the-agent-loop',
-        desc: 'LLM 工程收官 → 进入 Agent 工程：从裸 ReAct 循环开始'
+        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 2 课',
+        percent: 53,
+        text: 'Phase 14 · 01 the-agent-loop + 02 rewoo',
+        desc: 'LLM 工程收官 → 进入 Agent 工程：ReAct 循环 + ReWOO 先规划后执行'
       },
       sections: [
         {
@@ -1170,25 +1170,10 @@ mcp.run(transport="stdio")` }
               'Phase 14 后面 13-17 课逐个展开，回查对照表即可'
             ]}
           ]
-        }
-      ]
-    },
-    {
-      id: 7,
-      label: 'Day 7',
-      date: '2026年6月29日 · Agent 工程 · ReWOO 先规划后执行',
-      footer: 'Day 7 · 2026-06-29 · Phase 14-02',
-      progress: {
-        label: '当前进度',
-        detail: 'Phase 14 · 已学 2 课',
-        percent: 53,
-        text: 'Phase 14 · 02 rewoo-plan-and-execute',
-        desc: '场景：代码助手 —— 重命名函数/加类型注解/排查 bug'
-      },
-      sections: [
+        },
         {
-          emoji: '🎯',
-          title: '今日核心问题',
+          emoji: '🧭',
+          title: '—— 第 2 课：ReWOO 先规划后执行 ——',
           blocks: [
             { type: 'text', text: '<strong>ReAct 想一步做一步，每步都把全部历史塞回 prompt</strong>，token 随步数膨胀，中途失败还要从历史里重推。<span class="highlight">ReWOO</span> 换思路：先一次性规划整张计划，再并行取证据，最后汇总。省 token、失败更好定位，代价是计划死板。', style: 'note' }
           ]
