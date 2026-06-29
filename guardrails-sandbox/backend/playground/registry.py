@@ -26,6 +26,11 @@ from playground.modules.framework_picker import FrameworkPicker
 from playground.modules.react_loop_tracer import ReactLoopTracer
 from playground.modules.rewoo_planner import RewooPlanner
 from playground.modules.reflexion_coder import ReflexionCoder
+from playground.modules.tot_search import TotSearch
+from playground.modules.self_refine_critic import SelfRefineCritic
+from playground.modules.tool_use import ToolUse
+from playground.modules.memgpt_virtual_context import MemgptVirtualContext
+from playground.modules.memory_blocks_sleep import MemoryBlocksSleep
 
 
 # phase 显示名与图标
@@ -94,6 +99,11 @@ _MODULES = [
     ReactLoopTracer(),
     RewooPlanner(),
     ReflexionCoder(),
+    TotSearch(),
+    SelfRefineCritic(),
+    ToolUse(),
+    MemgptVirtualContext(),
+    MemoryBlocksSleep(),
 ]
 for _m in _MODULES:
     registry.register(_m)

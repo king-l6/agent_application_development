@@ -5,7 +5,7 @@
 
 ## 当前进度
 
-- **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 3 课 `03-reflexion-verbal-rl` ✅
+- **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 8 课 `08-memory-blocks-sleep-time-compute` ✅，正在学第 9 课
 - **最后更新**：2026/06/29
 
 ## Phase 11 · LLM 工程（课程清单）
@@ -39,7 +39,13 @@
 | 01 | 01-the-agent-loop | ✅ 已完成 | react_loop_tracer |
 | 02 | 02-rewoo-plan-and-execute | ✅ 已完成 | rewoo_planner |
 | 03 | 03-reflexion-verbal-rl | ✅ 已完成 | reflexion_coder |
-| .. | （04-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
+| 04 | 04-tree-of-thoughts-lats | ✅ 已完成 | （讲解+跑码，未建模块） |
+| 05 | 05-self-refine-and-critic | ✅ 已完成 | （讲解+跑码，未建模块） |
+| 06 | 06-tool-use-and-function-calling | ✅ 已完成 | （讲解+跑码，未建模块） |
+| 07 | 07-memory-virtual-context-memgpt | ✅ 已完成 | （讲解+跑码，未建模块） |
+| 08 | 08-memory-blocks-sleep-time-compute | ✅ 已完成 | （讲解+跑码，未建模块） |
+| 09 | 09-hybrid-memory-mem0 | 🔄 进行中 | — |
+| .. | （10-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
 
 ## 维护约定
 
