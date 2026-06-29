@@ -1046,10 +1046,10 @@ mcp.run(transport="stdio")` }
       ]
     },
     {
-      id: 3,
-      label: 'Day 3',
+      id: 6,
+      label: 'Day 6',
       date: '2026年6月29日 · Agent 工程 · ReAct 循环',
-      footer: 'Day 3 · 2026-06-29 · Phase 14 启程',
+      footer: 'Day 6 · 2026-06-29 · Phase 14 启程',
       progress: {
         label: '当前进度',
         detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 1 课',
