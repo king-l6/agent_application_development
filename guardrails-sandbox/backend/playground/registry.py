@@ -23,12 +23,14 @@ from playground.modules.cache_friendliness import CacheFriendliness
 from playground.modules.langgraph_simulator import LangGraphSimulator
 from playground.modules.checkpoint_viewer import CheckpointViewer
 from playground.modules.framework_picker import FrameworkPicker
+from playground.modules.react_loop_tracer import ReactLoopTracer
 
 
 # phase 显示名与图标
 _PHASE_META = {
     "00-navigation": {"label": "课程导航", "icon": "🧭"},
     "11-llm-engineering": {"label": "Phase 11 · LLM 工程", "icon": "🧪"},
+    "14-agent-engineering": {"label": "Phase 14 · Agent 工程", "icon": "🤖"},
 }
 
 
@@ -87,6 +89,7 @@ _MODULES = [
     LangGraphSimulator(),
     CheckpointViewer(),
     FrameworkPicker(),
+    ReactLoopTracer(),
 ]
 for _m in _MODULES:
     registry.register(_m)

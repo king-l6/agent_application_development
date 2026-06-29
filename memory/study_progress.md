@@ -5,8 +5,8 @@
 
 ## 当前进度
 
-- **正在学**：Phase 11 已全部学完 ✅，下一步进入 Phase 13（工具与协议）或按路线图选择
-- **最后更新**：2026/06/25
+- **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 1 课 `01-the-agent-loop` ✅
+- **最后更新**：2026/06/29
 
 ## Phase 11 · LLM 工程（课程清单）
 
@@ -28,9 +28,17 @@
 | 14 | 14-model-context-protocol | ❓ 待确认 | — |
 | 15 | 15-prompt-caching | ✅ 已完成 | cache_friendliness |
 | 16 | 16-langgraph-state-machines | ✅ 已完成 | langgraph_simulator（模拟）+ checkpoint_viewer（解码真实库） |
-| 17 | 17-agent-framework-tradeoffs | 🔄 进行中 | （待补） |
+| 17 | 17-agent-framework-tradeoffs | ✅ 已完成 | framework_picker |
 
 > ❓ 待确认：这几课缺独立 playground 模块，无法从代码倒推是否学过，需用户确认。
+
+## Phase 14 · Agent 工程（共 42 课）
+
+| # | 课程目录 | 状态 | Playground 模块 |
+|---|---|---|---|
+| 01 | 01-the-agent-loop | ✅ 已完成 | react_loop_tracer |
+| 02 | 02-rewoo-plan-and-execute | ⬜ 未开始 | — |
+| .. | （03-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
 
 ## 维护约定
 
