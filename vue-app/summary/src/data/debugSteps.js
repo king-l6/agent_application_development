@@ -1496,5 +1496,99 @@ if reply["kind"] == "finish":
         output: '报错也是一种观察 —— 2026 CRITIC 纠错模式的基础'
       },
     ]
+  },
+  {
+    id: 'rewoo',
+    title: 'ReWOO 先规划后执行',
+    description: '代码助手场景：先规划整张 DAG，再按依赖执行，最后汇总。对比 ReAct 的 token 用量',
+    steps: [
+      {
+        name: '1. 用户需求进来',
+        description: '一个结构清晰、步骤可预先规划的任务——适合 ReWOO',
+        code: `request = "把 get_user 重命名为 fetch_user，所有调用处都改"`,
+        highlightLines: [1],
+        variables: [
+          { name: 'request', value: '"重命名 get_user → fetch_user"' },
+        ],
+        output: null
+      },
+      {
+        name: '2. Planner：一次性规划整张 DAG',
+        description: 'Planner 只看需求就产出全部步骤，不看任何工具结果。#E1 是占位符',
+        code: `plan = [
+    ("E1", "grep", "def get_user"),          # 找定义
+    ("E2", "grep", "get_user("),             # 找调用点
+    ("E3", "rename", "#E1,#E2 → fetch_user"),# 依赖 E1+E2
+    ("E4", "run_tests"),                     # 验证
+]`,
+        highlightLines: [2, 3, 4, 5],
+        variables: [
+          { name: 'plan', value: '4 个节点的 DAG' },
+          { name: 'E3 的依赖', value: '#E1, #E2（占位符，还没替换）' },
+        ],
+        output: '计划已生成，规划阶段 0 次工具调用'
+      },
+      {
+        name: '3. Workers：E1 E2 并行执行',
+        description: 'E1、E2 互不依赖，可并行跑。结果存进 evidence',
+        code: `evidence = {}
+evidence["E1"] = grep("def get_user")   # → user/service.py:42
+evidence["E2"] = grep("get_user(")      # → 5 处调用`,
+        highlightLines: [2, 3],
+        variables: [
+          { name: 'evidence["E1"]', value: '"user/service.py:42"' },
+          { name: 'evidence["E2"]', value: '"5 处：api.py:8, view.py:15, ..."' },
+        ],
+        output: '→ 定义 1 处，调用 5 处'
+      },
+      {
+        name: '4. Workers：E3 替换占位符后执行',
+        description: '#E1 #E2 被替换成真实证据，再调 rename',
+        code: `# #E1 → "user/service.py:42"，#E2 → "5 处..."
+evidence["E3"] = rename(
+    defs=evidence["E1"],
+    calls=evidence["E2"],
+    to="fetch_user"
+)`,
+        highlightLines: [2, 3, 4, 5],
+        variables: [
+          { name: 'evidence["E3"]', value: '"已改 1 处定义 + 5 处调用"' },
+        ],
+        output: '→ 已改 1 定义 + 5 调用 → fetch_user'
+      },
+      {
+        name: '5. Workers：E4 验证',
+        description: '最后跑测试确认没改坏',
+        code: `evidence["E4"] = run_tests()  # → 测试 23 passed`,
+        highlightLines: [1],
+        variables: [
+          { name: 'evidence["E4"]', value: '"测试 23 passed"' },
+        ],
+        output: '→ 23 passed'
+      },
+      {
+        name: '6. Solver：汇总成最终答复',
+        description: 'Solver 拿到需求+计划+全部证据，组合出给用户的回答',
+        code: `answer = solver.solve(request, plan, evidence)`,
+        highlightLines: [1],
+        variables: [
+          { name: 'answer', value: '"已重命名：1 定义+5 调用，测试 23 passed ✓"' },
+        ],
+        output: '已将 get_user 重命名为 fetch_user：1 定义 + 5 调用，测试通过 ✓'
+      },
+      {
+        name: '7. 和 ReAct 比 token',
+        description: 'ReWOO 不把历史塞回 prompt，省下大量 token。步骤越多省越多',
+        code: `# ReAct：每步重复带 request + 全部历史 → 膨胀
+# ReWOO：规划1次 + 每步小提示(无历史) + 求解1次`,
+        highlightLines: [2],
+        variables: [
+          { name: 'ReAct 字符数', value: '更多（随步数累积）' },
+          { name: 'ReWOO 字符数', value: '更少（约省 2.86x）' },
+          { name: '论文 HotpotQA', value: '~5x token 减少 + 4% 准确率' },
+        ],
+        output: 'ReWOO 在结构化任务上省 token、失败按节点定位'
+      },
+    ]
   }
 ]

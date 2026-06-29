@@ -1172,6 +1172,128 @@ mcp.run(transport="stdio")` }
           ]
         }
       ]
+    },
+    {
+      id: 7,
+      label: 'Day 7',
+      date: '2026年6月29日 · Agent 工程 · ReWOO 先规划后执行',
+      footer: 'Day 7 · 2026-06-29 · Phase 14-02',
+      progress: {
+        label: '当前进度',
+        detail: 'Phase 14 · 已学 2 课',
+        percent: 53,
+        text: 'Phase 14 · 02 rewoo-plan-and-execute',
+        desc: '场景：代码助手 —— 重命名函数/加类型注解/排查 bug'
+      },
+      sections: [
+        {
+          emoji: '🎯',
+          title: '今日核心问题',
+          blocks: [
+            { type: 'text', text: '<strong>ReAct 想一步做一步，每步都把全部历史塞回 prompt</strong>，token 随步数膨胀，中途失败还要从历史里重推。<span class="highlight">ReWOO</span> 换思路：先一次性规划整张计划，再并行取证据，最后汇总。省 token、失败更好定位，代价是计划死板。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🧩',
+          title: '1. 三角色：Planner / Workers / Solver',
+          tag: 'Phase 14-02',
+          blocks: [
+            { type: 'table', headers: ['角色', '输入 → 输出', '干什么'], rows: [
+              ['Planner 规划器', '需求 → 计划 DAG', '一次性想清所有步骤，<strong>不看工具结果</strong>'],
+              ['Workers 执行器', '计划 → 证据', '按依赖顺序跑工具，可并行'],
+              ['Solver 求解器', '需求+计划+证据 → 答复', '汇总成最终结果']
+            ]},
+            { type: 'text', text: '场景：让代码助手「把 get_user 重命名为 fetch_user」。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '📋',
+          title: '2. 计划 DAG 与证据引用 #E1',
+          tag: 'Phase 14-02',
+          blocks: [
+            { type: 'code', code: `E1: grep("def get_user")              # 找定义
+E2: grep("get_user(")                 # 找调用点
+E3: rename(#E1, #E2, "fetch_user")    # 依赖 E1+E2
+E4: run_tests()                       # 验证` },
+            { type: 'list', items: [
+              '<span class="highlight">#E1</span> 是「证据引用」占位符——规划时还不知道 E1 返回啥，先占位',
+              '执行时 #E1 被替换成 E1 的真实输出（如 "user/service.py:42"）',
+              'E1、E2 互不依赖 → 可<strong>并行</strong>；E3 依赖前两步 → 等它们好了再跑',
+              '这就是 Planner 不看观察也能规划的关键'
+            ]}
+          ]
+        },
+        {
+          emoji: '⚡',
+          title: '3. 为什么省 5 倍 token',
+          tag: 'Phase 14-02',
+          blocks: [
+            { type: 'table', headers: ['', 'prompt 长什么样', 'token 随步数'], rows: [
+              ['ReAct', '每步=思考1+动作1+观察1+...+原始问题（每步重复带）', '线性甚至二次膨胀'],
+              ['ReWOO', '规划1次 + 每步小提示（无历史）+ 求解1次', '基本不随步数涨']
+            ]},
+            { type: 'text', text: '论文在 HotpotQA 测到 ~5x token 减少 + 4% 准确率提升。沙箱实测：重命名4步省 2.86x、类型注解4步省 3.47x、排bug 3步省 2.05x。<strong>步骤越多、链路越长，ReWOO 省越多。</strong>', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🔧',
+          title: '4. 鲁棒性 + 规划器蒸馏',
+          tag: 'Phase 14-02',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>失败定位按节点</strong>：哪个 E 出错一目了然，Solver 看到错误证据能优雅降级，不用从历史重推',
+              '<strong>规划器蒸馏</strong>：Planner 不看观察，活儿简单 → 可用小模型(7B)规划、大模型执行。2026 生产省钱套路'
+            ]}
+          ]
+        },
+        {
+          emoji: '🧭',
+          title: '5. 什么时候用哪种（代码助手场景）',
+          tag: 'Phase 14-02',
+          blocks: [
+            { type: 'table', headers: ['模式', '代码助手里何时用'], rows: [
+              ['ReAct', '探索式：「这 bug 哪来的」——环境未知要随机应变'],
+              ['ReWOO', '结构清晰：「重命名函数」「批量加注解」——可预先规划，省 token'],
+              ['Plan-and-Execute', 'ReWOO + 执行后能重规划（grep 发现 50 处调用→回头改计划）'],
+              ['Plan-and-Act', '超长任务(>30步)：「重构整个模块」']
+            ]},
+            { type: 'text', text: 'Anthropic 原则：从最简单开始。一次调用能搞定别上 ReWOO；40 步任务别硬用 ReAct。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '6. 面试可能问什么',
+          tag: 'Phase 14-02',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'ReWOO 和 ReAct 的核心区别？', a: 'ReAct 把思考-行动-观察交错在一个流里，每步都带全部历史。ReWOO 把它们解耦：先一次性规划整张 DAG，再并行取证据，最后求解。规划阶段不看观察结果。' },
+              { q: 'ReWOO 为什么能省 5 倍 token？', a: 'ReAct 的 prompt 随步数累积（每步重复带原始问题+全部历史），ReWOO 只付一次规划提示+N个无历史的小执行提示+一次求解提示，长度基本不随步数涨。' },
+              { q: '什么是规划器蒸馏？为什么 ReWOO 适合？', a: '因为 Planner 不看观察结果，规划任务相对独立简单，可以用大模型的规划轨迹微调一个 7B 小模型做规划，大模型只在执行/求解时用。小规划器+大执行器是 2026 常见生产配置。' },
+              { q: 'ReWOO 的代价是什么？怎么补救？', a: '计划一次性定死，执行中途发现意外改不了（不够灵活）。补救是 Plan-and-Execute：加一个重规划器节点，工作器返回错误时回头修改计划。' },
+              { q: '#E1 这种引用是干嘛的？', a: '证据引用占位符。规划时还没执行，不知道前一步返回啥，就用 #E1 占位；执行到依赖它的节点时，把 #E1 替换成 E1 的真实输出。这让 Planner 能在不看结果的情况下表达步骤间依赖。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '📌',
+          title: '今日总结',
+          accentBorder: true,
+          blocks: [
+            { type: 'subtitle', text: 'ReWOO = 先规划后执行' },
+            { type: 'list', items: [
+              'Planner（规划，不看观察）→ Workers（执行取证据，可并行）→ Solver（汇总）',
+              '#E1 证据引用：规划占位，执行时替换'
+            ]},
+            { type: 'subtitle', text: '好处与代价' },
+            { type: 'list', items: [
+              '省 ~5x token、失败按节点定位、可做规划器蒸馏（小规划+大执行）',
+              '代价：计划死板，要灵活就上 Plan-and-Execute（带重规划）'
+            ]},
+            { type: 'subtitle', text: '选型' },
+            { type: 'list', items: ['短/探索→ReAct，结构化→ReWOO，要重规划→Plan-and-Execute，超长→Plan-and-Act'] }
+          ]
+        }
+      ]
     }
   ]
 }
