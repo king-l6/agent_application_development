@@ -5,7 +5,7 @@
 
 ## 当前进度
 
-- **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 2 课 `02-rewoo-plan-and-execute` ✅
+- **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 3 课 `03-reflexion-verbal-rl` ✅
 - **最后更新**：2026/06/29
 
 ## Phase 11 · LLM 工程（课程清单）
@@ -38,7 +38,8 @@
 |---|---|---|---|
 | 01 | 01-the-agent-loop | ✅ 已完成 | react_loop_tracer |
 | 02 | 02-rewoo-plan-and-execute | ✅ 已完成 | rewoo_planner |
-| .. | （03-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
+| 03 | 03-reflexion-verbal-rl | ✅ 已完成 | reflexion_coder |
+| .. | （04-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
 
 ## 维护约定
 

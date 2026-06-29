@@ -1048,14 +1048,14 @@ mcp.run(transport="stdio")` }
     {
       id: 6,
       label: 'Day 6',
-      date: '2026年6月29日 · Agent 工程 · ReAct 循环 + ReWOO',
-      footer: 'Day 6 · 2026-06-29 · Phase 14-01/02',
+      date: '2026年6月29日 · Agent 工程 · ReAct 循环 + ReWOO + Reflexion',
+      footer: 'Day 6 · 2026-06-29 · Phase 14-01/02/03',
       progress: {
         label: '当前进度',
-        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 2 课',
-        percent: 53,
-        text: 'Phase 14 · 01 the-agent-loop + 02 rewoo',
-        desc: 'LLM 工程收官 → 进入 Agent 工程：ReAct 循环 + ReWOO 先规划后执行'
+        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 3 课',
+        percent: 54,
+        text: 'Phase 14 · 01 the-agent-loop + 02 rewoo + 03 reflexion',
+        desc: 'LLM 工程收官 → 进入 Agent 工程：ReAct 循环 + ReWOO 先规划后执行 + Reflexion 自我反思'
       },
       sections: [
         {
@@ -1276,6 +1276,103 @@ E4: run_tests()                       # 验证` },
             ]},
             { type: 'subtitle', text: '选型' },
             { type: 'list', items: ['短/探索→ReAct，结构化→ReWOO，要重规划→Plan-and-Execute，超长→Plan-and-Act'] }
+          ]
+        },
+        {
+          emoji: '🔁',
+          title: '—— 第 3 课：Reflexion 自我反思 ——',
+          blocks: [
+            { type: 'text', text: '<strong>代码助手写错了怎么办？</strong>没记忆的 AI 是个纯函数：同样的 prompt 永远给同样的输出。它跑测试失败后，下次还从零想，又写出同一版错代码——<span class="highlight">死循环</span>。Reflexion 让它失败后用「人话」写一条反思，把反思塞回 prompt 再重试。模型参数一个字没改，靠语言纠偏。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🧩',
+          title: '1. 四角色：Actor / Evaluator / SelfReflector / Memory',
+          tag: 'Phase 14-03',
+          blocks: [
+            { type: 'table', headers: ['角色', 'demo 里是谁', '代码助手现实中是谁'], rows: [
+              ['Actor 行动者', '根据记忆选实现', '写代码的 LLM'],
+              ['Evaluator 评估器', '跑 5 个测试用例', 'pytest / CI / 你的测试'],
+              ['SelfReflector 反思器', '把失败翻成人话', '让 LLM 总结「这次为啥错」'],
+              ['EpisodicMemory 情景记忆', 'memory 这个 list', '攒下的经验，下次塞回 prompt']
+            ]},
+            { type: 'text', text: '出处：Shinn 等人 Reflexion 论文（NeurIPS 2023）。又叫 verbal reinforcement learning——用语言强化，不是用梯度。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🔬',
+          title: '2. 实测：写 roman_to_int，无记忆 vs 开记忆',
+          tag: 'Phase 14-03',
+          blocks: [
+            { type: 'text', text: '任务：实现罗马数字转整数。测试集 III=3, LVIII=58, IX=9, IV=4, MCMXCIV=1994。', style: 'note' },
+            { type: 'table', headers: ['', '无记忆（Baseline）', '开记忆（Reflexion）'], rows: [
+              ['第1次', '傻加 → IX 期望9得11 ❌', '傻加 → IX 期望9得11 ❌'],
+              ['失败后', '信息丢弃', '反思：「小数字在大数字左边要减不要加」写入记忆'],
+              ['第2次', '还是傻加 → 还是11 ❌', '带反思重写→处理减法→5/5通过 ✓'],
+              ['结果', '4次用完全卡死', '2次就过']
+            ]},
+            { type: 'text', text: '差别不在模型，在于失败后有没有把「为什么错」写成语言、再喂回去。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '📝',
+          title: '3. 反思要具体可执行',
+          tag: 'Phase 14-03',
+          blocks: [
+            { type: 'code', code: `# SelfReflector 写出的反思（好）：
+"测试 'IX' 失败（期望9得11）：我只是把每个字符相加，
+ 忽略了减法规则——小数字在大数字左边时（IX/IV/CM）
+ 应做减法。下次写之前先判断 当前值 < 右边值。"
+
+# 反例（没用）：
+"下次小心点。"  # 空话，塞回 prompt 也纠不了` },
+            { type: 'list', items: [
+              '反思必须指向<strong>具体的错误和具体的修法</strong>，才能在下一轮真正改变行为',
+              '这跟 fine-tuning 的本质区别：反思是<span class="highlight">即时、可读、不用重训</span>的'
+            ]}
+          ]
+        },
+        {
+          emoji: '⚠️',
+          title: '4. 生产里的坑',
+          tag: 'Phase 14-03',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>记忆会膨胀</strong>：不能无脑全塞，要做衰减/TTL/按相关性召回',
+              '<strong>Evaluator 必须可靠</strong>：评分器有噪声时，反思可能学歪 → 反而更糟',
+              '<strong>适合有廉价可靠验证的任务</strong>：代码有单元测试、数学有显式目标——这正是代码助手的强项'
+            ]}
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '5. 面试可能问什么',
+          tag: 'Phase 14-03',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'Reflexion 的四个角色分别是什么？', a: 'Actor（行动者，写代码/答题的 LLM）、Evaluator（评估器，跑测试给 pass/fail）、SelfReflector（反思器，失败后用自然语言总结为什么错）、EpisodicMemory（情景记忆，攒下反思下次塞回 prompt）。' },
+              { q: '为什么叫 verbal reinforcement learning？和 fine-tuning 区别？', a: 'Reflexion 不更新模型权重（不用梯度），而是把失败经验写成自然语言塞回 prompt 来改变下一轮行为——用「语言」强化。区别：fine-tuning 要重训、改参数、慢且贵；Reflexion 即时、可读、零训练。' },
+              { q: '没有记忆的 agent 失败后为什么会卡死？', a: 'LLM 对同一 prompt 是确定性的（纯函数视角）：失败信息若被丢弃，下一轮 prompt 不变，就会写出一模一样的错代码，无限重复。Reflexion 把失败变成 prompt 的一部分，打破循环。' },
+              { q: '什么样的反思才有用？', a: '具体且可执行：指出具体哪个测试错、根因是什么、下次具体怎么改（如「IX 这类要做减法」）。空话（「下次小心」）塞回去也没用。' },
+              { q: 'Reflexion 什么时候反而帮倒忙？', a: '当 Evaluator（评分器）有噪声/不可靠时，反思可能基于错误信号学歪，越反思越偏。它最适合有廉价可靠验证的任务：代码的单元测试、数学的显式目标。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '📌',
+          title: '今日总结',
+          accentBorder: true,
+          blocks: [
+            { type: 'subtitle', text: 'Reflexion = 失败后用语言纠偏' },
+            { type: 'list', items: [
+              'Actor 写 → Evaluator 测 → 失败 → SelfReflector 写反思 → 存 Memory → 带反思重试',
+              '模型参数没变，变的只是 prompt 里多了「上次踩的坑」'
+            ]},
+            { type: 'subtitle', text: '关键' },
+            { type: 'list', items: [
+              '反思要具体可执行；记忆要做衰减；Evaluator 要可靠',
+              '代码助手是 Reflexion 的理想场景：测试就是天然的可靠评估器'
+            ]}
           ]
         }
       ]

@@ -1590,5 +1590,110 @@ evidence["E3"] = rename(
         output: 'ReWOO 在结构化任务上省 token、失败按节点定位'
       },
     ]
+  },
+  {
+    id: 'reflexion',
+    title: 'Reflexion 自我反思',
+    description: '代码助手场景：写函数→跑测试→失败→写反思→带反思重试→通过。对比无记忆（卡死）vs 开记忆',
+    steps: [
+      {
+        name: '1. 任务进来',
+        description: '让代码助手实现一个函数，有现成测试集当评估器',
+        code: `task = "实现 roman_to_int(s)：罗马数字转整数"
+tests = [("III",3),("LVIII",58),("IX",9),
+         ("IV",4),("MCMXCIV",1994)]
+memory = []   # EpisodicMemory：一开始是空的`,
+        highlightLines: [1, 4],
+        variables: [
+          { name: 'task', value: '"实现 roman_to_int"' },
+          { name: 'memory', value: '[]（空）' },
+        ],
+        output: null
+      },
+      {
+        name: '2. Actor：第 1 次写代码',
+        description: '记忆为空，LLM 写出最直觉的版本——把每个字符值相加',
+        code: `# memory 空 → 没有任何「坑」提示
+def roman_to_int(s):
+    return sum(VALUES[c] for c in s)  # 天真地全加`,
+        highlightLines: [3],
+        variables: [
+          { name: '实现', value: 'attempt_naive（全加）' },
+        ],
+        output: '交出第 1 版实现'
+      },
+      {
+        name: '3. Evaluator：跑测试',
+        description: 'pytest 跑 5 个用例，IX 期望 9 却得到 11——没处理减法规则',
+        code: `for inp, expected in tests:
+    if roman_to_int(inp) != expected:
+        return FAIL(inp, expected, got)
+# IX：I(1)+X(10)=11，但答案是 9`,
+        highlightLines: [4],
+        variables: [
+          { name: '失败用例', value: '"IX" 期望 9，得到 11' },
+        ],
+        output: '❌ 失败：IX 期望 9 得到 11'
+      },
+      {
+        name: '4. 岔路：有没有记忆？',
+        description: '这一步决定 agent 会不会进步。无记忆→丢弃失败；开记忆→写反思',
+        code: `if not use_memory:
+    continue          # Baseline：信息丢弃，下次还写同一版 → 死循环
+else:
+    reflection = self_reflector(impl, failure)  # 写人话反思`,
+        highlightLines: [2, 4],
+        variables: [
+          { name: 'Baseline', value: '丢弃失败 → 第2/3/4次都得 11 → 卡死' },
+          { name: 'Reflexion', value: '进入反思分支' },
+        ],
+        output: '无记忆：4 次用完全卡死 ❌'
+      },
+      {
+        name: '5. SelfReflector：把失败翻成人话',
+        description: '不是改分数，是写一条具体可执行的经验，存进记忆',
+        code: `reflection = (
+  "测试 'IX' 失败（期望9得11）：我只是把字符相加，"
+  "忽略了减法规则——小数字在大数字左边时(IX/IV/CM)"
+  "应做减法。下次先判断 当前值 < 右边值。"
+)
+memory.append(reflection)`,
+        highlightLines: [6],
+        variables: [
+          { name: 'memory', value: '[1 条减法反思]' },
+        ],
+        output: '反思写入 EpisodicMemory'
+      },
+      {
+        name: '6. Actor：带反思第 2 次写代码',
+        description: '这次 prompt 里多了那条反思，LLM 写出处理减法的版本',
+        code: `# prompt 现在包含 memory 里的反思
+def roman_to_int(s):
+    total = 0
+    for i, c in enumerate(s):
+        if i+1 < len(s) and VALUES[c] < VALUES[s[i+1]]:
+            total -= VALUES[c]   # 小在大左边 → 减
+        else:
+            total += VALUES[c]
+    return total`,
+        highlightLines: [5, 6],
+        variables: [
+          { name: '实现', value: 'attempt_with_subtraction（处理减法）' },
+        ],
+        output: '交出第 2 版实现'
+      },
+      {
+        name: '7. Evaluator 再跑：通过',
+        description: '5/5 全过。模型参数一个字没改，变的只是 prompt 里多了一条反思',
+        code: `# III=3 ✓ LVIII=58 ✓ IX=9 ✓ IV=4 ✓ MCMXCIV=1994 ✓
+# verbal RL：用语言强化，不用梯度重训`,
+        highlightLines: [2],
+        variables: [
+          { name: 'Reflexion 结果', value: '第 2 次就通过 ✓' },
+          { name: 'vs Baseline', value: '无记忆 4 次卡死' },
+        ],
+        output: '✅ 5/5 通过 —— 反思一次就纠对'
+      },
+    ]
   }
 ]

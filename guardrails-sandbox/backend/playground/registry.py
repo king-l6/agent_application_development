@@ -25,6 +25,7 @@ from playground.modules.checkpoint_viewer import CheckpointViewer
 from playground.modules.framework_picker import FrameworkPicker
 from playground.modules.react_loop_tracer import ReactLoopTracer
 from playground.modules.rewoo_planner import RewooPlanner
+from playground.modules.reflexion_coder import ReflexionCoder
 
 
 # phase 显示名与图标
@@ -92,6 +93,7 @@ _MODULES = [
     FrameworkPicker(),
     ReactLoopTracer(),
     RewooPlanner(),
+    ReflexionCoder(),
 ]
 for _m in _MODULES:
     registry.register(_m)
