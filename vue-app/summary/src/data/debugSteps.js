@@ -1,5 +1,119 @@
 export const experiments = [
   {
+    id: 'agent-loop',
+    title: 'ReAct Agent 循环',
+    description: '裸 ReAct 循环：思考→行动→观察 逐圈转，直到 finish。所有 agent 框架的地基',
+    steps: [
+      {
+        name: '1. 准备工具注册表（要素2）',
+        description: 'agent 只能调用注册过的工具。这里放三个：计算器、kv 存、kv 取',
+        code: `tools = {
+    "calculator": calculator,   # 算术
+    "kv_set": kv.set,           # 存键值
+    "kv_get": kv.get,           # 取键值
+}
+# 调用不存在的工具会返回 error 观察，而不是崩溃`,
+        highlightLines: [1, 2, 3, 4],
+        variables: [
+          { name: 'tools', value: 'dict, 3 个工具' },
+          { name: 'tools.keys()', value: "['calculator', 'kv_set', 'kv_get']" },
+        ],
+        output: null
+      },
+      {
+        name: '2. 用户任务进入消息缓冲区（要素1）',
+        description: '任务被记进一直增长的 history。每一圈模型都看着全部历史做决策',
+        code: `history = []
+history.append(("user", "120 加 15% 税，存进 kv"))`,
+        highlightLines: [2],
+        variables: [
+          { name: 'history', value: 'list, length=1' },
+          { name: 'history[0]', value: '("user", "120 加 15% 税...")' },
+        ],
+        output: null
+      },
+      {
+        name: '3. 第1圈：思考 → 行动 → 观察',
+        description: '模型想"先存基础价"，调 kv_set，拿到观察"stored base"塞回 history',
+        code: `# 思考
+thought = "先存下基础价"
+# 行动
+obs = dispatch("kv_set", {"key": "base", "value": "120"})
+# 观察塞回缓冲区
+history.append(("action", "kv_set", obs))`,
+        highlightLines: [4, 6],
+        variables: [
+          { name: 'thought', value: '"先存下基础价"' },
+          { name: 'obs', value: '"stored base"' },
+          { name: 'history', value: 'list, length=2' },
+        ],
+        output: '→ stored base'
+      },
+      {
+        name: '4. 第2圈：算 15% 税',
+        description: '模型记得已存 base，下一步调 calculator 算税',
+        code: `thought = "算 15% 的税"
+obs = dispatch("calculator", {"expr": "120 * 0.15"})
+history.append(("action", "calculator", obs))`,
+        highlightLines: [2],
+        variables: [
+          { name: 'obs', value: '"18.0"' },
+          { name: 'history', value: 'list, length=3' },
+        ],
+        output: '→ 18.0'
+      },
+      {
+        name: '5. 继续转圈：存税 → 算总额 → 回读',
+        description: '循环重复"思考→行动→观察"，每圈 history 长一截，直到任务完成',
+        code: `# 第3圈：存税
+dispatch("kv_set", {"key": "tax", "value": "18.0"})   # → stored tax
+# 第4圈：算含税总额
+dispatch("calculator", {"expr": "120 + 18.0"})        # → 138.0
+# 第5圈：回读确认
+dispatch("kv_get", {"key": "base"})                   # → 120`,
+        highlightLines: [2, 4, 6],
+        variables: [
+          { name: 'kv.store', value: "{'base': '120', 'tax': '18.0'}" },
+          { name: 'history', value: 'list, length=6' },
+          { name: 'action 回合数', value: '5' },
+        ],
+        output: '→ stored tax / 138.0 / 120'
+      },
+      {
+        name: '6. 停止条件触发（要素3）',
+        description: '模型发出 finish，循环退出，返回最终答案。轮次预算 max_turns=10 未触顶（要素4）',
+        code: `reply = {"kind": "finish", "content": "含税总额是 138.0"}
+if reply["kind"] == "finish":
+    return reply["content"]   # 跳出循环`,
+        highlightLines: [2, 3],
+        variables: [
+          { name: 'final_answer', value: '"含税总额是 138.0"' },
+          { name: 'stop_reason', value: '"模型发出 finish"' },
+          { name: 'turns_used', value: '5 / 10（预算未耗尽）' },
+        ],
+        output: '最终答案：含税总额是 138.0'
+      },
+      {
+        name: '7. 观察格式化器为何关键（要素5）',
+        description: '若工具报错，dispatch 返回 error 字符串而非抛异常——模型读到后能改道纠正，循环绝不崩',
+        code: `def dispatch(name, args):
+    fn = tools.get(name)
+    if fn is None:
+        return f"error: 未知工具 {name}"   # 不崩，返回观察
+    try:
+        return fn(**args)
+    except Exception as e:
+        return f"error: {e}"               # 出错也是观察`,
+        highlightLines: [4, 8],
+        variables: [
+          { name: 'dispatch("send_email", ...)', value: '"error: 未知工具 send_email"' },
+          { name: '模型下一步', value: '读到 error → 改用别的工具（自我纠正）' },
+        ],
+        output: '报错也是一种观察 —— 2026 CRITIC 纠错模式的基础'
+      },
+    ]
+  },
+  {
     id: 'rag-basic',
     title: 'RAG 基本流程',
     description: '从文档库到 LLM 回答的完整 RAG 流程',

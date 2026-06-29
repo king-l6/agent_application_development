@@ -1044,6 +1044,126 @@ mcp.run(transport="stdio")` }
           ]
         }
       ]
+    },
+    {
+      id: 3,
+      label: 'Day 3',
+      date: '2026年6月29日 · Agent 工程 · ReAct 循环',
+      footer: 'Day 3 · 2026-06-29 · Phase 14 启程',
+      progress: {
+        label: '当前进度',
+        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 1 课',
+        percent: 52,
+        text: 'Phase 14 · 01 the-agent-loop',
+        desc: 'LLM 工程收官 → 进入 Agent 工程：从裸 ReAct 循环开始'
+      },
+      sections: [
+        {
+          emoji: '🎯',
+          title: '今日核心问题',
+          blocks: [
+            { type: 'text', text: '<strong>LLM 本身只是个超级自动补全</strong>——问一句答一句，不能查文件、算账、上网、核实。Agent 用一个<span class="highlight">循环</span>解决：让模型暂停、调工具、读结果、继续思考。这个 ReAct 循环就是 2026 年所有 agent（Claude Code、Cursor、Devin）的共同地基。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🔁',
+          title: '1. ReAct 循环：思考 → 行动 → 观察',
+          tag: 'Phase 14-01',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>Thought（思考）</strong> — 制定计划、跨步骤跟踪、处理意外',
+              '<strong>Action（行动）</strong> — 调用一个工具',
+              '<strong>Observation（观察）</strong> — 工具结果转成字符串喂回',
+              '三者交错循环，直到触发<span class="highlight">停止条件</span>'
+            ]},
+            { type: 'flow', steps: ['用户任务', '思考', '行动(调工具)', '观察(结果)', '思考', '...', 'finish'] },
+            { type: 'text', text: '出处：Yao 等人 ReAct 论文（ICLR 2023）。推理轨迹做了三件「光调工具」做不到的事：制定计划、跨步骤跟踪计划、行动返回意外结果时纠错。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🧱',
+          title: '2. Agent 循环五要素（缺一个就退化成聊天机器人）',
+          tag: 'Phase 14-01',
+          blocks: [
+            { type: 'table', headers: ['#', '要素', '作用', '代码里'], rows: [
+              ['1', '消息缓冲区', '不断增长的对话历史，每圈都看全部历史决策', 'history'],
+              ['2', '工具注册表', '按名字调工具，调错名字得到 error 观察', 'ToolRegistry'],
+              ['3', '停止条件', 'finish / 无工具调用 / 超轮次 / 超token / 触发护栏', 'if reply==finish'],
+              ['4', '轮次预算', '防无限循环，2026 agent 常跑 40-400 步', 'max_turns'],
+              ['5', '观察格式化器', '工具出错也转字符串喂回，不崩溃', 'dispatch try/except']
+            ]}
+          ]
+        },
+        {
+          emoji: '🛡',
+          title: '3. 要素5精髓：报错也是一种观察',
+          tag: 'Phase 14-01',
+          blocks: [
+            { type: 'text', text: 'dispatch 把工具的任何异常都接住、转成 <span class="highlight">"error: ..."</span> 字符串返回，而不是抛出崩溃。因为对 agent 来说，报错也是一种观察——模型读到错误能改道纠正。这就是 2026 CRITIC 风格的纠错模式。', style: 'note' },
+            { type: 'code', code: `def dispatch(name, args):
+    fn = tools.get(name)
+    if fn is None:
+        return f"error: 未知工具 {name}"  # 不崩
+    try:
+        return fn(**args)
+    except Exception as e:
+        return f"error: {e}"  # 出错也是观察` }
+          ]
+        },
+        {
+          emoji: '🧩',
+          title: '4. 框架对照表（以后学到回查）',
+          tag: 'Phase 14-13~17',
+          blocks: [
+            { type: 'text', text: '<strong>所有框架底层都是这个 while 循环，区别只是「循环周围加了什么」。</strong>现在不用背，学到对应课回查这张表即可：', style: 'note' },
+            { type: 'table', headers: ['框架', '在裸循环上加了什么', '一句话比喻', '第几课'], rows: [
+              ['裸 ReAct', '什么都不加，就是 while', '蒙眼助手转圈', '01（已学）'],
+              ['LangGraph', '检查点（存档/暂停/回溯）', '给循环装存档读档', '13'],
+              ['AutoGen', '消息传递（多 agent 互发消息）', '拆成几个角色互相喊话', '14'],
+              ['CrewAI', '角色模板（身份/目标/背景）', '发工牌和岗位说明', '15'],
+              ['OpenAI Agents SDK', '交接+护栏+追踪', '包一层流程管控', '16'],
+              ['Claude Agent SDK', '内置工具+子agent+钩子', '自带工具箱和插槽', '17']
+            ]}
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '5. 面试可能问什么',
+          tag: 'Phase 14-01',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'ReAct 循环的三个组成部分是什么？为什么推理轨迹重要？', a: 'Thought（思考）、Action（行动）、Observation（观察）。推理轨迹让模型能制定计划、跨步骤跟踪计划、在行动返回意外结果时纠错——这是「只会调工具不会思考」的模型做不到的。' },
+              { q: '一个 agent 循环最少需要哪几个要素？', a: '五个：消息缓冲区、工具注册表、停止条件、轮次预算、观察格式化器。缺任何一个就退化成聊天机器人。' },
+              { q: '工具执行出错了，循环应该怎么处理？', a: '把错误转成字符串作为观察喂回给模型，而不是抛异常崩掉。模型读到 error 观察后能改道纠正（CRITIC 模式）。栈里每个 400 错误都要以观察形式呈现。' },
+              { q: '为什么说所有 agent 框架底层都是同一个循环？', a: 'LangGraph/CrewAI/AutoGen/OpenAI SDK/Claude SDK 底层都在跑 ReAct（思考→行动→观察→停）。框架的差异在循环周围：检查点、actor 消息、角色模板、追踪跨度。控制流本身不变。' },
+              { q: '2026 年「思考令牌」有什么变化？', a: '基于提示的 Thought: 文本令牌是 2022 变通方案。Responses API 系列改用原生推理通道——模型在单独信道发推理内容，跨轮传递（生产环境加密）。但循环本身没变。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '📌',
+          title: '今日总结',
+          accentBorder: true,
+          blocks: [
+            { type: 'subtitle', text: 'Agent = 一个循环' },
+            { type: 'list', items: [
+              'LLM 只会自动补全；循环让它能用工具、读结果、推进',
+              'ReAct：思考 → 行动 → 观察，转圈直到 finish',
+              '把 ToyLLM 换成真 provider，控制流一模一样'
+            ]},
+            { type: 'subtitle', text: '五要素' },
+            { type: 'list', items: [
+              '消息缓冲区 / 工具注册表 / 停止条件 / 轮次预算 / 观察格式化器',
+              '观察格式化器最关键：报错也是观察，循环绝不崩'
+            ]},
+            { type: 'subtitle', text: '框架是脚手架' },
+            { type: 'list', items: [
+              '所有框架底层都是这个 while 循环',
+              'Phase 14 后面 13-17 课逐个展开，回查对照表即可'
+            ]}
+          ]
+        }
+      ]
     }
   ]
 }
