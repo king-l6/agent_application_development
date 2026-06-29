@@ -1048,14 +1048,14 @@ mcp.run(transport="stdio")` }
     {
       id: 6,
       label: 'Day 6',
-      date: '2026年6月29日 · Agent 工程 · ReAct 循环 + ReWOO + Reflexion',
-      footer: 'Day 6 · 2026-06-29 · Phase 14-01/02/03',
+      date: '2026年6月29日 · Agent 工程 · ReAct→ReWOO→Reflexion→ToT→Self-Refine→工具→记忆',
+      footer: 'Day 6 · 2026-06-29 · Phase 14-01~08',
       progress: {
         label: '当前进度',
-        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 3 课',
-        percent: 54,
-        text: 'Phase 14 · 01 the-agent-loop + 02 rewoo + 03 reflexion',
-        desc: 'LLM 工程收官 → 进入 Agent 工程：ReAct 循环 + ReWOO 先规划后执行 + Reflexion 自我反思'
+        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 8 课',
+        percent: 60,
+        text: 'Phase 14 · 01~08（循环/规划/反思/搜索/自评/工具/记忆）',
+        desc: 'Agent 工程前 8 课：从 ReAct 循环到记忆块+睡眠时计算'
       },
       sections: [
         {
@@ -1372,6 +1372,301 @@ E4: run_tests()                       # 验证` },
             { type: 'list', items: [
               '反思要具体可执行；记忆要做衰减；Evaluator 要可靠',
               '代码助手是 Reflexion 的理想场景：测试就是天然的可靠评估器'
+            ]}
+          ]
+        },
+        {
+          emoji: '🌳',
+          title: '—— 第 4 课：Tree of Thoughts / LATS ——',
+          blocks: [
+            { type: 'text', text: '<strong>思维链是一条线，第一步错了后面全错、回不了头</strong>（24 点游戏 GPT-4 CoT 只有 4%）。<span class="highlight">Tree of Thoughts</span> 把推理变成一棵能回溯、带自我评分的树：提多个候选→评估→选有希望的→死路就回退。LATS 再用 MCTS 把 ToT+ReAct+Reflexion 焊在一起。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🔬',
+          title: '1. 实测：修 parse_duration，CoT vs ToT',
+          tag: 'Phase 14-04',
+          blocks: [
+            { type: 'text', text: '场景：代码助手修一个把 "1h30m" 转秒数的 bug。价值函数 = 跑测试（过几个用例就是几分）。', style: 'note' },
+            { type: 'table', headers: ['策略', '怎么做', '结果'], rows: [
+              ['CoT 思维链', '押注假设A「全按小时」，一条路走死', '2/5 卡住，回不了头'],
+              ['ToT 树搜索', '同时探 3 个假设，各跑测试打分，回溯选最优', '选出正解 C，5/5 全过']
+            ]},
+            { type: 'flow', steps: [
+              { label: '根节点', desc: '修 bug' },
+              { label: '扩展', desc: '展开 3 个候选修法（分支）' },
+              { label: '评估', desc: '每分支跑测试打分 A:2 B:4 C:5' },
+              { label: '回溯', desc: '剪掉低分，选满分的 C' },
+              { label: '完成', desc: '5/5 全过' }
+            ] }
+          ]
+        },
+        {
+          emoji: '🎯',
+          title: '2. ToT 三要素 + LATS 三角色',
+          tag: 'Phase 14-04',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>节点</strong>=一个想法（候选步骤）；<strong>扩展</strong>=展开 K 个子想法；<strong>自我评估</strong>=给每个节点打分（sure/likely/impossible 或 1~10 或投票）',
+              'ToT 把 4% 拉到 74%（24 点）。关键转变：<span class="highlight">推理 = 搜索</span>'
+            ]},
+            { type: 'table', headers: ['LATS 角色', '干什么', '哪节课学过'], rows: [
+              ['策略 Policy', '提出候选下一步', '第1课 ReAct'],
+              ['价值函数 Value', '给走一半的路径打分', '第4课 ToT 自我评估'],
+              ['自我反思器', '失败时写反思，给下轮重新播种', '第3课 Reflexion']
+            ]},
+            { type: 'text', text: 'LATS 把环境反馈（真实工具结果）混进价值函数。代码的单元测试就是天然可靠的价值函数 → LATS 在 HumanEval 冲到 92.7% pass@1。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '💰',
+          title: '3. 成本现实：搜索不是免费的',
+          tag: 'Phase 14-04',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>token 爆炸 100~1000 倍</strong>：探 N 个分支就是 N 倍开销',
+              '2026 多数生产 agent 不跑 LATS，跑的是 ReAct + 工具验证（第5课 CRITIC）',
+              '值得上搜索：单条轨迹明显不够 + 正确性 >> 速度 + <span class="highlight">有廉价可靠的价值函数</span>（代码的测试、数学的目标）',
+              '反而坑你：唯一答案但评估器有噪声时，搜索会找到「评分虚高的错答案」'
+            ]},
+            { type: 'code', code: `# 生产里它在一个开关后面
+if task_complexity > threshold:
+    use_search()   # 难题才掏出 ToT/LATS
+else:
+    react()        # 日常一条 ReAct 搞定` }
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '4. 面试可能问什么',
+          tag: 'Phase 14-04',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'Tree of Thoughts 和思维链(CoT)的本质区别？', a: 'CoT 是一条线性路径，第一步选错前提后续全错且无法回退。ToT 把推理变成树：每个节点是一个想法，可扩展多个候选，对每个节点自我评估打分，能剪枝和回溯。所以 24 点上 CoT 4% → ToT 74%。' },
+              { q: 'LATS 把哪三样东西统一了？怎么统一的？', a: '用 MCTS 统一 ToT(价值函数给路径打分)、ReAct(策略提出候选动作)、Reflexion(失败写反思重新播种)。同一个 LLM 演三个角色，环境反馈混进价值函数让搜索接地到真实结果。' },
+              { q: 'MCTS 的四个阶段？', a: '选择(用 UCT 从根走到叶)、扩展(策略生成K个子节点)、模拟(从子节点展开到底，价值函数或环境奖励打分)、反向传播(把分数沿路径回灌更新访问次数和Q)。UCT=Q+c·√(lnN/n) 平衡利用和探索。' },
+              { q: '什么时候该用搜索，什么时候反而有害？', a: '该用：单条轨迹明显不够(复杂代码/24点)、正确性远比速度重要、有廉价可靠的价值函数(单元测试/数学目标)。有害：答案唯一但评估器有噪声时，搜索会找到一个评分虚高的错答案，比不搜还糟。且 token 是 CoT 的 100~1000 倍。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '🔧',
+          title: '—— 第 5 课：Self-Refine 与 CRITIC ——',
+          blocks: [
+            { type: 'text', text: '<strong>Agent 输出「几乎对」时怎么办？</strong>让它自己批评再修。<span class="highlight">Self-Refine</span> 是模型给自己打分（generate→feedback→refine 循环），但对「听起来很自信的幻觉」查不出来。<span class="highlight">CRITIC</span> 把批评那一步换成外部工具验证（跑测试/查事实），接地到真实信号。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🔬',
+          title: '1. 实测：写 divide(a,b)，自我批评 vs 外部验证',
+          tag: 'Phase 14-05',
+          blocks: [
+            { type: 'table', headers: ['批评来源', '抓到了什么', 'b==0 崩溃 bug'], rows: [
+              ['Self-Refine 自我批评', '只说「补个 docstring」', '✗ 还在！没察觉会崩'],
+              ['CRITIC 外部验证器', '跑 divide(1,0) 直接崩 → 抓到', '✓ 修掉了']
+            ]},
+            { type: 'text', text: '同一个模型既生成又批评，对自己「自信的幻觉」是盲区——读着觉得没问题。外部验证器（测试运行器/linter/类型检查）才能抓出崩溃。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🔁',
+          title: '2. 循环结构 + 何时用',
+          tag: 'Phase 14-05',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>Self-Refine</strong>：一个 LLM 演 generate/feedback/refine 三角色，带<span class="highlight">完整历史</span>迭代（去掉历史质量崩溃）',
+              '<strong>CRITIC</strong>：把 feedback 换成 verify(task, output, tools)，路由到搜索引擎/代码解释器/计算器/单测',
+              '没有外部验证器时，CRITIC 退化成 Self-Refine',
+              'vs Reflexion(03)：那是失败后写反思记忆下次用；这是单次输出内的打磨微循环',
+              'vs ToT(04)：那是多分支横向搜索；这是单条输出纵向反复修订'
+            ]},
+            { type: 'text', text: '坑：预算 1-3 轮（每轮加延迟+token）；同模型同风格既生成又批评会走过场、收敛到「看起来没问题」；琐碎任务没真验证器别上 CRITIC。落地形态：评估器-优化器、输出护栏、LangGraph 反思节点。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '3. 面试可能问什么',
+          tag: 'Phase 14-05',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'Self-Refine 和 CRITIC 的核心区别？', a: 'Self-Refine 是模型给自己打分（纯自我批评，无需工具）；CRITIC 把批评这步换成外部工具验证（搜索查事实、代码解释器/单测查正确性）。区别在批评信号是主观的还是接地到外部真实信号。没外部验证器时 CRITIC 退化为 Self-Refine。' },
+              { q: '为什么纯自我批评不可靠？', a: '同一个模型既生成又批评，对自己「听起来很自信的幻觉」查不出来（比如 divide(1,0) 会崩它读着觉得没问题），容易走过场收敛到「看起来没问题」。要用结构差异大的提示、或让外部验证器/小模型做批评。' },
+              { q: '迭代循环里历史为什么重要？', a: '论文消融显示去掉历史质量崩溃。refine 时要带上所有先前的 output+critique，模型才能在前面基础上改进而不是反复犯同样的错或回退旧修复。' },
+              { q: 'Self-Refine/CRITIC 和 Reflexion 区别？', a: 'Reflexion 是任务失败后写一段反思存进记忆、下次重试时用（跨尝试）；Self-Refine/CRITIC 是针对当前这一条输出的生成→批评→修订微循环（单次输出内打磨）。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '🛠',
+          title: '—— 第 6 课：工具调用 / Function Calling ——',
+          blocks: [
+            { type: 'text', text: '<strong>ReAct 里的 Action 这一步怎么工程化？</strong>工具用 <span class="highlight">JSON Schema</span> 声明，模型读描述产出结构化调用，运行时校验参数→执行→把结果（含错误）作为 observation 回灌。核心原则：校验/执行失败都返回结构化错误字符串，<strong>绝不向循环抛异常</strong>。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🧩',
+          title: '1. 工具声明三要素 + 完整链路',
+          tag: 'Phase 14-06',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>name</strong> / <strong>description</strong>（写清「做什么、何时用」）/ <strong>input_schema</strong>（JSON Schema：properties、required、types、enum）',
+              'Anthropic 用 input_schema，OpenAI 用 function.parameters，本质都是 JSON Schema',
+              '<span class="highlight">描述质量是选错工具的首要原因</span>；工具要具体（git_status() 优于 run_shell(cmd)）'
+            ]},
+            { type: 'flow', steps: [
+              { label: '模型决定', desc: '读工具目录，产出结构化调用' },
+              { label: '校验', desc: '类型/enum/必填/格式' },
+              { label: '执行', desc: '沙箱、超时' },
+              { label: '回灌', desc: '结果作为 observation 喂回' }
+            ] }
+          ]
+        },
+        {
+          emoji: '🔬',
+          title: '2. 实测：5 个调用，含并行 + 两个坑',
+          tag: 'Phase 14-06',
+          blocks: [
+            { type: 'text', text: '代码助手注册 read_file/grep/run_tests，一轮发 5 个调用：', style: 'note' },
+            { type: 'table', headers: ['id', '调用', '结果'], rows: [
+              ['u01', 'grep("def login")', '执行 ✓（与 u02 并行）'],
+              ['u02', 'read_file("src/auth.py")', '执行 ✓'],
+              ['u03', 'read_file({})', '拒绝：缺必填 path'],
+              ['u04', 'lint(...)', '拒绝：幻觉调不存在的工具'],
+              ['u05', 'run_tests("tests/")', '执行 ✓']
+            ]},
+            { type: 'text', text: 'u03 缺参、u04 幻觉工具——都返回结构化 error 而非崩溃。模型读到 error observation 后能改道重试，这就是 ReAct「报错也是观察」在工具层的落地。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '3. 面试可能问什么',
+          tag: 'Phase 14-06',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'function calling 的工具声明需要哪三要素？', a: 'name、description（写清做什么+何时用）、input_schema（JSON Schema 描述参数：properties/required/types/enum）。description 质量直接决定模型选不选对工具。' },
+              { q: '工具调用出错了循环该怎么处理？', a: '校验失败（缺必填/类型错/enum越界）和执行异常都要返回结构化错误字符串作为 observation，绝不向循环抛异常崩溃。模型读到 error 后能改道重试。这跟 ReAct 第1课「报错也是观察」一脉相承。' },
+              { q: '模型幻觉调用了不存在的工具怎么办？', a: '返回描述性错误字符串（如"未知工具 lint"）而非崩溃，让模型重选。BFCL V4 专门有 10% 的幻觉检测评估。也可加 no-op 工具让模型显式表达「不调任何工具」。' },
+              { q: '并行工具调用要注意什么？', a: '只有互相独立的调用才能并行；每个调用带独立 tool_use_id，结果按 id 关联回灌，id 不能错配。有依赖关系的必须串行（等前一步结果）。' },
+              { q: 'function calling 和结构化输出什么关系？', a: '本质同源——function calling 就是「带校验 schema 的结构化输出」。模型产出符合 JSON Schema 的调用，运行时按 schema 校验，和让模型输出结构化 JSON 是一回事。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '🧠',
+          title: '—— 第 7 课：MemGPT 虚拟上下文 ——',
+          blocks: [
+            { type: 'text', text: '<strong>上下文窗口有限，但对话/代码库无限。</strong>溢出、稀释、新会话从零开始——靠「更大窗口」解决不了。<span class="highlight">MemGPT</span> 把上下文管理类比成操作系统的虚拟内存：主上下文=RAM，外部存储=磁盘，记忆工具调用=缺页中断，Agent 在两层间换入换出。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '💾',
+          title: '1. 类比 OS 虚拟内存',
+          tag: 'Phase 14-07',
+          blocks: [
+            { type: 'table', headers: ['MemGPT', '对应 OS', '说明'], rows: [
+              ['主上下文 main', 'RAM', '提示词窗口，固定大小，始终可见'],
+              ['外部上下文 external', '磁盘', '向量/KV/图存储，无界，可搜索'],
+              ['记忆工具调用', '缺页中断', '换入(page-in)/换出(page-out)'],
+              ['Agent 控制循环', 'OS 内核', '调度两层间的记忆移动']
+            ]},
+            { type: 'text', text: '场景：代码助手处理超长重构会话，连续打开新文件，主上下文超容量 → 最旧的片段被换出到「磁盘」；用户问「上次 auth 怎么改的」→ archival_search 检索换入。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🔧',
+          title: '2. self-editing memory + 坑',
+          tag: 'Phase 14-07',
+          blocks: [
+            { type: 'list', items: [
+              'Agent 用 function call <strong>主动改自己的记忆</strong>：core_memory_append/replace（改提示词内持久段）、archival_insert/search（写/检索外部）、conversation_search（扫历史）',
+              '<strong>vs 简单 RAG</strong>：RAG 只读检索；MemGPT 可读可写、把记忆当 OS 分页主动管理',
+              '坑1 <span class="highlight">记忆腐烂</span>：写快于读，过时事实淹没检索 → 定期整合/失效',
+              '坑2 <span class="highlight">记忆投毒</span>：恶意文本被存成记忆，召回时重摄取（时间维度的注入攻击）',
+              '坑3 <span class="highlight">引用丢失</span>：回忆得起内容却引不到来源 → 归档写入时存 citation（session_id/turn_id）'
+            ]},
+            { type: 'text', text: '递进关系：08 Letta（MemGPT 改名）扩成三层+睡眠时整合；09 Mem0 混合存储+冲突检测。核心模式都是 MemGPT，选型看运营形态而非模式。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '3. 面试可能问什么',
+          tag: 'Phase 14-07',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'MemGPT 的核心思想是什么？', a: '把 LLM 上下文管理类比操作系统的虚拟内存：主上下文(提示词窗口)是 RAM、外部存储是磁盘，Agent 通过记忆工具调用(=缺页中断)在两层间换入换出，从而用有限窗口处理无限长的对话/文档。' },
+              { q: 'MemGPT 和简单 RAG 的区别？', a: 'RAG 是只读的外部检索；MemGPT 是可读可写、self-editing——Agent 用 function call 主动编辑核心记忆、写入归档、决定换入换出，把记忆当成 OS 分页主动管理，而不只是被动检索。' },
+              { q: '长期记忆系统有哪些可靠性坑？', a: '记忆腐烂(写快于读，过时事实淹没检索，要定期整合失效)、记忆投毒(恶意文本被存成记忆，召回时重摄取，是时间维度的注入攻击)、引用丢失(回忆得起内容引不到来源，要在归档时存 citation)。' },
+              { q: 'MemGPT、Letta、Mem0 什么关系？', a: '同源递进。MemGPT(2023)是虚拟上下文换页的原型；Letta(改名)扩成核心/回忆/归档三层并加睡眠时异步整合；Mem0 用向量+KV+图混合存储加冲突检测。核心模式都是 MemGPT，选型按运营形态(自托管/托管/框架)。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '🗂',
+          title: '—— 第 8 课：记忆块 + 睡眠时计算 ——',
+          blocks: [
+            { type: 'text', text: '<strong>MemGPT 把记忆操作全压在关键路径上</strong>，带来尾延迟高、记忆腐烂、扁平存储缺结构。这节课用<span class="highlight">类型化记忆块</span>（加结构）+ <span class="highlight">睡眠时计算</span>（空闲时离线整理，移出关键路径）来解决。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🧱',
+          title: '1. 记忆块 + 睡眠时计算',
+          tag: 'Phase 14-08',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>记忆块</strong>：核心层里类型化、持久、LLM 可编辑的片段，每块有 label/value/limit/description。原始两类 Human(用户事实)、Persona(自我认知)，Letta 泛化为任意自定义块(Task/Project/Safety)',
+              '<strong>睡眠时计算</strong>：主 Agent 空闲时跑第二个 Agent，置于<span class="highlight">关键路径外</span>，做去重/摘要/巩固/失效矛盾事实。因不受延迟约束，可用更强更慢的模型'
+            ]},
+            { type: 'text', text: '三层架构：核心(始终在提示词内) / 回忆(对话缓冲) / 归档(外部向量+KV+图)。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🔬',
+          title: '2. 实测：项目约定的巩固',
+          tag: 'Phase 14-08',
+          blocks: [
+            { type: 'text', text: '代码助手会话里把项目约定原始 append 进 project 块（故意有重复+矛盾），空闲时睡眠 Agent 离线巩固：', style: 'note' },
+            { type: 'table', headers: ['', '巩固前（主轮次快写）', '巩固后（睡眠时计算）'], rows: [
+              ['内容', '6 条：含重复"用pytest"x2、矛盾"4空格vs2空格"', '4 条整洁'],
+              ['去重', '—', '丢弃重复的"用 pytest"'],
+              ['失效矛盾', '4空格和2空格共存', '"4空格"被"2空格"推翻 → INVALID'],
+              ['主轮次延迟', '快写不整理', '一点没增加（巩固是异步的）']
+            ]}
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '3. 面试可能问什么',
+          tag: 'Phase 14-08',
+          blocks: [
+            { type: 'qa', items: [
+              { q: '什么是记忆块？和扁平记忆有什么不同？', a: '记忆块是核心层里类型化、持久、LLM 可编辑的片段，每块有 label/value/limit/description(告诉模型何时编辑该块)。比扁平存储多了结构——按类型(Human/Persona/Task/Project)组织，模型知道该往哪个块写、何时改。' },
+              { q: '睡眠时计算解决什么问题？怎么做？', a: '解决 MemGPT 把记忆操作全压在关键路径上导致的尾延迟高、记忆腐烂。做法：主 Agent 空闲时跑第二个 Agent，在关键路径外做去重/摘要/巩固/失效矛盾事实，把结果写回共享块。因不受延迟约束可用更强更慢的模型，主轮次延迟不受影响。' },
+              { q: '记忆块 + 睡眠时计算和 MemGPT 是什么关系？', a: '递进。MemGPT(07)解决虚拟上下文换页的控制流，但记忆操作全在关键路径上；本课在其基础上加结构(类型化块)+移出关键路径(睡眠时异步巩固)。' },
+              { q: '睡眠时计算有哪些坑？', a: '块膨胀(无限 append 很快触限，要在写入前接摘要器)、静默漂移(睡眠 Agent 改了块主 Agent 不知道，要版本化并在 trace 显示 diff)、投毒巩固(睡眠接口同样需要安全审查)。值得用在会话长、记忆反复矛盾、有明显空闲窗口的场景。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '📌',
+          title: 'Day 6 全天总结（Phase 14 · 01~08）',
+          accentBorder: true,
+          blocks: [
+            { type: 'subtitle', text: '一条主线：Agent = 循环 + 各种增强' },
+            { type: 'list', items: [
+              '01 ReAct 循环：思考→行动→观察，所有 agent 的地基',
+              '02 ReWOO：先规划后执行，省 token、失败按节点定位',
+              '03 Reflexion：失败后用语言写反思，下次重试用（verbal RL）',
+              '04 ToT/LATS：把推理变成可回溯+自我评分的树，难题才用（token 爆炸）',
+              '05 Self-Refine/CRITIC：生成→批评→修订；自我批评有盲区，外部验证才靠谱',
+              '06 工具调用：Action 工程化，JSON Schema 声明+校验+回灌，报错也是观察',
+              '07 MemGPT：上下文当虚拟内存，换入换出',
+              '08 记忆块+睡眠时计算：加结构 + 离线巩固，移出关键路径'
+            ]},
+            { type: 'subtitle', text: '反复出现的母题' },
+            { type: 'list', items: [
+              '「报错也是观察」从 01 贯穿到 06：循环绝不崩，错误转字符串喂回',
+              '「可靠的外部验证器」是 03/04/05 的胜负手：测试就是代码助手的天然裁判',
+              '「记忆怎么管」是 03/07/08 的主线：即时反思 → 虚拟内存换页 → 离线巩固'
             ]}
           ]
         }

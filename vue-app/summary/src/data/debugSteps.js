@@ -1695,5 +1695,303 @@ def roman_to_int(s):
         output: '✅ 5/5 通过 —— 反思一次就纠对'
       },
     ]
+  },
+  {
+    id: 'tot-search',
+    title: 'Tree of Thoughts 树搜索',
+    description: '代码助手修 bug：CoT 一条路走死 vs ToT 多分支+测试打分+回溯。价值函数=跑测试',
+    steps: [
+      {
+        name: '1. 痛点：CoT 一条路走到黑',
+        description: '修 parse_duration 的 bug。CoT 第一步猜错根因，后面全错，回不了头',
+        code: `# 任务：'2h'→7200, '1h30m'→5400, '45m'→2700
+# CoT 直觉：『大概单位搞错了，全按小时』→ 押注假设A
+def parse(s): return int(digits(s)) * 3600`,
+        highlightLines: [3],
+        variables: [
+          { name: '假设A 得分', value: '2/5（45m→162000 ✗）' },
+          { name: 'CoT 问题', value: '没有回溯机制，卡死在 2/5' },
+        ],
+        output: '❌ CoT 卡在 2/5，第一步错了就回不了头'
+      },
+      {
+        name: '2. ToT：根节点扩展出多个分支',
+        description: '不押注单条路，同时展开 3 个候选修法（3 个假设）',
+        code: `# 根节点『修 bug』→ 扩展 3 个分支
+branches = ["A:全按小时", "B:看首个单位", "C:正则逐段累加"]`,
+        highlightLines: [2],
+        variables: [
+          { name: '分支数', value: '3（不把鸡蛋放一个篮子）' },
+        ],
+        output: '展开 3 个分支'
+      },
+      {
+        name: '3. 价值函数：每个分支跑测试打分',
+        description: '不靠模型主观打分，直接跑测试——过几个用例就是几分',
+        code: `for name in branches:
+    score = run_tests(candidates[name])  # 价值函数=测试
+# A:[██···]2/5  B:[████·]4/5  C:[█████]5/5`,
+        highlightLines: [2],
+        variables: [
+          { name: 'A:全按小时', value: '2/5' },
+          { name: 'B:看首个单位', value: '4/5' },
+          { name: 'C:正则逐段累加', value: '5/5' },
+        ],
+        output: '三个分支分别得分 2 / 4 / 5'
+      },
+      {
+        name: '4. 回溯/剪枝：选评分最高的',
+        description: '剪掉低分分支 A、B，选满分的 C',
+        code: `scored.sort(reverse=True)
+best = scored[0]   # C:正则逐段累加 5/5`,
+        highlightLines: [2],
+        variables: [
+          { name: '选中', value: 'C:正则逐段累加 5/5 全过 ✓' },
+          { name: 'vs CoT', value: 'CoT 卡 2/5，ToT 捞出正解' },
+        ],
+        output: '✅ 回溯选出 C，5/5 全过。代价：3 倍 token（探 3 个分支）'
+      },
+    ]
+  },
+  {
+    id: 'self-refine-critic',
+    title: 'Self-Refine vs CRITIC',
+    description: '写 divide(a,b)：自我批评放过崩溃盲区 vs CRITIC 外部验证器抓出 b==0 崩溃',
+    steps: [
+      {
+        name: '1. 初版：啥都没处理',
+        description: '生成 divide 第一版，没处理除零、没类型注解',
+        code: `def divide(a, b):
+    return a / b   # divide(1,0) 会崩`,
+        highlightLines: [2],
+        variables: [
+          { name: '隐患', value: 'b==0 会 ZeroDivisionError' },
+        ],
+        output: '初版生成完毕'
+      },
+      {
+        name: '2. Self-Refine：模型自我批评',
+        description: '同一个模型给自己打分——只挑到表面风格，放过崩溃 bug',
+        code: `critique = self_critique(code)
+# → "读着觉得：可以补个 docstring 和类型注解"
+# 注意：完全没提 b==0 会崩！`,
+        highlightLines: [3],
+        variables: [
+          { name: '自我批评', value: '只说补 docstring' },
+          { name: '盲区', value: 'divide(1,0) 崩溃没被发现' },
+        ],
+        output: 'Self-Refine「通过」了，但崩溃 bug 还在 ❌'
+      },
+      {
+        name: '3. CRITIC：换成外部验证器',
+        description: '把批评这步接地到真实信号——跑测试 + linter',
+        code: `passed, crit = external_verify(code)  # 跑测试
+# → "divide(1,0) → ZeroDivisionError，b==0 未处理"
+# → "linter：缺类型注解或 docstring"`,
+        highlightLines: [2],
+        variables: [
+          { name: '外部验证', value: '跑 divide(1,0) 直接崩 → 抓到' },
+        ],
+        output: 'CRITIC 抓出了自我批评放过的崩溃'
+      },
+      {
+        name: '4. 修订 → 通过',
+        description: '带历史修订：补判空 + 类型 + 文档，再验证通过',
+        code: `def divide(a: float, b: float) -> float:
+    """两数相除，b 为 0 时抛 ValueError。"""
+    if b == 0:
+        raise ValueError('b 不能为 0')
+    return a / b`,
+        highlightLines: [3, 4],
+        variables: [
+          { name: 'CRITIC 结果', value: 'b==0 已处理 ✓' },
+          { name: 'vs Self-Refine', value: '崩溃 bug 还在 ✗' },
+        ],
+        output: '✅ CRITIC 因接地到真实测试，修掉了崩溃；自我批评做不到'
+      },
+    ]
+  },
+  {
+    id: 'tool-use',
+    title: '工具调用 / Function Calling',
+    description: '代码助手注册工具→模型产出 JSON 调用→校验→执行→回灌。错误也转 observation 不崩',
+    steps: [
+      {
+        name: '1. 声明工具目录',
+        description: '三要素：name / description(写清何时用) / input_schema',
+        code: `catalog = {
+  "read_file": {desc:"读文件。何时用:看源码", required:["path"]},
+  "grep":      {desc:"搜代码。何时用:找定义/调用点", required:["pattern"]},
+  "run_tests": {desc:"跑测试。何时用:改完验证", required:[]},
+}`,
+        highlightLines: [2, 3, 4],
+        variables: [
+          { name: '工具数', value: '3' },
+          { name: '关键', value: 'description 决定模型选不选对' },
+        ],
+        output: '工具目录喂给模型'
+      },
+      {
+        name: '2. 模型产出结构化调用（含并行）',
+        description: '一轮发多个调用，各带独立 tool_use_id。u01+u02 并行',
+        code: `calls = [
+  ("u01","grep",{"pattern":"def login"}),      # 并行
+  ("u02","read_file",{"path":"src/auth.py"}),  # 并行
+  ("u03","read_file",{}),       # 坑:缺必填 path
+  ("u04","lint",{...}),         # 坑:幻觉调不存在工具
+  ("u05","run_tests",{"target":"tests/"}),
+]`,
+        highlightLines: [2, 3],
+        variables: [
+          { name: 'u01+u02', value: '并行回合（互不依赖）' },
+          { name: 'u03/u04', value: '故意埋的坑' },
+        ],
+        output: '5 个调用，含 1 个并行回合 + 2 个坑'
+      },
+      {
+        name: '3. 校验：缺参 / 幻觉工具被拒',
+        description: '校验失败返回结构化错误字符串，绝不向循环抛异常',
+        code: `for uid, name, args in calls:
+    err = validate(name, args)
+    # u03 → "error: 缺必填参数 'path'"
+    # u04 → "error: 幻觉调用了不存在的工具 'lint'"`,
+        highlightLines: [3, 4],
+        variables: [
+          { name: 'u03', value: '拒绝：缺必填 path' },
+          { name: 'u04', value: '拒绝：幻觉工具 lint' },
+        ],
+        output: '两个坑都返回错误字符串，没崩'
+      },
+      {
+        name: '4. 执行 → observation 回灌',
+        description: '成功的按 tool_use_id 配回结果；错误也是 observation，模型读了能重试',
+        code: `# u01 → "auth.py: def login(req):"
+# u02 → "def login(req):\\n    return req['token']"
+# u05 → "测试 12 passed ✓"
+# 模型读到 u03/u04 的 error 后改道重试`,
+        highlightLines: [4],
+        variables: [
+          { name: '成功', value: 'u01/u02/u05 回灌结果' },
+          { name: '本质', value: '带校验 schema 的结构化输出' },
+        ],
+        output: '✅ 3 成功 + 2 错误转 observation。这是 ReAct「报错也是观察」在工具层落地'
+      },
+    ]
+  },
+  {
+    id: 'memgpt',
+    title: 'MemGPT 虚拟上下文',
+    description: '超长会话上下文塞不下：旧片段换出"磁盘"，需要时检索换入。类比 OS 虚拟内存',
+    steps: [
+      {
+        name: '1. 类比 OS 虚拟内存',
+        description: 'main=RAM(窗口,固定可见)，external=磁盘(归档,无界可搜)，记忆工具=缺页中断',
+        code: `main_context = ["persona: 代码助手"]  # RAM，容量有限
+archive = [...]  # 磁盘：带 citation 的归档记忆`,
+        highlightLines: [1],
+        variables: [
+          { name: 'main 容量', value: '3 段（模拟窗口大小）' },
+        ],
+        output: '分层记忆初始化'
+      },
+      {
+        name: '2. page-out：超容量换出最旧的',
+        description: '连续打开新文件灌入主上下文，超容量就把最旧的驱逐到磁盘',
+        code: `for f in ["main.py","utils.py","views.py","models.py"]:
+    main_context.append(f)
+    if len(main_context) > cap:
+        evicted.append(main_context.pop(0))  # 换出`,
+        highlightLines: [4],
+        variables: [
+          { name: '换出', value: 'persona、main.py（最旧的）' },
+          { name: '主区', value: '保留最近 3 段' },
+        ],
+        output: '换出 2 段到磁盘'
+      },
+      {
+        name: '3. page-in：检索换入回答',
+        description: '用户问"上次 auth 怎么改的"→检索归档换回主上下文',
+        code: `hit = archival_memory_search("auth 模块")
+# → 内容:"login() 加了 token 判空兜底"
+#   来源: auth.py:42（归档存了 citation，可溯源）`,
+        highlightLines: [2, 3],
+        variables: [
+          { name: '换入', value: 'auth 改动记忆 + 来源 auth.py:42' },
+        ],
+        output: '✅ 从磁盘检索换入，带来源回答'
+      },
+      {
+        name: '4. self-editing + 坑',
+        description: 'Agent 用 function call 主动改记忆；注意记忆腐烂/投毒/引用丢失',
+        code: `core_memory_replace("task", "修 bug")  # 自编辑核心记忆
+# 坑：记忆腐烂(过时事实)、投毒(恶意文本)、引用丢失`,
+        highlightLines: [1],
+        variables: [
+          { name: 'vs RAG', value: 'RAG 只读；MemGPT 可读可写、当 OS 分页管理' },
+          { name: '递进', value: '08 三层+睡眠整合，09 mem0 混合存储' },
+        ],
+        output: '✅ MemGPT = 把上下文当虚拟内存主动分页管理'
+      },
+    ]
+  },
+  {
+    id: 'memory-blocks-sleep',
+    title: '记忆块 + 睡眠时计算',
+    description: '会话学到的约定 append 进记忆块(有重复+矛盾)，空闲时离线去重/失效/压缩',
+    steps: [
+      {
+        name: '1. 类型化记忆块',
+        description: '核心层里类型化、持久、可编辑的片段：human/project/task',
+        code: `blocks = {
+  "human":   "喜欢简洁注释、用 pytest",
+  "project": "",  # 项目约定，本例操作它
+  "task":    "当前任务",
+}  # 每块有 label/value/limit/description`,
+        highlightLines: [3],
+        variables: [
+          { name: '操作的块', value: 'project（项目约定）' },
+        ],
+        output: '三个记忆块就位'
+      },
+      {
+        name: '2. 主轮次：快速原始 append',
+        description: '主 Agent 在关键路径上只管快写，不做整理，故意制造重复和矛盾',
+        code: `project += "用 pytest；缩进4空格；禁print；
+            缩进改2空格；用 pytest；lint用ruff"
+# 重复:"用 pytest"x2  矛盾:"4空格" vs "2空格"`,
+        highlightLines: [3],
+        variables: [
+          { name: '原始', value: '6 条，含重复+矛盾' },
+          { name: '块状态', value: '接近上限 ⚠ + 矛盾共存' },
+        ],
+        output: '主轮次快写完，块膨胀了'
+      },
+      {
+        name: '3. 睡眠时计算：空闲离线巩固',
+        description: '助手空闲时跑第二个 Agent，关键路径外做去重/失效/压缩',
+        code: `# 不受延迟约束，可用更强更慢的模型
+dedup:  丢弃重复"用 pytest"
+失效:  "4空格"被"2空格"推翻 → 标记 INVALID
+压缩:  摘要重写超限块`,
+        highlightLines: [3, 4],
+        variables: [
+          { name: '去重', value: '6条→5条' },
+          { name: '失效矛盾', value: '4空格被2空格推翻' },
+        ],
+        output: '巩固：6条 → 4条整洁块'
+      },
+      {
+        name: '4. 关键属性 + 坑',
+        description: '主轮次延迟一点没增加（巩固在关键路径外）',
+        code: `# 主轮次延迟不变 ← 巩固是异步的
+# 坑：块膨胀(写入前接摘要器)、静默漂移(版本化+diff)、投毒巩固`,
+        highlightLines: [2],
+        variables: [
+          { name: 'vs MemGPT(07)', value: '加结构(块)+移出关键路径(睡眠)' },
+          { name: 'vs Reflexion(03)', value: '即时自省 vs 离线巩固，互补' },
+        ],
+        output: '✅ 记忆块+睡眠时计算 = 离线巩固长期记忆，主轮次不卡'
+      },
+    ]
   }
 ]
