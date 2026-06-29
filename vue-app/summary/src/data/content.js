@@ -1076,7 +1076,15 @@ mcp.run(transport="stdio")` }
               '<strong>Observation（观察）</strong> — 工具结果转成字符串喂回',
               '三者交错循环，直到触发<span class="highlight">停止条件</span>'
             ]},
-            { type: 'flow', steps: ['用户任务', '思考', '行动(调工具)', '观察(结果)', '思考', '...', 'finish'] },
+            { type: 'flow', steps: [
+              { label: '用户任务', desc: '问题进入消息缓冲区' },
+              { label: '思考', desc: 'Thought：盘算下一步' },
+              { label: '行动', desc: 'Action：调用一个工具' },
+              { label: '观察', desc: 'Observation：结果喂回' },
+              { label: '再思考', desc: '看观察决定下一步' },
+              { label: '循环', desc: '重复直到任务完成' },
+              { label: 'finish', desc: '触发停止条件，返回答案' }
+            ] },
             { type: 'text', text: '出处：Yao 等人 ReAct 论文（ICLR 2023）。推理轨迹做了三件「光调工具」做不到的事：制定计划、跨步骤跟踪计划、行动返回意外结果时纠错。', style: 'note' }
           ]
         },
