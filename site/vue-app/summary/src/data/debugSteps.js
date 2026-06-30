@@ -2111,5 +2111,126 @@ hits = search(task)  # 命中 read_csv + validate_schema`,
         output: '✅ 检索-组合-执行-反馈-升版闭环；技能让 agent「会做」，不只是「记得」'
       },
     ]
+  },
+  {
+    id: 'filtered-vector-search',
+    title: '过滤 + 向量检索',
+    description: '生产级检索：库过几百条后纯向量变糊，先用标签/硬约束砍掉无关项，再在小范围里算相似度。看候选集怎么缩小、排名怎么变。',
+    steps: [
+      {
+        name: '1. 痛点：库过几百条，纯向量变糊',
+        description: '向量库里 800 条记录，查"退款要几天"。语义沾边的太多，真正要的那条被一堆"差不多相关"的淹没，掉出 top-5。',
+        code: `# 800 条记录，纯向量检索
+results = vector_store.search(
+    query="退款要几天",
+    top_k=5,
+)
+# 前 5 名里混进一堆"沾边但不对"的`,
+        highlightLines: [2, 3, 4],
+        params: [
+          { name: 'top_k', value: '5', desc: '只取最相似的前 k 条。库一大，对的那条可能掉到第 8、第 20，直接被漏掉' }
+        ],
+        variables: [
+          { name: '库规模', value: '800 条' },
+          { name: '#1 物流时效(0.83)', value: '❌ 沾边但不对' },
+          { name: '#2 退款政策(0.82)', value: '✓ 想要的，但排第2' },
+          { name: '#3 退货流程(0.81)', value: '❌ 相关但不对' },
+          { name: '真正要的', value: '挤在一堆 0.8x 里，召回不稳' },
+        ],
+        output: '❌ 纯向量：相似项扎堆，目标被淹没，召回不稳'
+      },
+      {
+        name: '2. 每条记录写入时带 metadata 标签',
+        description: '关键前提：写入(add)时就给每条挂标签。优先用数据自带的结构字段(最可靠)，类别用规则/小模型提取。',
+        code: `vector_store.add(
+    text="企业版退款政策：60天内按比例退款",
+    vector=embed(text),
+    metadata={                      # ← 标签，用来过滤
+        "user_id": "42",            # 结构字段(最可靠)
+        "category": "退款",          # 规则/小模型提取
+        "doc_type": "policy",
+        "status": "VALID",          # 时间有效性
+        "lang": "zh",
+    },
+)`,
+        highlightLines: [4, 5, 6, 7, 8, 9],
+        variables: [
+          { name: 'user_id/时间/来源', value: '结构自带，直接抄，零误差' },
+          { name: 'category', value: '可枚举集合，防"模式蔓延"' },
+          { name: 'status', value: 'VALID/INVALID，冲突时软删除' },
+        ],
+        output: '每条记录 = 向量 + 一组可过滤的标签'
+      },
+      {
+        name: '3. 第一步：标签过滤砍掉无关项',
+        description: '检索时先按标签硬筛，不是去查另一个库——是向量库记录自带的 metadata filter。800 条瞬间砍到 18 条。',
+        code: `candidates = vector_store.filter(
+    category="退款",        # 只留退款类
+    status="VALID",         # 只留当前有效
+    user_id="42",           # 作用域隔离
+)
+# 800 条 → 18 条`,
+        highlightLines: [2, 3, 4],
+        params: [
+          { name: '过滤字段', value: 'category+status+user_id', desc: '高频过滤字段要在向量库建索引才快；user_id 是安全隔离边界，漏了会泄露别人数据' }
+        ],
+        variables: [
+          { name: '过滤前', value: '800 条' },
+          { name: '过滤后', value: '18 条（砍掉 97.7%）' },
+          { name: '物流时效', value: '被 category 过滤掉 ✓' },
+          { name: '过期旧政策', value: '被 status=VALID 过滤掉 ✓' },
+        ],
+        output: '✅ 800 → 18 条：无关项、过期项、别人的数据全砍掉'
+      },
+      {
+        name: '4. 第二步：在小范围里算向量相似度',
+        description: '只在这 18 条里做向量检索。范围小了，干扰项没了，目标稳居第一。',
+        code: `results = rank_by_similarity(
+    query="退款要几天",
+    candidates=candidates,   # 只在 18 条里排
+    top_k=3,
+)`,
+        highlightLines: [3],
+        variables: [
+          { name: '#1 退款政策(0.82)', value: '✓ 稳居第一' },
+          { name: '#2 退款时效说明(0.79)', value: '✓ 也对口' },
+          { name: '#3 退款条件(0.75)', value: '✓ 相关' },
+          { name: 'vs 纯向量', value: '目标从第2→第1，干扰项消失' },
+        ],
+        output: '✅ 小范围内向量检索：目标稳居 top-1，召回精准'
+      },
+      {
+        name: '5. 过滤 vs 向量：各管一摊',
+        description: '过滤负责"缩小范围+精确约束"(硬)，向量负责"范围内找最贴切的语义"(软)。一次查询里组合完成，不是两步走。',
+        code: `# 现代向量库(Pinecone/Qdrant/Milvus)
+# 支持"带 filter 的向量搜索"，一次查完：
+results = store.search(
+    query="退款要几天",
+    filter={"category":"退款","status":"VALID"},  # 硬
+    top_k=3,                                       # 软
+)`,
+        highlightLines: [5, 6],
+        variables: [
+          { name: '过滤(硬约束)', value: '精确：必须满足，否则排除' },
+          { name: '向量(软匹配)', value: '模糊：范围内找最像的' },
+          { name: '执行', value: '同一次查询完成，非串行两步' },
+        ],
+        output: '过滤缩小范围 + 向量精排，组合 = 生产级检索'
+      },
+      {
+        name: '6. 别混淆：这不是"先 KV 再向量"',
+        description: '三个相似场景别搞混：本实验是"向量库内过滤+向量"；Mem0 是三库并行融合；分层缓存才是 KV→向量串行回退。',
+        code: `# 1 本实验：向量库内 过滤+向量，一次查完(为了准)
+# 2 Mem0:   KV/向量/图 并行查+融合打分(覆盖不同问题)
+# 3 分层缓存: KV精确→向量→LLM 串行回退(为了省钱提速)`,
+        highlightLines: [1, 2, 3],
+        variables: [
+          { name: '本实验', value: '过滤+向量，缩范围保准确' },
+          { name: 'Mem0', value: '三库并行融合，覆盖三类查询' },
+          { name: '分层缓存', value: 'KV→向量→LLM，省钱提速' },
+        ],
+        output: '✅ 生产级是"过滤+向量"，不是"KV+向量"两步走'
+      },
+    ]
   }
 ]
