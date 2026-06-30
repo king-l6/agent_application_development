@@ -44,6 +44,8 @@ Thumbs.db
 data/
 !site/vue-app/**/data/
 site/vue-app/**/node_modules/
+# 构建产物：笔记引用的源码由 prebuild 脚本自动生成，不提交（防漂移/泄密）
+site/vue-app/**/src/data/codeRefs.generated.js
 models/
 checkpoints/
 wandb/

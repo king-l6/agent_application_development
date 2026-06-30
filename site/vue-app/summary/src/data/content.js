@@ -549,11 +549,9 @@ CI = p ± z × √(p(1-p)/n + z²/(4n²))  /  分母` },
           emoji: '📁',
           title: '8. 代码文件',
           blocks: [
-            { type: 'code', code: `test_eval_real.py  — 真实 Eval 流水线（20 条用例 + LLM 裁判 + Wilson CI）
-test_eval.py       — 模拟版 Eval 演示（确定性打分 + 模型对比）
-
-# 运行方式：
-source venv/bin/activate && python3 test_eval_real.py` }
+            { type: 'text', text: '运行方式：<span class="highlight">source venv/bin/activate && python3 test_eval_real.py</span>', style: 'note' },
+            { type: 'codeRef', file: 'test_eval_real.py', label: '真实 Eval 流水线（20 条用例 + LLM 裁判 + Wilson CI）' },
+            { type: 'codeRef', file: 'test_eval.py', label: '模拟版 Eval 演示（确定性打分 + 模型对比）' }
           ]
         },
         {
@@ -705,10 +703,8 @@ source venv/bin/activate && python3 test_eval_real.py` }
           emoji: '📁',
           title: '9. 代码文件',
           blocks: [
-            { type: 'code', code: `phases/11-llm-engineering/11-caching-cost/code/caching_cost.py
-
-# 运行 demo：
-source venv/bin/activate && python3 phases/11-llm-engineering/11-caching-cost/code/caching_cost.py` }
+            { type: 'text', text: '运行 demo：<span class="highlight">source venv/bin/activate && python3 phases/11-llm-engineering/11-caching-cost/code/caching_cost.py</span>', style: 'note' },
+            { type: 'codeRef', file: 'phases/11-llm-engineering/11-caching-cost/code/caching_cost.py', label: '缓存与成本估算 demo' }
           ]
         }
       ]
