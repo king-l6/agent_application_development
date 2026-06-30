@@ -1671,6 +1671,156 @@ else:
           ]
         }
       ]
+    },
+    {
+      id: 7,
+      label: 'Day 7',
+      date: '2026年6月30日 · Agent 工程 · 混合记忆 Mem0 + Voyager 技能库',
+      footer: 'Day 7 · 2026-06-30 · Phase 14-09/10',
+      progress: {
+        label: '当前进度',
+        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 10 课',
+        percent: 64,
+        text: 'Phase 14 · 09 mem0 + 10 voyager',
+        desc: '记忆线收尾(Mem0 混合存储) + 能力线开端(技能库：让 agent 会做而不只是记得)'
+      },
+      sections: [
+        {
+          emoji: '🧠',
+          title: '—— 第 9 课：Mem0 混合记忆 ——',
+          blocks: [
+            { type: 'text', text: '<strong>单一存储对生产 agent 的三类查询，至少两类是错的。</strong><span class="highlight">Mem0</span> 把向量(语义)+KV(精确事实)+图(关系)三路藏在统一的 add/search 接口后，检索时用融合评分整合。开发者改了偏好时，冲突检测把旧事实软删除（不物理删）。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🗃',
+          title: '1. 三路存储各管一摊',
+          tag: 'Phase 14-09',
+          blocks: [
+            { type: 'table', headers: ['存储', '擅长', '代码助手里的例子'], rows: [
+              ['向量', '语义相似（余弦 top-k）', '"我平时喜欢怎么写测试" → 召回 "用 pytest"'],
+              ['KV', '精确事实查找（O(1)）', '(project, language) → Rust'],
+              ['图', '关系推理（类型化边）', '"哪些 repo 依赖 serde" → api-repo、web-repo']
+            ]},
+            { type: 'text', text: '为什么必须混合：单一存储对另两类查询必然无能为力。向量查不了精确事实，KV 推不了关系，图做不了语义相似。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '⚖️',
+          title: '2. 融合评分 + 冲突软删除',
+          tag: 'Phase 14-09',
+          blocks: [
+            { type: 'code', code: `score = 0.6·相关性 + 0.2·重要性 + 0.2·时效性
+# 加权求和(非层级)，权重按产品调：
+#   聊天重时效 / 合规重重要性 / 检索重相关性` },
+            { type: 'list', items: [
+              '<strong>检索</strong>：三路各召回 → 评分层融合排序 → top-k',
+              '<strong>冲突失效</strong>：缩进偏好 tabs→spaces，旧边标 <span class="highlight">valid=False 软删除</span>，绝不物理删',
+              '<strong>时间查询</strong>："上个月用啥缩进" → 遍历当时有效子图，tabs(INVALID)/spaces(VALID) 都留着',
+              'vs MemGPT(07)/记忆块(08)：那俩解决「上下文放不下」(换页/块编辑)，Mem0 解决「多类查询用一套接口」'
+            ]}
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '3. 面试可能问什么',
+          tag: 'Phase 14-09',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'Mem0 为什么要混合三种存储？', a: '生产 agent 的查询分三类：语义相似(向量擅长)、精确事实(KV擅长)、关系推理(图擅长)。任何单一存储对另两类查询都无能为力，所以 Mem0 三路并存，藏在统一 add/search 接口后用融合评分整合。' },
+              { q: '融合评分是怎么算的？', a: 'score = w_rel·相关性 + w_imp·重要性 + w_rec·时效性，是加权求和而非层级筛选。权重按产品调：聊天场景重时效性、合规场景重重要性、检索场景重相关性。' },
+              { q: 'Mem0 怎么处理矛盾的事实？为什么不直接删？', a: '冲突检测发现新事实与旧边矛盾(同 subject+relation)时，把旧边标 valid=False 软删除而非物理删除。这样支持时间查询(如"三月时住哪")——遍历当时有效的子图，历史可追溯。' },
+              { q: 'Mem0 和 MemGPT/记忆块解决的问题有什么不同？', a: 'MemGPT(07)和记忆块(08)解决"上下文放不下"——靠虚拟内存换页、块编辑、睡眠时巩固。Mem0 解决的是"多类查询用一套接口"——三路混合存储+融合评分+合规级失效。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '🧰',
+          title: '—— 第 10 课：Voyager 技能库 ——',
+          blocks: [
+            { type: 'text', text: '<strong>Agent 每次会话从零重建能力，浪费 token、进度不跨会话。</strong><span class="highlight">Voyager</span> 把跑通的行为固化成可复用的「技能」(可执行代码)存库，下次遇到类似任务直接检索调用、组合。这是从「记得」到「会做」的跨越。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🧩',
+          title: '1. 三组件 + 技能的定义',
+          tag: 'Phase 14-10',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>自动课程</strong>：好奇心驱动，自底向上选「略高于当前能力」的下一任务',
+              '<strong>技能库</strong>：成功后把可执行代码存为命名技能，以「描述+嵌入向量」为键检索',
+              '<strong>迭代提示</strong>：失败时拿错误/环境反馈/自验证输出重写技能',
+              '<span class="highlight">技能 = 可执行代码 + 描述 + 向量索引 + 依赖</span>；动作空间=代码(发函数而非原始命令)才能表达可组合的行为'
+            ]},
+            { type: 'flow', steps: [
+              { label: '检索', desc: '对任务嵌入，查 top-k 相似技能' },
+              { label: '组合', desc: '用检索到的原语 + 新逻辑拼高阶技能' },
+              { label: '执行', desc: '在环境里真跑（跑通才入库）' },
+              { label: '反馈', desc: '失败→错误折进代码' },
+              { label: '升版', desc: '改好重存，旧版进 history' }
+            ] }
+          ]
+        },
+        {
+          emoji: '🔬',
+          title: '2. 实测：组合 ingest_csv，失败升版',
+          tag: 'Phase 14-10',
+          blocks: [
+            { type: 'text', text: '代码助手库里有 read_csv / validate_schema / retry_wrapper 三个原语技能。新任务"解析并校验 CSV"：', style: 'note' },
+            { type: 'table', headers: ['版本', '拓扑执行', '结果'], rows: [
+              ['v1', 'read_csv → validate_schema', '❌ 空文件时 read_csv 崩'],
+              ['v2', 'retry_wrapper(read_csv) → validate_schema', '✓ 空文件被兜住，通过，入库']
+            ]},
+            { type: 'text', text: '下次"解析 TSV"直接检索复用 validate_schema，只新增分隔符逻辑——而不是从零重写。这就是终身学习：能力随技能库累积，零重复造轮子。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🆚',
+          title: '3. 技能 vs 记忆 + 坑',
+          tag: 'Phase 14-10',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>技能是「可执行代码」(怎么做)，记忆是「事实」(是什么)</strong>——记忆让 agent 记得，技能让 agent 会做',
+              'vs Reflexion(03)：那存的是经验文本(自然语言反思)，技能库存的是跑通的代码，可直接调用',
+              '验证：跑通才入库（环境验证 = 带验证器的 Self-Refine/CRITIC，呼应第5课）',
+              '坑：技能库腐烂(同技能换描述存十遍→写入去重)、组合漂移(父依赖被改→技能版本固定)、检索退化(库过几百→加标签过滤)'
+            ]}
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '4. 面试可能问什么',
+          tag: 'Phase 14-10',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'Voyager 的三个组件是什么？', a: '自动课程(好奇心驱动选略高于当前能力的下一任务)、技能库(成功代码存为命名技能、以描述+向量为键检索)、迭代提示(失败时拿错误/环境反馈重写技能)。' },
+              { q: '技能和记忆有什么本质区别？', a: '技能是可执行代码(怎么做)，检索到就能运行和组合；记忆是事实(是什么)，检索到用于回忆。一句话：记忆让 agent 记得，技能让 agent 会做。' },
+              { q: '为什么 Voyager 的动作空间是代码而不是原始命令？', a: '代码(函数)能表达时间上扩展、可组合的行为——新技能可以调用已有技能形成 DAG，按拓扑排序执行。原始命令是一次性的，无法沉淀和复用。' },
+              { q: '技能怎么保证质量？和 Self-Refine/CRITIC 什么关系？', a: '跑通才入库——在环境里真执行，返回 success/error/自验证失败，只有通过环境验证的才存。这等于带验证器的 Self-Refine/CRITIC：用真实执行结果而非模型主观判断来决定是否保留。' },
+              { q: '技能库会有什么生产问题？', a: '技能库腐烂(同一技能换描述存十遍→写入去重)、组合漂移(父技能依赖的子技能被改→技能版本控制、版本固定)、检索退化(库过几百后向量检索变差→加标签过滤+硬约束)。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '📌',
+          title: 'Day 7 总结（Phase 14 · 09~10）',
+          accentBorder: true,
+          blocks: [
+            { type: 'subtitle', text: '记忆线收尾 + 能力线开端' },
+            { type: 'list', items: [
+              'Mem0：向量+KV+图三路混合，融合评分，冲突软删除——记忆课(07/08/09)的集大成',
+              'Voyager：把跑通的代码固化成技能，检索-组合-执行-反馈-升版闭环',
+              '一条认知升级：记忆让 agent「记得」，技能让 agent「会做」'
+            ]},
+            { type: 'subtitle', text: '记忆三课的递进' },
+            { type: 'list', items: [
+              '07 MemGPT：上下文当虚拟内存换页（解决放不下）',
+              '08 记忆块+睡眠时计算：加结构 + 离线巩固（解决整理）',
+              '09 Mem0：三路混合 + 融合评分 + 合规级失效（解决多类查询）'
+            ]}
+          ]
+        }
+      ]
     }
   ]
 }

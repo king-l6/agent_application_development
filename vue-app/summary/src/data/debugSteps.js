@@ -1993,5 +1993,123 @@ dedup:  丢弃重复"用 pytest"
         output: '✅ 记忆块+睡眠时计算 = 离线巩固长期记忆，主轮次不卡'
       },
     ]
+  },
+  {
+    id: 'mem0-hybrid',
+    title: 'Mem0 混合记忆',
+    description: '向量(语义)+KV(精确)+图(关系)三路存储，融合评分检索；改偏好时冲突检测软删除',
+    steps: [
+      {
+        name: '1. 三路存储各管一摊',
+        description: '单一存储对三类查询里至少两类是错的，所以要混合',
+        code: `# 向量：语义相似("怎么写测试"→召回偏好)
+# KV：精确事实查找(语言/CI，O(1))
+# 图：关系推理("哪些 repo 依赖 serde")`,
+        highlightLines: [1, 2, 3],
+        variables: [
+          { name: '向量', value: '语义相似 top-k' },
+          { name: 'KV', value: '(scope,key)→值 精确查' },
+          { name: '图', value: '类型化边，关系可达' },
+        ],
+        output: '同一 add/search 接口藏住三路'
+      },
+      {
+        name: '2. 检索：融合评分',
+        description: '三路各召回，加权求和排序(非层级)',
+        code: `score = 0.6*相关性 + 0.2*重要性 + 0.2*时效性
+# 聊天重时效、合规重重要性、检索重相关性
+# 权重按产品调`,
+        highlightLines: [1],
+        variables: [
+          { name: '权重', value: 'w_rel=0.6 w_imp=0.2 w_rec=0.2' },
+          { name: '"怎么写测试"', value: '召回"用 pytest"(最高分)' },
+        ],
+        output: '三路结果融合成 top-k'
+      },
+      {
+        name: '3. 改偏好 → 冲突检测',
+        description: '缩进偏好 tabs→spaces，发现矛盾',
+        code: `add("缩进改用 spaces")
+# 冲突检测：同 subject+relation 的新事实
+# 与旧边矛盾 → 触发失效`,
+        highlightLines: [2, 3],
+        variables: [
+          { name: '旧', value: '"缩进用 tabs"' },
+          { name: '新', value: '"缩进改用 spaces"' },
+        ],
+        output: '检测到 tabs vs spaces 冲突'
+      },
+      {
+        name: '4. 软删除：旧边标 INVALID',
+        description: '不物理删除，valid=False，支持时间查询',
+        code: `old_edge.valid = False  # 软删除，不是 del
+# "上个月用啥缩进?" → 遍历当时有效子图
+# tabs(INVALID) / spaces(VALID) 都留着`,
+        highlightLines: [1],
+        variables: [
+          { name: 'tabs 边', value: 'valid=False（历史可追溯）' },
+          { name: 'spaces 边', value: 'valid=True（当前）' },
+        ],
+        output: '✅ 软删除让历史可追溯，区别于 MemGPT/记忆块(解决放不下)'
+      },
+    ]
+  },
+  {
+    id: 'voyager-skills',
+    title: 'Voyager 技能库',
+    description: '把跑通的代码固化成技能存库，下次检索复用而非从零写；技能调技能、失败升版',
+    steps: [
+      {
+        name: '1. 技能库里有原语技能',
+        description: '技能=可执行代码+描述+向量索引+依赖',
+        code: `skills = {
+  "read_csv": 读CSV,
+  "validate_schema": 校验schema,
+  "retry_wrapper": 加重试,
+}  # 每个跑通过、可检索、可被组合`,
+        highlightLines: [2, 3, 4],
+        variables: [
+          { name: '技能 vs 记忆', value: '技能=怎么做(代码)，记忆=是什么(事实)' },
+        ],
+        output: '库里 3 个原语技能'
+      },
+      {
+        name: '2. 新任务 → 检索复用',
+        description: '对任务描述嵌入，查 top-k 相似技能，不从零写',
+        code: `task = "解析并校验一个 CSV 文件"
+hits = search(task)  # 命中 read_csv + validate_schema`,
+        highlightLines: [2],
+        variables: [
+          { name: '命中', value: 'read_csv、validate_schema' },
+        ],
+        output: '检索到可复用的原语'
+      },
+      {
+        name: '3. 组合高阶技能（技能调技能）',
+        description: 'ingest_csv 依赖两个原语，执行按拓扑排序',
+        code: `ingest_csv = compose(read_csv, validate_schema)
+# 执行 v1：read_csv → validate_schema
+# ❌ 空文件时 read_csv 抛异常`,
+        highlightLines: [1],
+        variables: [
+          { name: 'ingest_csv v1', value: '依赖 read_csv+validate_schema' },
+          { name: 'v1 结果', value: '空文件崩溃' },
+        ],
+        output: 'v1 在环境里跑挂了'
+      },
+      {
+        name: '4. 失败折进反馈 → 升版入库',
+        description: '把"空文件崩"反馈折进代码，加 retry_wrapper 依赖，升 v2',
+        code: `ingest_csv_v2 = retry_wrapper(read_csv) → validate_schema
+# ✓ 通过 → 入库(v1进history)
+# 下次"解析TSV"直接复用 validate_schema，零重复`,
+        highlightLines: [1, 3],
+        variables: [
+          { name: 'v2', value: '加 retry_wrapper 依赖，通过' },
+          { name: '终身学习', value: '跑通才入库，能力随库累积' },
+        ],
+        output: '✅ 检索-组合-执行-反馈-升版闭环；技能让 agent「会做」，不只是「记得」'
+      },
+    ]
   }
 ]
