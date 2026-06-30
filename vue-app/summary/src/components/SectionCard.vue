@@ -21,6 +21,23 @@
       <!-- Code -->
       <div v-if="block.type === 'code'" class="code" v-html="block.code"></div>
 
+      <!-- Code reference: 自动注入的真实源码，可折叠 -->
+      <div v-if="block.type === 'codeRef'" class="code-ref">
+        <button class="code-ref-head" @click="toggle(i)">
+          <span class="code-ref-arrow">{{ expanded[i] ? '▼' : '▶' }}</span>
+          <span class="code-ref-file">{{ block.file }}</span>
+          <span v-if="resolveRef(block).lineCount" class="code-ref-meta">{{ resolveRef(block).lineCount }} 行</span>
+          <span v-if="block.label" class="code-ref-label">— {{ block.label }}</span>
+        </button>
+        <div v-show="expanded[i]" class="code-ref-body">
+          <p v-if="resolveRef(block).error" class="code-ref-error">{{ resolveRef(block).error }}</p>
+          <template v-else>
+            <pre class="code-ref-pre"><code>{{ resolveRef(block).code }}</code></pre>
+            <p v-if="resolveRef(block).truncated" class="code-ref-trunc">… 仅显示前若干行，完整源码见仓库 {{ block.file }}</p>
+          </template>
+        </div>
+      </div>
+
       <!-- Table -->
       <div v-if="block.type === 'table'" class="table-wrap">
         <table>
@@ -53,7 +70,22 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import codeRefs from '../data/codeRefs.generated.js'
+
 defineProps({
   section: { type: Object, required: true }
 })
+
+// 记录每个 codeRef 块的展开状态（按 block 索引）
+const expanded = ref({})
+function toggle(i) {
+  expanded.value[i] = !expanded.value[i]
+}
+
+// 按 file(+lines) 拼 key，从生成的映射里取真实源码
+function resolveRef(block) {
+  const key = block.lines ? `${block.file}#${block.lines}` : block.file
+  return codeRefs[key] || { code: '', error: `未找到源码：${block.file}（重新 build 试试）`, lineCount: 0 }
+}
 </script>
