@@ -1817,6 +1817,113 @@ else:
           ]
         }
       ]
+    },
+    {
+      id: 8,
+      label: 'Day 8',
+      date: '2026年6月30日 · Agent 工程 · HTN 规划 + 进化搜索',
+      footer: 'Day 8 · 2026-06-30 · Phase 14-11',
+      progress: {
+        label: '当前进度',
+        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 11 课',
+        percent: 67,
+        text: 'Phase 14 · 11 HTN + 进化搜索',
+        desc: '两种重型规划法：HTN 求「对」(保证正确)，进化搜索求「最好」(逼近最优)'
+      },
+      sections: [
+        {
+          emoji: '🧭',
+          title: '—— 第 11 课：HTN 规划 + 进化搜索 ——',
+          blocks: [
+            { type: 'text', text: '<strong>ReAct/ReWOO 覆盖了大多数规划，但两类场景它们不够：必须「可证明正确」的流程(调度/合规)，和要「找最优」的优化(算法/编译器)。</strong>这两类分别用 <span class="highlight">HTN</span> 和 <span class="highlight">进化搜索</span>，且都把 LLM 当放大器、不当主力。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🁢',
+          title: '1. HTN：骨牌式拆任务，规则保证正确',
+          tag: 'Phase 14-11',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>四件套</strong>：任务(大事)→方法(怎么拆的菜谱)→操作符(最小动作，带前提+效果)→状态(已知事实集合)',
+              '<strong>骨牌链</strong>：每步的「前提」正好是上一步的「效果」，执行前查前提，跳步/乱序直接被拦——构造上就正确',
+              '<strong>ChatHTN</strong>：没现成方法才回退问 AI；AI 的建议必须每步都是已知动作，过验证才采纳（防瞎编）',
+              '<strong>在线方法学习</strong>：问过的拆法缓存，下次同任务不再问 AI（省 ~75% 调用）'
+            ]},
+            { type: 'table', headers: ['步骤', '前提', '产生效果'], rows: [
+              ['open_editor', 'logged_in', 'editor_open'],
+              ['write_tests', 'editor_open', 'tests_written'],
+              ['run_tests', 'tests_written', 'tests_passing'],
+              ['open_pr', 'tests_passing', 'pr_open']
+            ]},
+            { type: 'text', text: '上表就是「发布代码变更」的拆解：editor_open 是 write_tests 的前提，tests_written 又是 run_tests 的前提……环环相扣。想把 run_tests 排到 write_tests 前面？执行时前提不满足，直接判失败。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🧬',
+          title: '2. 进化搜索：打分→挑最好→变异，自动逼近最优',
+          tag: 'Phase 14-11',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>循环四步</strong>：挑最好的几个 → 各自随机变异生几个孩子 → 爹妈+孩子一起打分 → 留最好的进下一代',
+              '<strong>精英保留</strong>：爹妈也参与竞争，所以最优成绩只降不升（不退步）',
+              '<strong>硬前提</strong>：必须能机器自动打分。写诗/散文无法自动评分 → 进化搜索用不了',
+              '<strong>AlphaEvolve 实战</strong>：改进用了 56 年的矩阵乘法、省 Google 0.7% 算力、FlashAttention 提速 32%'
+            ]},
+            { type: 'table', headers: ['代', '本代最优', '误差'], rows: [
+              ['第0代(随机)', 'a=2 b=3', '286'],
+              ['第3代', 'a=3 b=4', '99'],
+              ['第6代', 'a=3 b=7', '0 ✓ 完美']
+            ]},
+            { type: 'text', text: '任务：找 a,b 使 a·x+b 等于 3x+7。打分=和目标的总误差。没人教它 a 该是 3，是「挑最好+随机变异」自动逼出来的——a 第2代就锁定，b 慢慢从 3 挪到 7。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '⚖',
+          title: '3. HTN vs 进化 vs ReAct：什么时候用哪个',
+          tag: 'Phase 14-11',
+          blocks: [
+            { type: 'table', headers: ['方法', '求什么', '适合场景'], rows: [
+              ['HTN', '对（一个保证正确的计划）', '调度、合规、审批'],
+              ['进化搜索', '最好（一堆方案挑最优）', '算法/编译器优化、带测试的代码改进'],
+              ['ReAct/ReWOO', '灵活应变（无形式化保证）', '大多数普通多步任务']
+            ]},
+            { type: 'text', text: '<strong>默认先用 ReAct。</strong>这俩都比 ReAct 重：HTN 靠符号层保证正确(AI 只在没方法时补充)，进化靠确定性打分器选优(AI 只负责变异)。非必要不用。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '4. 面试可能问什么',
+          tag: 'Phase 14-11',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'HTN 为什么能「保证正确」？', a: '每个操作符带前提和效果，执行前检查前提是否满足，不满足就失败。步骤顺序由「前提-效果」链强制约束，无法跳步或乱序——正确性是构造出来的，不靠模型自觉。' },
+              { q: 'ChatHTN 里 LLM 扮演什么角色？怎么防止它瞎编？', a: 'LLM 只在没有现成方法时被回退调用，提供候选分解。但建议必须每一步都是系统已注册的操作符/方法，过验证才采纳，否则拒绝。正确性归符号层，LLM 只扩展方法库——当放大器不当主力。' },
+              { q: '进化搜索能用的硬前提是什么？', a: '必须有确定性、可机器检查的打分函数(fitness)。代码可以跑测试看快慢，算法可以测性能——但散文/创意没法自动打分，进化搜索不收敛。' },
+              { q: '进化搜索为什么不会「碰对了又丢掉」？', a: '精英保留：每代让爹妈和孩子一起参与打分竞争。就算孩子全变差，上一代的好爹妈还在池子里，排序后照样留下。所以最优成绩只降不升。' },
+              { q: 'HTN 和进化搜索的本质区别？', a: 'HTN 求「对」——产出一个保证正确的执行计划；进化搜索求「最好」——在一大堆方案里逼近最优。前者用规则保证正确性，后者用打分筛选最优解，解决的是两类不同问题。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '📌',
+          title: 'Day 8 总结（Phase 14 · 11）',
+          accentBorder: true,
+          blocks: [
+            { type: 'subtitle', text: '两种重型规划法' },
+            { type: 'list', items: [
+              'HTN：番茄炒蛋式——按「前提→效果」骨牌拆解，规则强制保证不跳步、不出错',
+              '进化搜索：养蛊式——打分→挑最好→变异→再挑，自动逼出最优解',
+              '共性：都拿 AI 当放大器(HTN 没方法时补充 / 进化负责变异)，正确性和选优交给可靠机制'
+            ]},
+            { type: 'subtitle', text: '一条选型主线' },
+            { type: 'list', items: [
+              '默认 ReAct（灵活、够用）',
+              '绝不能错的流程 → HTN（可证明正确）',
+              '有自动评分的优化 → 进化搜索（逼近最优）'
+            ]}
+          ]
+        }
+      ]
     }
   ]
 }
