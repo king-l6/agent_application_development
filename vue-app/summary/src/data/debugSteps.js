@@ -2113,6 +2113,84 @@ hits = search(task)  # 命中 read_csv + validate_schema`,
     ]
   },
   {
+    id: 'htn-evolutionary',
+    title: 'HTN 规划 + 进化搜索',
+    description: '两种重型规划法：HTN 按「前提→效果」骨牌式拆任务，规则保证正确(适合合规/调度)；进化搜索打分→挑最好→变异，自动逼近最优(适合有自动评分的优化)。',
+    steps: [
+      {
+        name: '1. HTN：操作符带「前提」和「效果」',
+        description: '每个最小动作声明：要满足什么前提、执行后产生什么效果。这是「保证正确」的地基。',
+        code: `OPERATORS = {
+  "open_editor": (前提=logged_in,    效果=editor_open),
+  "write_tests": (前提=editor_open,  效果=tests_written),
+  "run_tests":   (前提=tests_written,效果=tests_passing),
+  "open_pr":     (前提=tests_passing,效果=pr_open),
+}`,
+        highlightLines: [2, 3, 4, 5],
+        variables: [
+          { name: '骨牌链', value: '上一步的效果 = 下一步的前提' },
+        ],
+        output: '4 个操作符，前提-效果环环相扣'
+      },
+      {
+        name: '2. HTN：按顺序执行，边走边查前提',
+        description: '执行前检查前提是否在「已知事实」里。跳步/乱序会被当场拦下——正确性是构造出来的。',
+        code: `state = {logged_in}
+open_editor: 前提 logged_in ✓ → +editor_open
+write_tests: 前提 editor_open ✓ → +tests_written
+run_tests:   前提 tests_written ✓ → +tests_passing
+open_pr:     前提 tests_passing ✓ → +pr_open`,
+        highlightLines: [2, 3, 4, 5],
+        variables: [
+          { name: '若把 run_tests 提前', value: '前提 tests_written 不满足 → 直接失败' },
+        ],
+        output: '计划合法：open_editor→write_tests→run_tests→open_pr'
+      },
+      {
+        name: '3. HTN：没现成方法 → 回退问 AI（要验证+缓存）',
+        description: 'ChatHTN：遇到没菜谱的新任务才问 AI；AI 建议必须每步都是已知动作才采纳，问过就缓存。',
+        code: `task = "带数据库迁移的新功能"  # 没现成菜谱
+suggested = ask_AI(task)        # 问一次
+assert all(s in OPERATORS for s in suggested)  # 验证防瞎编
+cache[task] = suggested          # 缓存，下次不再问`,
+        highlightLines: [3, 4],
+        variables: [
+          { name: 'LLM 角色', value: '放大器：只补方法，正确性归符号层' },
+          { name: '在线方法学习', value: '缓存后省 ~75% AI 调用' },
+        ],
+        output: 'AI 建议过验证 → 采纳并缓存'
+      },
+      {
+        name: '4. 进化搜索：打分→挑最好→变异',
+        description: '换个完全不同的问题：找 a,b 使 a·x+b 等于 3x+7。打分=和目标的总误差，越小越好。',
+        code: `population = 6个随机 (a,b)   # 第0代瞎猜
+每代：
+  survivors = 留误差最小的 3 个   # 挑最好
+  children  = 每个各变异生 3 个    # ±2 随机抖
+  population = 留(爹妈+孩子)中最好的 6 个  # 精英保留`,
+        highlightLines: [3, 4, 5],
+        variables: [
+          { name: '精英保留', value: '爹妈也参赛 → 最优只降不升' },
+          { name: '硬前提', value: '必须能机器自动打分' },
+        ],
+        output: '一群解，靠打分筛选+变异逼近最优'
+      },
+      {
+        name: '5. 进化搜索：误差一代代往下掉',
+        description: 'a 第2代就锁定到 3，b 慢慢从 3 挪到 7，第6代撞中完美解。没人教它答案。',
+        code: `第0代: a=2 b=3  误差=286  (瞎猜)
+第3代: a=3 b=4  误差=99   (a 锁定)
+第6代: a=3 b=7  误差=0    (完美！)`,
+        highlightLines: [3],
+        variables: [
+          { name: 'HTN vs 进化', value: 'HTN 求「对」，进化求「最好」' },
+          { name: '都比 ReAct 重', value: '默认 ReAct，这俩特殊场景才用' },
+        ],
+        output: '✅ 第6代收敛 a=3 b=7；AlphaEvolve 同理改进了 56 年的矩阵乘法'
+      },
+    ]
+  },
+  {
     id: 'filtered-vector-search',
     title: '过滤 + 向量检索',
     description: '生产级检索：库过几百条后纯向量变糊，先用标签/硬约束砍掉无关项，再在小范围里算相似度。看候选集怎么缩小、排名怎么变。',

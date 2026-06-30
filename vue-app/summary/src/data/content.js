@@ -1671,14 +1671,14 @@ else:
     {
       id: 7,
       label: 'Day 7',
-      date: '2026年6月30日 · Agent 工程 · 混合记忆 Mem0 + Voyager 技能库',
-      footer: 'Day 7 · 2026-06-30 · Phase 14-09/10',
+      date: '2026年6月30日 · Agent 工程 · Mem0 + Voyager + HTN/进化',
+      footer: 'Day 7 · 2026-06-30 · Phase 14-09/10/11',
       progress: {
         label: '当前进度',
-        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 10 课',
-        percent: 64,
-        text: 'Phase 14 · 09 mem0 + 10 voyager',
-        desc: '记忆线收尾(Mem0 混合存储) + 能力线开端(技能库：让 agent 会做而不只是记得)'
+        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 11 课',
+        percent: 67,
+        text: 'Phase 14 · 09 mem0 + 10 voyager + 11 HTN/进化',
+        desc: '记忆线收尾(Mem0) + 能力线(技能库) + 重型规划(HTN求对/进化求最优)'
       },
       sections: [
         {
@@ -1798,40 +1798,6 @@ else:
           ]
         },
         {
-          emoji: '📌',
-          title: 'Day 7 总结（Phase 14 · 09~10）',
-          accentBorder: true,
-          blocks: [
-            { type: 'subtitle', text: '记忆线收尾 + 能力线开端' },
-            { type: 'list', items: [
-              'Mem0：向量+KV+图三路混合，融合评分，冲突软删除——记忆课(07/08/09)的集大成',
-              'Voyager：把跑通的代码固化成技能，检索-组合-执行-反馈-升版闭环',
-              '一条认知升级：记忆让 agent「记得」，技能让 agent「会做」'
-            ]},
-            { type: 'subtitle', text: '记忆三课的递进' },
-            { type: 'list', items: [
-              '07 MemGPT：上下文当虚拟内存换页（解决放不下）',
-              '08 记忆块+睡眠时计算：加结构 + 离线巩固（解决整理）',
-              '09 Mem0：三路混合 + 融合评分 + 合规级失效（解决多类查询）'
-            ]}
-          ]
-        }
-      ]
-    },
-    {
-      id: 8,
-      label: 'Day 8',
-      date: '2026年6月30日 · Agent 工程 · HTN 规划 + 进化搜索',
-      footer: 'Day 8 · 2026-06-30 · Phase 14-11',
-      progress: {
-        label: '当前进度',
-        detail: 'Phase 11 已全部学完 ✅ · Phase 14 · 已学 11 课',
-        percent: 67,
-        text: 'Phase 14 · 11 HTN + 进化搜索',
-        desc: '两种重型规划法：HTN 求「对」(保证正确)，进化搜索求「最好」(逼近最优)'
-      },
-      sections: [
-        {
           emoji: '🧭',
           title: '—— 第 11 课：HTN 规划 + 进化搜索 ——',
           blocks: [
@@ -1892,7 +1858,7 @@ else:
         },
         {
           emoji: '💬',
-          title: '4. 面试可能问什么',
+          title: '第 11 课面试可能问什么',
           tag: 'Phase 14-11',
           blocks: [
             { type: 'qa', items: [
@@ -1906,16 +1872,22 @@ else:
         },
         {
           emoji: '📌',
-          title: 'Day 8 总结（Phase 14 · 11）',
+          title: 'Day 7 总结（Phase 14 · 09~11）',
           accentBorder: true,
           blocks: [
-            { type: 'subtitle', text: '两种重型规划法' },
+            { type: 'subtitle', text: '记忆线收尾 + 能力线 + 重型规划' },
             { type: 'list', items: [
-              'HTN：番茄炒蛋式——按「前提→效果」骨牌拆解，规则强制保证不跳步、不出错',
-              '进化搜索：养蛊式——打分→挑最好→变异→再挑，自动逼出最优解',
-              '共性：都拿 AI 当放大器(HTN 没方法时补充 / 进化负责变异)，正确性和选优交给可靠机制'
+              'Mem0：向量+KV+图三路混合，融合评分，冲突软删除——记忆课(07/08/09)的集大成',
+              'Voyager：把跑通的代码固化成技能，检索-组合-执行-反馈-升版闭环',
+              'HTN/进化：两种重型规划法——HTN 求「对」(可证明正确)，进化求「最好」(逼近最优)'
             ]},
-            { type: 'subtitle', text: '一条选型主线' },
+            { type: 'subtitle', text: '记忆三课的递进' },
+            { type: 'list', items: [
+              '07 MemGPT：上下文当虚拟内存换页（解决放不下）',
+              '08 记忆块+睡眠时计算：加结构 + 离线巩固（解决整理）',
+              '09 Mem0：三路混合 + 融合评分 + 合规级失效（解决多类查询）'
+            ]},
+            { type: 'subtitle', text: '规划选型主线' },
             { type: 'list', items: [
               '默认 ReAct（灵活、够用）',
               '绝不能错的流程 → HTN（可证明正确）',
