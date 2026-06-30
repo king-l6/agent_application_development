@@ -33,6 +33,7 @@ from playground.modules.memgpt_virtual_context import MemgptVirtualContext
 from playground.modules.memory_blocks_sleep import MemoryBlocksSleep
 from playground.modules.mem0_hybrid import Mem0Hybrid
 from playground.modules.voyager_skills import VoyagerSkills
+from playground.modules.htn_evolutionary import HtnEvolutionary
 
 
 # phase 显示名与图标
@@ -108,6 +109,7 @@ _MODULES = [
     MemoryBlocksSleep(),
     Mem0Hybrid(),
     VoyagerSkills(),
+    HtnEvolutionary(),
 ]
 for _m in _MODULES:
     registry.register(_m)

@@ -5,8 +5,8 @@
 
 ## 当前进度
 
-- **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 8 课 `08-memory-blocks-sleep-time-compute` ✅，正在学第 9 课
-- **最后更新**：2026/06/29
+- **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 11 课 `11-planning-htn-and-evolutionary` ✅，正在学第 12 课
+- **最后更新**：2026/06/30
 
 ## Phase 11 · LLM 工程（课程清单）
 
@@ -46,8 +46,9 @@
 | 08 | 08-memory-blocks-sleep-time-compute | ✅ 已完成 | memory_blocks_sleep |
 | 09 | 09-hybrid-memory-mem0 | ✅ 已完成 | mem0_hybrid |
 | 10 | 10-skill-libraries-voyager | ✅ 已完成 | voyager_skills |
-| 11 | 11-planning-htn-and-evolutionary | 🔄 正在学 | — |
-| .. | （12-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
+| 11 | 11-planning-htn-and-evolutionary | ✅ 已完成 | htn_evolutionary |
+| 12 | 12-anthropic-workflow-patterns | 🔄 正在学 | — |
+| .. | （13-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
 
 ## 维护约定
 
