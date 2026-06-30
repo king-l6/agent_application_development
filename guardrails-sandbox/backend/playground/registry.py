@@ -31,6 +31,8 @@ from playground.modules.self_refine_critic import SelfRefineCritic
 from playground.modules.tool_use import ToolUse
 from playground.modules.memgpt_virtual_context import MemgptVirtualContext
 from playground.modules.memory_blocks_sleep import MemoryBlocksSleep
+from playground.modules.mem0_hybrid import Mem0Hybrid
+from playground.modules.voyager_skills import VoyagerSkills
 
 
 # phase 显示名与图标
@@ -104,6 +106,8 @@ _MODULES = [
     ToolUse(),
     MemgptVirtualContext(),
     MemoryBlocksSleep(),
+    Mem0Hybrid(),
+    VoyagerSkills(),
 ]
 for _m in _MODULES:
     registry.register(_m)

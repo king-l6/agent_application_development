@@ -39,13 +39,15 @@
 | 01 | 01-the-agent-loop | ✅ 已完成 | react_loop_tracer |
 | 02 | 02-rewoo-plan-and-execute | ✅ 已完成 | rewoo_planner |
 | 03 | 03-reflexion-verbal-rl | ✅ 已完成 | reflexion_coder |
-| 04 | 04-tree-of-thoughts-lats | ✅ 已完成 | （讲解+跑码，未建模块） |
-| 05 | 05-self-refine-and-critic | ✅ 已完成 | （讲解+跑码，未建模块） |
-| 06 | 06-tool-use-and-function-calling | ✅ 已完成 | （讲解+跑码，未建模块） |
-| 07 | 07-memory-virtual-context-memgpt | ✅ 已完成 | （讲解+跑码，未建模块） |
-| 08 | 08-memory-blocks-sleep-time-compute | ✅ 已完成 | （讲解+跑码，未建模块） |
-| 09 | 09-hybrid-memory-mem0 | 🔄 进行中 | — |
-| .. | （10-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
+| 04 | 04-tree-of-thoughts-lats | ✅ 已完成 | tot_search |
+| 05 | 05-self-refine-and-critic | ✅ 已完成 | self_refine_critic |
+| 06 | 06-tool-use-and-function-calling | ✅ 已完成 | tool_use |
+| 07 | 07-memory-virtual-context-memgpt | ✅ 已完成 | memgpt_virtual_context |
+| 08 | 08-memory-blocks-sleep-time-compute | ✅ 已完成 | memory_blocks_sleep |
+| 09 | 09-hybrid-memory-mem0 | ✅ 已完成 | mem0_hybrid |
+| 10 | 10-skill-libraries-voyager | ✅ 已完成 | voyager_skills |
+| 11 | 11-planning-htn-and-evolutionary | 🔄 正在学 | — |
+| .. | （12-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
 
 ## 维护约定
 
