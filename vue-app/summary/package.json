@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "gen:coderefs": "node scripts/gen-code-refs.mjs",
-    "predev": "node scripts/gen-code-refs.mjs",
+    "gen:checkpoints": "node scripts/gen-checkpoint-snapshot.mjs",
+    "predev": "node scripts/gen-code-refs.mjs && node scripts/gen-checkpoint-snapshot.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/gen-code-refs.mjs",
+    "prebuild": "node scripts/gen-code-refs.mjs && node scripts/gen-checkpoint-snapshot.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },
