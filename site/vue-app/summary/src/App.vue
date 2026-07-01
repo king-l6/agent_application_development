@@ -24,6 +24,9 @@
 
     <!-- Practice View -->
     <PracticeView v-if="currentTab === 'practice'" />
+
+    <!-- Playground View（纯前端实验台）-->
+    <PlaygroundView v-if="currentTab === 'playground'" />
   </div>
 </template>
 
@@ -33,12 +36,14 @@ import { siteData } from './data/content.js'
 import AppHeader from './components/AppHeader.vue'
 import DayContent from './components/DayContent.vue'
 import PracticeView from './components/PracticeView.vue'
+import PlaygroundView from './components/PlaygroundView.vue'
 
 const days = siteData.days
 const currentTab = ref(days[days.length - 1].id)
 
 const tabs = [
   ...days.map(d => ({ id: d.id, label: d.label })),
-  { id: 'practice', label: '实践' }
+  { id: 'practice', label: '实践' },
+  { id: 'playground', label: '🧪 实验台' }
 ]
 </script>

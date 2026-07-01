@@ -21,7 +21,7 @@ const compareResult = ref<{ without: ChatResponse; with_: ChatResponse } | null>
 const loading = ref(false)
 const compareLoading = ref(false)
 const error = ref('')
-const activeTab = ref<'normal' | 'compare' | 'mcp' | 'playground' | 'checkpoints'>('normal')
+const activeTab = ref<'normal' | 'compare' | 'mcp' | 'playground' | 'checkpoints'>('playground')
 
 async function loadData() {
   try {
@@ -87,6 +87,10 @@ onMounted(loadData)
       <h1>🧪 AI 工程学习实验台</h1>
       <div class="header-tabs">
         <button
+          :class="['tab-btn', { active: activeTab === 'playground' }]"
+          @click="activeTab = 'playground'"
+        >🧪 课程实验</button>
+        <button
           :class="['tab-btn', { active: activeTab === 'normal' }]"
           @click="activeTab = 'normal'"
         >普通模式</button>
@@ -98,10 +102,6 @@ onMounted(loadData)
           :class="['tab-btn', { active: activeTab === 'mcp' }]"
           @click="activeTab = 'mcp'"
         >🔌 MCP 工具</button>
-        <button
-          :class="['tab-btn', { active: activeTab === 'playground' }]"
-          @click="activeTab = 'playground'"
-        >🧪 课程实验</button>
         <button
           :class="['tab-btn', { active: activeTab === 'checkpoints' }]"
           @click="activeTab = 'checkpoints'"
