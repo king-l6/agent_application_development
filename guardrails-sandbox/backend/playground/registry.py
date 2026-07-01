@@ -34,6 +34,7 @@ from playground.modules.memory_blocks_sleep import MemoryBlocksSleep
 from playground.modules.mem0_hybrid import Mem0Hybrid
 from playground.modules.voyager_skills import VoyagerSkills
 from playground.modules.htn_evolutionary import HtnEvolutionary
+from playground.modules.confidence_router import ConfidenceRouter
 
 
 # phase 显示名与图标
@@ -110,6 +111,7 @@ _MODULES = [
     Mem0Hybrid(),
     VoyagerSkills(),
     HtnEvolutionary(),
+    ConfidenceRouter(),
 ]
 for _m in _MODULES:
     registry.register(_m)
