@@ -284,6 +284,8 @@ const result = computed(() => {
   color: var(--text-dim);
   font-weight: 500;
 }
+/* 覆盖笔记全局的浅色 tr:hover（深色主题下用低调的深色高亮） */
+.ckpt-table tbody tr:hover td { background: var(--surface-hover); }
 .col-idx { width: 44px; text-align: center; }
 .col-thread { width: 130px; word-break: break-all; }
 .col-cid { width: 240px; }
