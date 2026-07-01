@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" :class="{ 'full-width': topTab === 'playground' }">
     <!-- 顶层大 tab：学习笔记 / 实验台 -->
     <div class="top-tabs">
       <button
@@ -64,6 +64,13 @@ const noteTabs = [
 </script>
 
 <style scoped>
+/* 实验台走全屏：解除 .container 的 720px 居中限制 */
+.container.full-width {
+  max-width: none;
+  margin: 0;
+  padding: 0 16px;
+}
+
 .top-tabs {
   display: flex;
   gap: 6px;
