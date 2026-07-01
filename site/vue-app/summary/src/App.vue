@@ -39,7 +39,24 @@
     </template>
 
     <!-- ===== 实验台 ===== -->
-    <PlaygroundView v-else-if="topTab === 'playground'" />
+    <template v-else-if="topTab === 'playground'">
+      <!-- 实验台内部子 tab：课程实验 / 数据库 -->
+      <div class="pg-subtabs">
+        <button
+          class="pg-subtab-btn"
+          :class="{ active: pgTab === 'modules' }"
+          @click="pgTab = 'modules'"
+        >🧪 课程实验</button>
+        <button
+          class="pg-subtab-btn"
+          :class="{ active: pgTab === 'checkpoints' }"
+          @click="pgTab = 'checkpoints'"
+        >🗄 数据库</button>
+      </div>
+
+      <PlaygroundView v-if="pgTab === 'modules'" />
+      <CheckpointDbView v-else-if="pgTab === 'checkpoints'" />
+    </template>
   </div>
 </template>
 
@@ -49,11 +66,15 @@ import { siteData } from './data/content.js'
 import DayContent from './components/DayContent.vue'
 import PracticeView from './components/PracticeView.vue'
 import PlaygroundView from './components/PlaygroundView.vue'
+import CheckpointDbView from './components/CheckpointDbView.vue'
 
 const days = siteData.days
 
 // 顶层：notes（学习笔记）/ playground（实验台）
 const topTab = ref('notes')
+
+// 实验台内部：modules（课程实验）/ checkpoints（数据库）
+const pgTab = ref('modules')
 
 // 笔记内部子 tab
 const currentTab = ref(days[days.length - 1].id)
@@ -94,4 +115,29 @@ const noteTabs = [
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
+/* 实验台内部子 tab */
+.pg-subtabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 14px;
+}
+.pg-subtab-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pg-subtab-btn:hover { color: var(--accent); }
+.pg-subtab-btn.active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 </style>

@@ -7,6 +7,7 @@
 
 - **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 12 课 `12-anthropic-workflow-patterns` ✅，下一课第 13 课
 - **最后更新**：2026/07/01
+- **实验台搬迁**（2026/07/01）：sandbox 的"课程实验"+"数据库(检查点查看器)"已全部静态化搬进学习笔记实验台，零后端纯前端。课程实验从 1 个补齐到 22 个模块（`site/vue-app/summary/src/data/modules/*.js`，import.meta.glob 自动聚合）；embedding 用离线向量快照、检查点查看器用 JsonPlusSerializer 预解码快照。
 
 ## Phase 11 · LLM 工程（课程清单）
 
