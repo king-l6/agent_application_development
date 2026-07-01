@@ -85,10 +85,10 @@ const noteTabs = [
 </script>
 
 <style scoped>
-/* 实验台走全屏：解除 .container 的 720px 居中限制 */
+/* 实验台比笔记宽（要容纳左导航+右内容），但不铺满超宽屏：1200px 居中 */
 .container.full-width {
-  max-width: none;
-  margin: 0;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 0 16px;
 }
 
