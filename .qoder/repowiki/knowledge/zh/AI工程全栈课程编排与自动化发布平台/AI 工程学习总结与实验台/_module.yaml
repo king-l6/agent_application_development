@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: site_static
+title: AI 工程学习总结与实验台
+scope:
+    - site/
+source_files: []
+depends_on: []
+related_to:
+    - path: scripts_tooling

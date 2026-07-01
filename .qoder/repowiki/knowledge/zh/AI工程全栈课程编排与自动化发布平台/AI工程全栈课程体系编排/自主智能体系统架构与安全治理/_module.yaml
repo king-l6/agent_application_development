@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/autonomous_systems
+title: 自主智能体系统架构与安全治理
+scope:
+    - phases/15-autonomous-systems/
+source_files: []
+depends_on: []
+related_to: []

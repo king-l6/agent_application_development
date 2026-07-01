@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/math_foundations
+title: AI数学基础与直觉构建
+scope:
+    - phases/01-math-foundations/
+source_files: []
+depends_on: []
+related_to: []

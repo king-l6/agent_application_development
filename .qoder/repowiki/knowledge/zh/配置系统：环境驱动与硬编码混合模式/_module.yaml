@@ -1,0 +1,14 @@
+schema_version: 1
+module_path: configuration_system
+title: 配置系统：环境驱动与硬编码混合模式
+scope: []
+source_files:
+    - guardrails-sandbox/backend/llm_client.py
+    - guardrails-sandbox/backend/main.py
+    - guardrails-sandbox/frontend/vite.config.ts
+    - vercel.json
+    - site/build.js
+    - phases/00-setup-and-tooling/04-apis-and-keys/code/first_api_call.ts
+    - phases/11-llm-engineering/14-model-context-protocol/code/real_server.py
+depends_on: []
+related_to: []

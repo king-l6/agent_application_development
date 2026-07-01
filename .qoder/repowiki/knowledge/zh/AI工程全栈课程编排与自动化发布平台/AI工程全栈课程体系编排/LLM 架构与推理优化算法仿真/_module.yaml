@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/llms_from_scratch
+title: LLM 架构与推理优化算法仿真
+scope:
+    - phases/10-llms-from-scratch/
+source_files: []
+depends_on: []
+related_to: []

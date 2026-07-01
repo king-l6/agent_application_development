@@ -1,0 +1,12 @@
+schema_version: 1
+module_path: build_system
+title: 课程化静态站点构建与自动化发布管线
+scope: []
+source_files:
+    - site/build.js
+    - .github/workflows/curriculum.yml
+    - vercel.json
+    - scripts/deploy-learning-notes.sh
+    - scripts/audit_lessons.py
+depends_on: []
+related_to: []

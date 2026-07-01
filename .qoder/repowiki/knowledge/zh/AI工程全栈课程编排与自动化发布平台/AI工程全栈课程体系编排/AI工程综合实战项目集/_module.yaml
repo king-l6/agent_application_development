@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/capstone_projects
+title: AI工程综合实战项目集
+scope:
+    - phases/19-capstone-projects/
+source_files: []
+depends_on: []
+related_to: []

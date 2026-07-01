@@ -1,0 +1,36 @@
+schema_version: 1
+module_path: ""
+title: AI工程全栈课程编排与自动化发布平台
+scope:
+    - README.md
+    - CONTRIBUTING.md
+    - .gitignore
+    - AGENTS.md
+    - CODE_OF_CONDUCT.md
+    - FORKING.md
+    - LESSON_TEMPLATE.md
+    - ROADMAP.md
+    - SPONSORS.md
+    - requirements.txt
+    - vercel.json
+    - .coderabbit.yaml
+    - CHANGELOG.md
+    - LICENSE
+    - finetune.py
+    - finetune_colab.ipynb
+    - page_1_ocr.txt
+    - test_adapter.py
+    - test_api.py
+    - test_embedding.py
+    - test_eval.py
+    - test_eval_real.py
+    - test_lora_demo.py
+    - test_pdf_ocr.py
+    - test_production.py
+    - test_rag.py
+    - train_and_test.py
+    - train_data.jsonl
+    - zqB10617.pdf
+source_files: []
+depends_on: []
+related_to: []

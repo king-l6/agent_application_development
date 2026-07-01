@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: guardrails_sandbox/frontend_app
+title: AI护栏沙箱前端交互界面
+scope:
+    - guardrails-sandbox/frontend/
+source_files: []
+depends_on: []
+related_to:
+    - path: guardrails_sandbox/backend_service

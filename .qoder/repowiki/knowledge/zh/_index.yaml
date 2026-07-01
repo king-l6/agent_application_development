@@ -1,0 +1,457 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+branch: main
+nodes_managed: true
+exported_at: "2026-07-01T11:51:40Z"
+modules:
+    "":
+        dir_name: AI工程全栈课程编排与自动化发布平台
+        title: AI工程全栈课程编排与自动化发布平台
+        scope:
+            - README.md
+            - CONTRIBUTING.md
+            - .gitignore
+            - AGENTS.md
+            - CODE_OF_CONDUCT.md
+            - FORKING.md
+            - LESSON_TEMPLATE.md
+            - ROADMAP.md
+            - SPONSORS.md
+            - requirements.txt
+            - vercel.json
+            - .coderabbit.yaml
+            - CHANGELOG.md
+            - LICENSE
+            - finetune.py
+            - finetune_colab.ipynb
+            - page_1_ocr.txt
+            - test_adapter.py
+            - test_api.py
+            - test_embedding.py
+            - test_eval.py
+            - test_eval_real.py
+            - test_lora_demo.py
+            - test_pdf_ocr.py
+            - test_production.py
+            - test_rag.py
+            - train_and_test.py
+            - train_data.jsonl
+            - zqB10617.pdf
+        source_files: []
+        children:
+            - curriculum_phases
+            - glossary_docs
+            - guardrails_sandbox
+            - memory_state
+            - scripts_tooling
+            - site_static
+        depends_on: []
+        related_to: []
+    build_system:
+        dir_name: 课程化静态站点构建与自动化发布管线
+        title: 课程化静态站点构建与自动化发布管线
+        scope: []
+        source_files:
+            - site/build.js
+            - .github/workflows/curriculum.yml
+            - vercel.json
+            - scripts/deploy-learning-notes.sh
+            - scripts/audit_lessons.py
+        children: []
+        depends_on: []
+        related_to: []
+    configuration_system:
+        dir_name: 配置系统：环境驱动与硬编码混合模式
+        title: 配置系统：环境驱动与硬编码混合模式
+        scope: []
+        source_files:
+            - guardrails-sandbox/backend/llm_client.py
+            - guardrails-sandbox/backend/main.py
+            - guardrails-sandbox/frontend/vite.config.ts
+            - vercel.json
+            - site/build.js
+            - phases/00-setup-and-tooling/04-apis-and-keys/code/first_api_call.ts
+            - phases/11-llm-engineering/14-model-context-protocol/code/real_server.py
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases:
+        dir_name: AI工程全栈课程体系编排
+        title: AI工程全栈课程体系编排
+        scope:
+            - phases/
+        source_files: []
+        children:
+            - curriculum_phases/agent_engineering
+            - curriculum_phases/autonomous_systems
+            - curriculum_phases/capstone_projects
+            - curriculum_phases/computer_vision
+            - curriculum_phases/deep_learning_core
+            - curriculum_phases/ethics_safety_alignment
+            - curriculum_phases/generative_ai
+            - curriculum_phases/infrastructure_and_production
+            - curriculum_phases/llm_engineering
+            - curriculum_phases/llms_from_scratch
+            - curriculum_phases/math_foundations
+            - curriculum_phases/ml_fundamentals
+            - curriculum_phases/multi_agent_and_swarms
+            - curriculum_phases/multimodal_ai
+            - curriculum_phases/nlp_foundations_to_advanced
+            - curriculum_phases/reinforcement_learning
+            - curriculum_phases/setup_and_tooling
+            - curriculum_phases/speech_and_audio
+            - curriculum_phases/tools_and_protocols
+            - curriculum_phases/transformers_deep_dive
+        depends_on: []
+        related_to:
+            - path: scripts_tooling
+    curriculum_phases/agent_engineering:
+        dir_name: 智能体工程与编排架构
+        title: 智能体工程与编排架构
+        scope:
+            - phases/14-agent-engineering/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: curriculum_phases/llm_engineering
+            - path: curriculum_phases/multi_agent_and_swarms
+            - path: curriculum_phases/tools_and_protocols
+    curriculum_phases/autonomous_systems:
+        dir_name: 自主智能体系统架构与安全治理
+        title: 自主智能体系统架构与安全治理
+        scope:
+            - phases/15-autonomous-systems/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/capstone_projects:
+        dir_name: AI工程综合实战项目集
+        title: AI工程综合实战项目集
+        scope:
+            - phases/19-capstone-projects/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/computer_vision:
+        dir_name: 计算机视觉全栈能力培养
+        title: 计算机视觉全栈能力培养
+        scope:
+            - phases/04-computer-vision/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/deep_learning_core:
+        dir_name: 深度学习核心原理与框架实现
+        title: 深度学习核心原理与框架实现
+        scope:
+            - phases/03-deep-learning-core/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/ethics_safety_alignment:
+        dir_name: AI伦理、安全与对齐工程
+        title: AI伦理、安全与对齐工程
+        scope:
+            - phases/18-ethics-safety-alignment/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/generative_ai:
+        dir_name: 生成式AI核心原理与多模态工程
+        title: 生成式AI核心原理与多模态工程
+        scope:
+            - phases/08-generative-ai/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/infrastructure_and_production:
+        dir_name: AI 基础设施与生产工程
+        title: AI 基础设施与生产工程
+        scope:
+            - phases/17-infrastructure-and-production/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/llm_engineering:
+        dir_name: LLM工程化与生产级应用架构
+        title: LLM工程化与生产级应用架构
+        scope:
+            - phases/11-llm-engineering/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: curriculum_phases/agent_engineering
+            - path: curriculum_phases/tools_and_protocols
+            - path: guardrails_sandbox/backend_service/adapters
+    curriculum_phases/llms_from_scratch:
+        dir_name: LLM 架构与推理优化算法仿真
+        title: LLM 架构与推理优化算法仿真
+        scope:
+            - phases/10-llms-from-scratch/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/math_foundations:
+        dir_name: AI数学基础与直觉构建
+        title: AI数学基础与直觉构建
+        scope:
+            - phases/01-math-foundations/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/ml_fundamentals:
+        dir_name: 经典机器学习基础与工程实践
+        title: 经典机器学习基础与工程实践
+        scope:
+            - phases/02-ml-fundamentals/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/multi_agent_and_swarms:
+        dir_name: 多智能体协作与群体智能架构
+        title: 多智能体协作与群体智能架构
+        scope:
+            - phases/16-multi-agent-and-swarms/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: curriculum_phases/agent_engineering
+    curriculum_phases/multimodal_ai:
+        dir_name: 多模态AI架构与工程实践
+        title: 多模态AI架构与工程实践
+        scope:
+            - phases/12-multimodal-ai/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/nlp_foundations_to_advanced:
+        dir_name: NLP基础与进阶技术栈
+        title: NLP基础与进阶技术栈
+        scope:
+            - phases/05-nlp-foundations-to-advanced/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: curriculum_phases/transformers_deep_dive
+    curriculum_phases/reinforcement_learning:
+        dir_name: 强化学习核心算法与对齐架构
+        title: 强化学习核心算法与对齐架构
+        scope:
+            - phases/09-reinforcement-learning/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/setup_and_tooling:
+        dir_name: AI工程环境初始化与工具链配置
+        title: AI工程环境初始化与工具链配置
+        scope:
+            - phases/00-setup-and-tooling/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/speech_and_audio:
+        dir_name: 语音与音频工程基础
+        title: 语音与音频工程基础
+        scope:
+            - phases/06-speech-and-audio/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    curriculum_phases/tools_and_protocols:
+        dir_name: AI 工具接口与 MCP_A2A 协议
+        title: AI 工具接口与 MCP/A2A 协议
+        scope:
+            - phases/13-tools-and-protocols/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: curriculum_phases/agent_engineering
+            - path: curriculum_phases/llm_engineering
+    curriculum_phases/transformers_deep_dive:
+        dir_name: Transformer 架构深度解析与工程实现
+        title: Transformer 架构深度解析与工程实现
+        scope:
+            - phases/07-transformers-deep-dive/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: curriculum_phases/nlp_foundations_to_advanced
+    dependency_management:
+        dir_name: 依赖管理策略：多环境隔离与混合包管理器
+        title: 依赖管理策略：多环境隔离与混合包管理器
+        scope: []
+        source_files:
+            - requirements.txt
+            - guardrails-sandbox/frontend/package.json
+            - guardrails-sandbox/frontend/package-lock.json
+            - site/vue-app/summary/package.json
+            - site/vue-app/summary/package-lock.json
+            - phases/00-setup-and-tooling/06-python-environments/docs/en.md
+        children: []
+        depends_on: []
+        related_to: []
+    error_handling:
+        dir_name: 错误处理与护栏拦截机制
+        title: 错误处理与护栏拦截机制
+        scope: []
+        source_files:
+            - guardrails-sandbox/backend/pipeline.py
+            - guardrails-sandbox/backend/adapters/base.py
+            - guardrails-sandbox/backend/main.py
+            - guardrails-sandbox/backend/llm_client.py
+            - guardrails-sandbox/backend/playground/registry.py
+            - guardrails-sandbox/backend/adapters/format_validator.py
+        children: []
+        depends_on: []
+        related_to: []
+    frontend_style:
+        dir_name: 前端视觉风格与主题系统
+        title: 前端视觉风格与主题系统
+        scope: []
+        source_files:
+            - site/style.css
+            - site/index.html
+            - guardrails-sandbox/frontend/src/App.vue
+            - site/vue-app/summary/src/assets/styles.css
+            - site/vue-app/summary/src/components/PlaygroundView.vue
+        children: []
+        depends_on: []
+        related_to: []
+    glossary_docs:
+        dir_name: AI工程术语与误区澄清
+        title: AI工程术语与误区澄清
+        scope:
+            - glossary/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    guardrails_sandbox:
+        dir_name: AI 护栏与工程化实验沙箱
+        title: AI 护栏与工程化实验沙箱
+        scope:
+            - guardrails-sandbox/
+        source_files: []
+        children:
+            - guardrails_sandbox/backend_service
+            - guardrails_sandbox/frontend_app
+        depends_on: []
+        related_to: []
+    guardrails_sandbox/backend_service:
+        dir_name: AI 护栏与工程化实验后端服务
+        title: AI 护栏与工程化实验后端服务
+        scope:
+            - guardrails-sandbox/backend/
+        source_files: []
+        children:
+            - guardrails_sandbox/backend_service/adapters
+            - guardrails_sandbox/backend_service/core_pipeline
+            - guardrails_sandbox/backend_service/playground
+        depends_on: []
+        related_to:
+            - path: guardrails_sandbox/frontend_app
+    guardrails_sandbox/backend_service/adapters:
+        dir_name: AI 护栏适配器层
+        title: AI 护栏适配器层
+        scope:
+            - guardrails-sandbox/backend/adapters/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: curriculum_phases/llm_engineering
+    guardrails_sandbox/backend_service/core_pipeline:
+        dir_name: AI 安全护栏核心管线与评估引擎
+        title: AI 安全护栏核心管线与评估引擎
+        scope:
+            - guardrails-sandbox/backend/main.py
+            - guardrails-sandbox/backend/pipeline.py
+            - guardrails-sandbox/backend/llm_client.py
+            - guardrails-sandbox/backend/benchmark.py
+            - guardrails-sandbox/backend/test_cases.py
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    guardrails_sandbox/backend_service/playground:
+        dir_name: AI 工程化教学实验台（Playground）
+        title: AI 工程化教学实验台（Playground）
+        scope:
+            - guardrails-sandbox/backend/playground/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    guardrails_sandbox/frontend_app:
+        dir_name: AI护栏沙箱前端交互界面
+        title: AI护栏沙箱前端交互界面
+        scope:
+            - guardrails-sandbox/frontend/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: guardrails_sandbox/backend_service
+    logging_system:
+        dir_name: 日志与可观测性体系
+        title: 日志与可观测性体系
+        scope: []
+        source_files:
+            - phases/00-setup-and-tooling/12-debugging-and-profiling/code/debug_tools.py
+            - phases/14-agent-engineering/23-otel-genai-conventions/docs/en.md
+            - phases/19-capstone-projects/52-experiment-runner/code/main.py
+            - guardrails-sandbox/backend/main.py
+        children: []
+        depends_on: []
+        related_to: []
+    memory_state:
+        dir_name: 学习进度与面试话术规范记忆库
+        title: 学习进度与面试话术规范记忆库
+        scope:
+            - memory/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    scripts_tooling:
+        dir_name: 课程工程化与自动化运维工具集
+        title: 课程工程化与自动化运维工具集
+        scope:
+            - scripts/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: curriculum_phases
+            - path: site_static
+    site_static:
+        dir_name: AI 工程学习总结与实验台
+        title: AI 工程学习总结与实验台
+        scope:
+            - site/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: scripts_tooling

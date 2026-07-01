@@ -1,0 +1,10 @@
+schema_version: 1
+module_path: curriculum_phases/tools_and_protocols
+title: AI 工具接口与 MCP/A2A 协议
+scope:
+    - phases/13-tools-and-protocols/
+source_files: []
+depends_on: []
+related_to:
+    - path: curriculum_phases/agent_engineering
+    - path: curriculum_phases/llm_engineering

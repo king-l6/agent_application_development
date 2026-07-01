@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: guardrails_sandbox
+title: AI 护栏与工程化实验沙箱
+scope:
+    - guardrails-sandbox/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,12 @@
+schema_version: 1
+module_path: frontend_style
+title: 前端视觉风格与主题系统
+scope: []
+source_files:
+    - site/style.css
+    - site/index.html
+    - guardrails-sandbox/frontend/src/App.vue
+    - site/vue-app/summary/src/assets/styles.css
+    - site/vue-app/summary/src/components/PlaygroundView.vue
+depends_on: []
+related_to: []

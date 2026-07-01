@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/computer_vision
+title: 计算机视觉全栈能力培养
+scope:
+    - phases/04-computer-vision/
+source_files: []
+depends_on: []
+related_to: []

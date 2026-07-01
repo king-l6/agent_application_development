@@ -1,0 +1,13 @@
+schema_version: 1
+module_path: dependency_management
+title: 依赖管理策略：多环境隔离与混合包管理器
+scope: []
+source_files:
+    - requirements.txt
+    - guardrails-sandbox/frontend/package.json
+    - guardrails-sandbox/frontend/package-lock.json
+    - site/vue-app/summary/package.json
+    - site/vue-app/summary/package-lock.json
+    - phases/00-setup-and-tooling/06-python-environments/docs/en.md
+depends_on: []
+related_to: []

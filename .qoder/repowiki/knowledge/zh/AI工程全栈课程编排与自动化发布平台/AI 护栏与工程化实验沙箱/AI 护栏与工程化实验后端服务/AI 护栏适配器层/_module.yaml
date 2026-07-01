@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: guardrails_sandbox/backend_service/adapters
+title: AI 护栏适配器层
+scope:
+    - guardrails-sandbox/backend/adapters/
+source_files: []
+depends_on: []
+related_to:
+    - path: curriculum_phases/llm_engineering

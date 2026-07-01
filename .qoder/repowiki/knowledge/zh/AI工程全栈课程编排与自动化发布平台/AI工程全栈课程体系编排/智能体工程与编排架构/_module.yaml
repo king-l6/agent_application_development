@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: curriculum_phases/agent_engineering
+title: 智能体工程与编排架构
+scope:
+    - phases/14-agent-engineering/
+source_files: []
+depends_on: []
+related_to:
+    - path: curriculum_phases/llm_engineering
+    - path: curriculum_phases/multi_agent_and_swarms
+    - path: curriculum_phases/tools_and_protocols

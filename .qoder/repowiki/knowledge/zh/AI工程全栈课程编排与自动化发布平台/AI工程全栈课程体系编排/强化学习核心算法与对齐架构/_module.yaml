@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/reinforcement_learning
+title: 强化学习核心算法与对齐架构
+scope:
+    - phases/09-reinforcement-learning/
+source_files: []
+depends_on: []
+related_to: []

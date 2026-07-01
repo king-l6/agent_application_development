@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/deep_learning_core
+title: 深度学习核心原理与框架实现
+scope:
+    - phases/03-deep-learning-core/
+source_files: []
+depends_on: []
+related_to: []

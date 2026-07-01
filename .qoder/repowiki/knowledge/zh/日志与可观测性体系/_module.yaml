@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: logging_system
+title: 日志与可观测性体系
+scope: []
+source_files:
+    - phases/00-setup-and-tooling/12-debugging-and-profiling/code/debug_tools.py
+    - phases/14-agent-engineering/23-otel-genai-conventions/docs/en.md
+    - phases/19-capstone-projects/52-experiment-runner/code/main.py
+    - guardrails-sandbox/backend/main.py
+depends_on: []
+related_to: []
