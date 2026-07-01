@@ -1,7 +1,5 @@
 <template>
   <div class="container">
-    <AppHeader />
-
     <!-- 顶层大 tab：学习笔记 / 实验台 -->
     <div class="top-tabs">
       <button
@@ -13,7 +11,7 @@
         class="top-tab-btn"
         :class="{ active: topTab === 'playground' }"
         @click="topTab = 'playground'"
-      >🧪 实验台</button>
+      >🧪 AI 工程学习实验台</button>
     </div>
 
     <!-- ===== 学习笔记 ===== -->
@@ -48,7 +46,6 @@
 <script setup>
 import { ref } from 'vue'
 import { siteData } from './data/content.js'
-import AppHeader from './components/AppHeader.vue'
 import DayContent from './components/DayContent.vue'
 import PracticeView from './components/PracticeView.vue'
 import PlaygroundView from './components/PlaygroundView.vue'

@@ -76,18 +76,25 @@ function runConfidenceRouter(inputs) {
   }
 }
 
-// ── 实验注册表 ────────────────────────────────────────────────
-export const playgroundExperiments = [
+// ── 实验注册表（按 phase 分组，还原老 sandbox 左侧导航）──────────
+// 每个模块：{ name, displayName, lesson, description, inputs[], run }
+export const playgroundGroups = [
   {
-    id: 'confidence-router',
-    title: '置信度阈值路由（客服分流）',
-    phase: 'Phase 14 · Agent 工程',
-    lesson: '12 工作流模式',
-    description: '路由模式落地：分类器给每条消息判类别+置信度，低于阈值转人工。调阈值看自动率/人工率权衡（练习题1）。',
-    inputs: [
-      { name: 'threshold', label: '置信度阈值 (0~1)', type: 'number', default: 0.7,
-        help: '低于此值＝分类器没把握→转人工。一级客服可低(0.6~0.7)，高风险业务调高(0.9)' },
+    phase: '14-agent-engineering',
+    icon: '🤖',
+    label: 'Phase 14 · Agent 工程',
+    modules: [
+      {
+        name: 'confidence-router',
+        displayName: '置信度阈值路由（客服分流）',
+        lesson: '12 工作流模式',
+        description: '路由模式落地：分类器给每条消息判类别+置信度，低于阈值转人工。调阈值看自动率/人工率权衡（练习题1）。',
+        inputs: [
+          { name: 'threshold', label: '置信度阈值 (0~1)', type: 'number', default: 0.7,
+            help: '低于此值＝分类器没把握→转人工。一级客服可低(0.6~0.7)，高风险业务调高(0.9)' },
+        ],
+        run: runConfidenceRouter,
+      },
     ],
-    run: runConfidenceRouter,
   },
 ]
