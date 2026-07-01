@@ -256,6 +256,8 @@ function kvEntries(items) {
 }
 .block-table th { color: var(--pg-text-dim); font-weight: 600; }
 .block-table td { color: var(--pg-text); word-break: break-word; }
+/* 覆盖笔记全局的浅色 tr:hover（深色主题下用低调的深色高亮） */
+.block-table tr:hover td { background: var(--pg-surface-hover); }
 
 .block-kv .kv-row {
   display: flex; justify-content: space-between; gap: 12px; padding: 6px 0;
