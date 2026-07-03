@@ -6,13 +6,17 @@
   "scripts": {
     "gen:coderefs": "node scripts/gen-code-refs.mjs",
     "gen:checkpoints": "node scripts/gen-checkpoint-snapshot.mjs",
-    "predev": "node scripts/gen-code-refs.mjs && node scripts/gen-checkpoint-snapshot.mjs",
+    "gen:wiki": "node scripts/gen-wiki.mjs",
+    "predev": "node scripts/gen-code-refs.mjs && node scripts/gen-checkpoint-snapshot.mjs && node scripts/gen-wiki.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/gen-code-refs.mjs && node scripts/gen-checkpoint-snapshot.mjs",
+    "prebuild": "node scripts/gen-code-refs.mjs && node scripts/gen-checkpoint-snapshot.mjs && node scripts/gen-wiki.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "highlight.js": "^11.11.1",
+    "marked": "^14.1.4",
+    "mermaid": "^11.16.0",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0"
   },

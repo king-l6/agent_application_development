@@ -1,6 +1,6 @@
 <template>
-  <div class="container" :class="{ 'full-width': topTab === 'playground' }">
-    <!-- 顶层大 tab：学习笔记 / 实验台 -->
+  <div class="container" :class="{ 'full-width': topTab === 'playground' || topTab === 'wiki' }">
+    <!-- 顶层大 tab：学习笔记 / 实验台 / Repo Wiki -->
     <div class="top-tabs">
       <button
         class="top-tab-btn"
@@ -12,6 +12,11 @@
         :class="{ active: topTab === 'playground' }"
         @click="topTab = 'playground'"
       >🧪 AI 工程学习实验台</button>
+      <button
+        class="top-tab-btn"
+        :class="{ active: topTab === 'wiki' }"
+        @click="topTab = 'wiki'"
+      >📚 Repo Wiki</button>
     </div>
 
     <!-- ===== 学习笔记 ===== -->
@@ -57,16 +62,24 @@
       <PlaygroundView v-if="pgTab === 'modules'" />
       <CheckpointDbView v-else-if="pgTab === 'checkpoints'" />
     </template>
+
+    <!-- ===== Repo Wiki ===== -->
+    <template v-else-if="topTab === 'wiki'">
+      <WikiView />
+    </template>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import { siteData } from './data/content.js'
 import DayContent from './components/DayContent.vue'
 import PracticeView from './components/PracticeView.vue'
 import PlaygroundView from './components/PlaygroundView.vue'
 import CheckpointDbView from './components/CheckpointDbView.vue'
+// Repo Wiki 数据量大（含 337 篇正文 + mermaid），异步加载：
+// 只有点开「Repo Wiki」tab 时才拉取，避免拖慢笔记/实验台首屏。
+const WikiView = defineAsyncComponent(() => import('./components/WikiView.vue'))
 
 const days = siteData.days
 
