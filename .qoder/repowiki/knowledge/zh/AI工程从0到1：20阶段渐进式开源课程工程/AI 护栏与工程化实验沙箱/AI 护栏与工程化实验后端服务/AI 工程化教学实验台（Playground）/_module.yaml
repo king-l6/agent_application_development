@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: guardrails_sandbox/backend_service/playground
+title: AI 工程化教学实验台（Playground）
+scope:
+    - guardrails-sandbox/backend/playground/
+source_files: []
+depends_on: []
+related_to: []

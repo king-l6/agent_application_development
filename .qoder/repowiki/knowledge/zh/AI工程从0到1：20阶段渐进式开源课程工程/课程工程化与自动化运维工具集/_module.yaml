@@ -1,0 +1,10 @@
+schema_version: 1
+module_path: scripts_tooling
+title: 课程工程化与自动化运维工具集
+scope:
+    - scripts/
+source_files: []
+depends_on: []
+related_to:
+    - path: curriculum_phases
+    - path: site_static

@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/speech_and_audio
+title: 语音与音频工程基础
+scope:
+    - phases/06-speech-and-audio/
+source_files: []
+depends_on: []
+related_to: []

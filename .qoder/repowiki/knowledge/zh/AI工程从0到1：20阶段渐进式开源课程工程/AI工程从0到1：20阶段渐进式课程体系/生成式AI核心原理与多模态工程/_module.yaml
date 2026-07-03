@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/generative_ai
+title: 生成式AI核心原理与多模态工程
+scope:
+    - phases/08-generative-ai/
+source_files: []
+depends_on: []
+related_to: []

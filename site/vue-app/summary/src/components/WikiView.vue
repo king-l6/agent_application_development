@@ -3,28 +3,48 @@
     <!-- 左侧：可折叠分类树 -->
     <aside class="wiki-nav">
       <div class="wiki-search">
-        <input v-model="q" type="text" placeholder="🔍 搜索文档标题…" />
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input v-model="q" type="text" placeholder="搜索文档…" />
+        <button v-if="q" class="search-clear" @click="q = ''" title="清空">×</button>
       </div>
-      <ul class="tree-root">
+      <div class="tree-root">
         <WikiTreeNode
           v-for="node in filteredTree"
           :key="node.id"
           :node="node"
           :active-id="activeDocId"
           :expanded="expanded"
+          :depth="0"
           @select="selectDoc"
           @toggle="toggleNode"
         />
-      </ul>
+        <p v-if="!filteredTree.length" class="no-result">没有匹配的文档</p>
+      </div>
     </aside>
 
     <!-- 右侧：正文 -->
-    <section class="wiki-main">
+    <section class="wiki-main" ref="mainRef">
       <div v-if="!activeDoc" class="empty-state">
         <div class="empty-icon">📚</div>
         <p>从左侧选一篇文档开始阅读</p>
       </div>
-      <article v-else class="wiki-doc" v-html="renderedHtml"></article>
+      <template v-else>
+        <article class="wiki-doc" v-html="renderedHtml" @click="onDocClick"></article>
+        <!-- 引用文件清单：移到文末，折叠式卡片 -->
+        <aside v-if="citeHtml" class="wiki-cite">
+          <div class="cite-head">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <path d="M4 4h10l6 6v10a0 0 0 0 1 0 0H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M14 4v6h6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+            本文引用的文件
+          </div>
+          <div class="cite-body" v-html="citeHtml" @click="onExternalClick"></div>
+        </aside>
+      </template>
     </section>
   </div>
 </template>
@@ -45,7 +65,8 @@ const WikiTreeNode = defineComponent({
   props: {
     node: { type: Object, required: true },
     activeId: { type: String, default: null },
-    expanded: { type: Object, required: true }, // reactive Set-like via object map
+    expanded: { type: Object, required: true },
+    depth: { type: Number, default: 0 },
   },
   emits: ['select', 'toggle'],
   setup(props, { emit }) {
@@ -54,19 +75,28 @@ const WikiTreeNode = defineComponent({
       const hasChildren = n.children && n.children.length > 0
       const isOpen = props.expanded[n.id]
       const isActive = props.activeId === n.docId && n.docId
+      const isTop = props.depth === 0
+
       const rowChildren = []
+      // 展开箭头（仅有子节点时显示，用旋转动画）
       if (hasChildren) {
         rowChildren.push(h('span', {
           class: ['caret', { open: isOpen }],
           onClick: (e) => { e.stopPropagation(); emit('toggle', n.id) },
-        }, isOpen ? '▾' : '▸'))
+        }, svgCaret()))
       } else {
-        rowChildren.push(h('span', { class: 'caret placeholder' }, ''))
+        rowChildren.push(h('span', { class: 'caret placeholder' }))
       }
       rowChildren.push(h('span', { class: 'node-title' }, n.title))
 
       const row = h('div', {
-        class: ['tree-row', { active: isActive, group: hasChildren }],
+        class: ['tree-row', {
+          active: isActive,
+          'is-top': isTop,
+          'is-group': hasChildren,
+          'has-doc': !!n.docId,
+        }],
+        style: isTop ? undefined : { paddingLeft: (10 + props.depth * 14) + 'px' },
         onClick: () => {
           if (n.docId) emit('select', n.docId)
           else if (hasChildren) emit('toggle', n.id)
@@ -74,18 +104,25 @@ const WikiTreeNode = defineComponent({
       }, rowChildren)
 
       const kids = (hasChildren && isOpen)
-        ? h('ul', { class: 'tree-children' }, n.children.map(c =>
+        ? h('div', { class: 'tree-children' }, n.children.map(c =>
             h(WikiTreeNode, {
-              node: c, activeId: props.activeId, expanded: props.expanded,
+              node: c, activeId: props.activeId, expanded: props.expanded, depth: props.depth + 1,
               onSelect: (id) => emit('select', id),
               onToggle: (id) => emit('toggle', id),
             })))
         : null
 
-      return h('li', { class: 'tree-node' }, [row, kids])
+      return h('div', { class: ['tree-node', { 'top-node': isTop }] }, [row, kids])
     }
   }
 })
+
+// 内联 SVG 箭头（比字符更清晰、可平滑旋转）
+function svgCaret() {
+  return h('svg', { width: 10, height: 10, viewBox: '0 0 24 24', fill: 'none' }, [
+    h('path', { d: 'M9 6l6 6-6 6', stroke: 'currentColor', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
+  ])
+}
 
 // ---- 状态 ----
 const q = ref('')
@@ -142,6 +179,15 @@ watch(q, (kw) => {
 // ---- markdown 渲染 ----
 // marked v14 移除了 setOptions({highlight})，改用自定义 renderer.code 做高亮。
 // mermaid 块在 preprocessMermaid 已抽走，这里只处理普通代码块。
+// 生成标题锚点 id。marked 里的「目录」链接形如 [引言](#引言)，target 就是标题原文，
+// 所以 id 用「原文去空格」而非常见的英文 slug，才能让中文锚点对上。
+function headingId(text) {
+  return String(text)
+    .replace(/<[^>]+>/g, '')      // 去内联标签
+    .trim()
+    .replace(/\s+/g, '-')         // 空白转连字符（对应 marked 目录里 [x](#x) 的写法）
+}
+
 const renderer = new marked.Renderer()
 renderer.code = ({ text, lang }) => {
   let html
@@ -152,6 +198,12 @@ renderer.code = ({ text, lang }) => {
   }
   const cls = lang ? ` class="language-${lang}"` : ''
   return `<pre><code${cls}>${html}</code></pre>`
+}
+renderer.heading = ({ tokens, depth }) => {
+  const inner = renderer.parser.parseInline(tokens)
+  const raw = tokens.map(t => t.raw || t.text || '').join('')
+  const id = headingId(raw)
+  return `<h${depth} id="${id}">${inner}</h${depth}>\n`
 }
 marked.setOptions({ gfm: true, breaks: false, renderer })
 
@@ -171,21 +223,39 @@ function preprocessMermaid(md) {
   return { replaced, blocks }
 }
 
+// 抽出 <cite>...</cite>「本文档引用的文件」块。它在原文里紧跟标题、很占地方，
+// 移到文末更符合阅读习惯（对齐 Qoder：引用清单放最后）。
+function extractCite(md) {
+  const m = md.match(/<cite>([\s\S]*?)<\/cite>/i)
+  if (!m) return { body: md, cite: '' }
+  const body = md.replace(m[0], '').replace(/\n{3,}/g, '\n\n')
+  // 去掉块内那句「**本文档引用的文件**」标题——我们自己渲染带图标的卡片头
+  const cite = m[1].replace(/\*\*本文档引用的文件\*\*/g, '').trim()
+  return { body, cite }
+}
+
 const renderedHtml = ref('')
+const citeHtml = ref('')
 let currentBlocks = []
 
 watch(activeDoc, (doc) => {
-  if (!doc) { renderedHtml.value = ''; return }
-  const { replaced, blocks } = preprocessMermaid(doc.markdown)
+  if (!doc) { renderedHtml.value = ''; citeHtml.value = ''; return }
+  const { body, cite } = extractCite(doc.markdown)
+  const { replaced, blocks } = preprocessMermaid(body)
   currentBlocks = blocks
   renderedHtml.value = marked.parse(replaced)
+  citeHtml.value = cite ? marked.parse(cite) : ''
   nextTick(renderMermaidAndScroll)
 }, { immediate: true })
 
+const mainRef = ref(null)
+
 async function renderMermaidAndScroll() {
-  // 渲染 mermaid 占位块
+  const root = mainRef.value
+  if (!root) return
+  // 渲染 mermaid 占位块（限定在当前正文内查找，避免全局撞 id）
   for (const b of currentBlocks) {
-    const holder = document.querySelector(`.mermaid-holder[data-id="${b.id}"]`)
+    const holder = root.querySelector(`.mermaid-holder[data-id="${b.id}"]`)
     if (!holder) continue
     try {
       const { svg } = await mermaid.render(`svg-${b.id}-${Date.now()}`, b.code)
@@ -195,83 +265,204 @@ async function renderMermaidAndScroll() {
     }
   }
   // 切换文档后滚回顶部
-  const main = document.querySelector('.wiki-main')
-  if (main) main.scrollTop = 0
+  root.scrollTop = 0
+}
+
+// 拦截正文内的锚点点击（如目录里的 [引言](#引言)）。
+// 正文在自带滚动条的容器里，默认的 hash 跳转不生效，需手动滚到目标标题。
+function onDocClick(e) {
+  const a = e.target.closest('a')
+  if (!a) return
+  const href = a.getAttribute('href') || ''
+  if (!href.startsWith('#')) {               // 外链（GitHub 源文件等）新标签打开
+    if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener' }
+    return
+  }
+  e.preventDefault()
+  const id = decodeURIComponent(href.slice(1))
+  const root = mainRef.value
+  if (!root) return
+  // id 可能因编码差异对不上，做一次兜底：先精确查，再按标题文本模糊找
+  let target = root.querySelector(`[id="${CSS.escape(id)}"]`)
+  if (!target) {
+    const heads = root.querySelectorAll('h1,h2,h3,h4,h5,h6')
+    target = Array.from(heads).find(h => h.textContent.trim() === id)
+  }
+  if (target) {
+    const top = target.offsetTop - root.offsetTop - 8
+    root.scrollTo({ top, behavior: 'smooth' })
+  }
+}
+
+// 引用清单里的 GitHub 链接：强制新标签打开
+function onExternalClick(e) {
+  const a = e.target.closest('a')
+  if (a && /^https?:/.test(a.getAttribute('href') || '')) {
+    a.target = '_blank'; a.rel = 'noopener'
+  }
 }
 </script>
 
 <style scoped>
 .wiki-panel {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 16px;
+  grid-template-columns: 272px 1fr;
+  gap: 20px;
   align-items: start;
 }
 
-/* 左侧导航 */
+/* ===== 左侧导航 ===== */
 .wiki-nav {
   position: sticky;
   top: 12px;
   max-height: calc(100vh - 90px);
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
-  padding: 10px;
+  border-radius: 12px;
+  padding: 12px 10px;
+}
+/* 细滚动条 */
+.wiki-nav::-webkit-scrollbar { width: 8px; }
+.wiki-nav::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
+.wiki-nav::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* 搜索框 */
+.wiki-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.wiki-search .search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
 }
 .wiki-search input {
   width: 100%;
   box-sizing: border-box;
-  padding: 7px 10px;
+  padding: 8px 30px 8px 32px;
   border: 1px solid var(--card-border);
-  border-radius: 8px;
+  border-radius: 9px;
   font-size: 0.85rem;
-  margin-bottom: 8px;
   background: var(--bg);
   color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.tree-root, .tree-children {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.wiki-search input:focus {
+  outline: none;
+  border-color: #9ca3af;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
 }
-.tree-children { padding-left: 14px; }
+.search-clear {
+  position: absolute;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: var(--card-border);
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.search-clear:hover { background: var(--text-muted); color: #fff; }
+
+.tree-root { display: flex; flex-direction: column; gap: 2px; }
+.no-result { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 20px 0; }
+
+/* 顶级节点之间留出呼吸间距 */
+.top-node { margin-bottom: 2px; }
+.top-node + .top-node { margin-top: 4px; }
+
+.tree-children { display: flex; flex-direction: column; gap: 1px; margin-top: 1px; }
+
+/* 通用条目行 —— 中性灰调，克制无花哨 */
 .tree-row {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
-  border-radius: 6px;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 7px;
   cursor: pointer;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.35;
+  font-size: 0.86rem;
+  color: #4b5563;
+  line-height: 1.5;
+  transition: background 0.12s, color 0.12s;
+  position: relative;
 }
-.tree-row:hover { background: var(--accent-light); color: var(--accent); }
-.tree-row.active { background: var(--accent); color: #fff; }
-.tree-row.group > .node-title { font-weight: 600; color: var(--text); }
-.tree-row.active.group > .node-title { color: #fff; }
-.caret {
-  width: 14px;
-  flex: none;
-  text-align: center;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  user-select: none;
-}
-.caret.placeholder { visibility: hidden; }
-.node-title { word-break: break-word; }
+.tree-row:hover { background: #f1f3f5; color: #111827; }
 
-/* 右侧正文 */
+/* 顶级分类：稍大字重、深色，像分区标题 */
+.tree-row.is-top {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+  padding: 7px 10px;
+}
+
+/* 子分组（中间层）：半粗体深色 */
+.tree-row.is-group:not(.is-top) > .node-title { font-weight: 500; color: #374151; }
+
+/* 选中态：浅灰整条圆角底 + 深色文字（对齐 Qoder），不用任何强调色 */
+.tree-row.active,
+.tree-row.active:hover {
+  background: #eceef1;
+  color: #111827;
+  font-weight: 600;
+}
+.tree-row.active > .node-title { color: #111827; }
+
+/* 展开箭头：默认朝右，展开旋转 90° 朝下 */
+.caret {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  user-select: none;
+  transition: transform 0.18s ease, color 0.12s;
+  border-radius: 4px;
+}
+.caret:hover { color: #4b5563; background: rgba(0,0,0,0.05); }
+.caret.open { transform: rotate(90deg); }
+.caret.placeholder { visibility: hidden; }
+
+.node-title {
+  word-break: break-word;
+  flex: 1;
+}
+
+/* ===== 右侧正文 ===== */
 .wiki-main {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
-  padding: 24px 32px;
+  border-radius: 14px;
+  padding: 32px 44px;
   min-height: 400px;
   max-height: calc(100vh - 90px);
   overflow-y: auto;
+  box-shadow: var(--shadow);
 }
+.wiki-main::-webkit-scrollbar { width: 10px; }
+.wiki-main::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 5px; }
+.wiki-main::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+/* 正文限宽，长文更易读 */
+.wiki-doc { max-width: 860px; }
+/* 标题带锚点定位偏移，点目录跳转不被顶部遮住 */
+.wiki-doc :deep(h1),
+.wiki-doc :deep(h2),
+.wiki-doc :deep(h3),
+.wiki-doc :deep(h4) { scroll-margin-top: 12px; }
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -341,15 +532,39 @@ async function renderMermaidAndScroll() {
   border: 1px solid #fecaca;
 }
 .wiki-doc :deep(img) { max-width: 100%; height: auto; }
-.wiki-doc :deep(cite) {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+/* 文末「本文引用的文件」卡片 */
+.wiki-cite {
+  max-width: 860px;
+  margin: 40px 0 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
   background: var(--bg);
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin: 8px 0 16px;
+  overflow: hidden;
 }
+.cite-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  background: #f1f3f5;
+  border-bottom: 1px solid var(--card-border);
+}
+.cite-head svg { color: var(--text-secondary); }
+.cite-body { padding: 10px 18px; }
+.wiki-cite :deep(ul) { margin: 0; padding-left: 20px; }
+.wiki-cite :deep(li) { margin: 4px 0; font-size: 0.84rem; }
+.wiki-cite :deep(p) { margin: 4px 0; }
+/* 引用清单里的文件链接：等宽字体 + 链接色，可点跳 GitHub */
+.wiki-cite :deep(a) {
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  color: #059669;
+  text-decoration: none;
+  word-break: break-all;
+}
+.wiki-cite :deep(a:hover) { text-decoration: underline; }
 
 @media (max-width: 820px) {
   .wiki-panel { grid-template-columns: 1fr; }

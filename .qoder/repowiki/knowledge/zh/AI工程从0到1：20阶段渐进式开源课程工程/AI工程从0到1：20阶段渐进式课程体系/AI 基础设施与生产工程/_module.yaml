@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/infrastructure_and_production
+title: AI 基础设施与生产工程
+scope:
+    - phases/17-infrastructure-and-production/
+source_files: []
+depends_on: []
+related_to: []

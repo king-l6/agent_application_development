@@ -3,11 +3,11 @@ schema_version: 1
 locale: zh-CN
 branch: main
 nodes_managed: true
-exported_at: "2026-07-02T11:43:42Z"
+exported_at: "2026-07-03T07:10:46Z"
 modules:
     "":
-        dir_name: AI工程全栈课程编排与自动化发布平台
-        title: AI工程全栈课程编排与自动化发布平台
+        dir_name: AI工程从0到1：20阶段渐进式开源课程工程
+        title: AI工程从0到1：20阶段渐进式开源课程工程
         scope:
             - README.md
             - CONTRIBUTING.md
@@ -77,8 +77,8 @@ modules:
         depends_on: []
         related_to: []
     curriculum_phases:
-        dir_name: AI工程全栈课程体系编排
-        title: AI工程全栈课程体系编排
+        dir_name: AI工程从0到1：20阶段渐进式课程体系
+        title: AI工程从0到1：20阶段渐进式课程体系
         scope:
             - phases/
         source_files: []
@@ -107,8 +107,8 @@ modules:
         related_to:
             - path: scripts_tooling
     curriculum_phases/agent_engineering:
-        dir_name: 智能体工程与编排架构
-        title: 智能体工程与编排架构
+        dir_name: 智能体工程范式与生产级工作流（Phase 14）
+        title: 智能体工程范式与生产级工作流（Phase 14）
         scope:
             - phases/14-agent-engineering/
         source_files: []
@@ -446,8 +446,8 @@ modules:
             - path: curriculum_phases
             - path: site_static
     site_static:
-        dir_name: AI 工程学习总结与实验台
-        title: AI 工程学习总结与实验台
+        dir_name: 课程站点静态前端与交互式实验台
+        title: 课程站点静态前端与交互式实验台
         scope:
             - site/
         source_files: []

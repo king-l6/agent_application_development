@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: memory_state
+title: 学习进度与面试话术规范记忆库
+scope:
+    - memory/
+source_files: []
+depends_on: []
+related_to: []
