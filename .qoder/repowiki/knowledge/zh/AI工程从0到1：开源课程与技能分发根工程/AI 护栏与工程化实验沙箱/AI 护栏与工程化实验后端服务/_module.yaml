@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: guardrails_sandbox/backend_service
+title: AI 护栏与工程化实验后端服务
+scope:
+    - guardrails-sandbox/backend/
+source_files: []
+depends_on: []
+related_to:
+    - path: guardrails_sandbox/frontend_app

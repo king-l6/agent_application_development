@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: curriculum_phases/llm_engineering
+title: LLM工程化与生产级应用架构
+scope:
+    - phases/11-llm-engineering/
+source_files: []
+depends_on: []
+related_to:
+    - path: curriculum_phases/agent_engineering
+    - path: curriculum_phases/tools_and_protocols
+    - path: guardrails_sandbox/backend_service/adapters

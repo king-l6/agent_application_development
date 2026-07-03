@@ -3,11 +3,11 @@ schema_version: 1
 locale: zh-CN
 branch: main
 nodes_managed: true
-exported_at: "2026-07-03T07:10:46Z"
+exported_at: "2026-07-03T09:46:00Z"
 modules:
     "":
-        dir_name: AI工程从0到1：20阶段渐进式开源课程工程
-        title: AI工程从0到1：20阶段渐进式开源课程工程
+        dir_name: AI工程从0到1：开源课程与技能分发根工程
+        title: AI工程从0到1：开源课程与技能分发根工程
         scope:
             - README.md
             - CONTRIBUTING.md
@@ -446,8 +446,8 @@ modules:
             - path: curriculum_phases
             - path: site_static
     site_static:
-        dir_name: 课程站点静态前端与交互式实验台
-        title: 课程站点静态前端与交互式实验台
+        dir_name: 课程站点静态资源与 Vue 实验台
+        title: 课程站点静态资源与 Vue 实验台
         scope:
             - site/
         source_files: []

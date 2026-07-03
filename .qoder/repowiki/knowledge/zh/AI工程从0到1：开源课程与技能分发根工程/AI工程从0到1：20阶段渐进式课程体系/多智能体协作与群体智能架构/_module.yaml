@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: curriculum_phases/multi_agent_and_swarms
+title: 多智能体协作与群体智能架构
+scope:
+    - phases/16-multi-agent-and-swarms/
+source_files: []
+depends_on: []
+related_to:
+    - path: curriculum_phases/agent_engineering

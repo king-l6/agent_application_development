@@ -411,14 +411,24 @@ function onExternalClick(e) {
 /* 子分组（中间层）：半粗体深色 */
 .tree-row.is-group:not(.is-top) > .node-title { font-weight: 500; color: #374151; }
 
-/* 选中态：浅灰整条圆角底 + 深色文字（对齐 Qoder），不用任何强调色 */
+/* 选中态：明显的灰底 + 左侧主题色竖条 + 深色加粗文字 */
 .tree-row.active,
 .tree-row.active:hover {
-  background: #eceef1;
-  color: #111827;
+  background: #e3e8ef;
+  color: #0f172a;
   font-weight: 600;
 }
-.tree-row.active > .node-title { color: #111827; }
+.tree-row.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+.tree-row.active > .node-title { color: #0f172a; }
 
 /* 展开箭头：默认朝右，展开旋转 90° 朝下 */
 .caret {
