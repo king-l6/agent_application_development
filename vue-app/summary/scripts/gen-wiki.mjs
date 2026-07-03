@@ -39,12 +39,18 @@ function redactSecrets(text) {
     .replace(/\b((?:sk|personal|ghp|xox[bap])[-_][A-Za-z0-9]{12,})\b/g, '***REDACTED***')
 }
 
-// ---- 清理正文里的本地 file:// 引用 ----
-// Qoder 会插入 <cite> 块与 [xxx](file://path) 链接，线上点不开，转成纯文本。
+// GitHub 源文件基址：Qoder 里的 file://path 是仓库相对路径，转成可点的 blob 链接。
+const GH_BLOB = 'https://github.com/king-l6/agent_application_development/blob/main/'
+
+// ---- 处理正文里的本地 file:// 引用 ----
+// Qoder 插入的 [label](file://phases/xxx) 线上点不开，改写成指向 GitHub 仓库源文件。
 function cleanMarkdown(md) {
   let out = md
-  // [label](file://xxx) -> label
-  out = out.replace(/\[([^\]]+)\]\(file:\/\/[^)]*\)/g, '$1')
+  // [label](file://relative/path) -> [label](https://github.com/.../blob/main/relative/path)
+  out = out.replace(/\[([^\]]+)\]\(file:\/\/([^)]*)\)/g, (_, label, p) => {
+    const rel = String(p).replace(/^\/+/, '')          // 去开头多余斜杠
+    return `[${label}](${GH_BLOB}${rel})`
+  })
   return redactSecrets(out)
 }
 
