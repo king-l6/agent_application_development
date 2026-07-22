@@ -1,0 +1,12 @@
+schema_version: 1
+module_path: guardrails_sandbox/backend_service/core_pipeline
+title: AI 安全护栏核心管线与评估引擎
+scope:
+    - guardrails-sandbox/backend/main.py
+    - guardrails-sandbox/backend/pipeline.py
+    - guardrails-sandbox/backend/llm_client.py
+    - guardrails-sandbox/backend/benchmark.py
+    - guardrails-sandbox/backend/test_cases.py
+source_files: []
+depends_on: []
+related_to: []

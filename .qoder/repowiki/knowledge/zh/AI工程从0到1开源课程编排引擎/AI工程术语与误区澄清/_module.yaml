@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: glossary_docs
+title: AI工程术语与误区澄清
+scope:
+    - glossary/
+source_files: []
+depends_on: []
+related_to: []

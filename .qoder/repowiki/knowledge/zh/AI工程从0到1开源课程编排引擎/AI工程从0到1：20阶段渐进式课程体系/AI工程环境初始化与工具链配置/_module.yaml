@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/setup_and_tooling
+title: AI工程环境初始化与工具链配置
+scope:
+    - phases/00-setup-and-tooling/
+source_files: []
+depends_on: []
+related_to: []

@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: site_static
+title: AI 工程课程静态站点与 Vue 实验台
+scope:
+    - site/
+source_files: []
+depends_on: []
+related_to:
+    - path: scripts_tooling

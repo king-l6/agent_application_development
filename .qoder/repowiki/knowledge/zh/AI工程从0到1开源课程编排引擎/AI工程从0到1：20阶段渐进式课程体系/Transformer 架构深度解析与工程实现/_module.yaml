@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: curriculum_phases/transformers_deep_dive
+title: Transformer 架构深度解析与工程实现
+scope:
+    - phases/07-transformers-deep-dive/
+source_files: []
+depends_on: []
+related_to:
+    - path: curriculum_phases/nlp_foundations_to_advanced

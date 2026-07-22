@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: curriculum_phases/multimodal_ai
+title: 多模态AI架构与工程实践
+scope:
+    - phases/12-multimodal-ai/
+source_files: []
+depends_on: []
+related_to: []

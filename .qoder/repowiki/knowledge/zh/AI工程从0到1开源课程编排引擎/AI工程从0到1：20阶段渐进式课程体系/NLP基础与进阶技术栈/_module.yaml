@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: curriculum_phases/nlp_foundations_to_advanced
+title: NLP基础与进阶技术栈
+scope:
+    - phases/05-nlp-foundations-to-advanced/
+source_files: []
+depends_on: []
+related_to:
+    - path: curriculum_phases/transformers_deep_dive
