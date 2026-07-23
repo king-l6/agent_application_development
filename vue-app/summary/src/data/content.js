@@ -1980,4 +1980,169 @@ else:
       ]
     }
   ]
+},
+    {
+      id: 9,
+      label: 'Day 9',
+      date: '2026年7月22日 · LangGraph 有状态图',
+      footer: 'Day 9 · 2026-07-22 · Phase 14-13 LangGraph 有状态图',
+      progress: {
+        label: '当前进度',
+        detail: 'Phase 14 · 已学 13 课',
+        percent: 76,
+        text: 'Phase 14 · 13 LangGraph 有状态图',
+        desc: '状态机三件套 + 检查点/恢复 + 并行归约 + SQLite 开销'
+      },
+      sections: [
+        {
+          emoji: '🕸',
+          title: '—— 第 13 课：LangGraph 有状态图 ——',
+          blocks: [
+            { type: 'text', text: '<strong>工作流模式（第 12 课）的图结构版：有向图 + 不可变状态 + 每步检查点。</strong>每个节点是纯函数 `(state) → update`，运行时在每个节点后序列化状态，支持从任意节点精确恢复。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '🧩',
+          title: '1. 三件套：State / Node / Edge',
+          tag: 'Phase 14-13',
+          blocks: [
+            { type: 'table', headers: ['组件', '定义', '作用'], rows: [
+              ['State 状态类型', 'TypedDict，不可变', '流经全图的数据。节点读它，返回更新'],
+              ['Node 节点', '纯函数 (state) → update', '每个节点做一件事：分类/执行/审批/发送'],
+              ['Edge 边', '静态或条件', '决定下一步去哪个节点。条件边用路由函数布尔分支']
+            ]},
+            { type: 'text', text: '<strong>不可变状态 + 条件边 = 图状态机的核心。</strong>节点不直接改状态，而是返回 update dict，运行时用 `{**state, **update}` 合并。条件边由 state 的某个字段（如 route/confidence）决定方向。', style: 'note' },
+            { type: 'code', code: `classify ──(route=refund)──> refund ──> human_gate ──> send ──> END
+          ──(route=bug)────> bug
+          ──(route=sales)──> sales
+# 条件边 = 三条分支，由 classify 的 route 字段决定` }
+          ]
+        },
+        {
+          emoji: '💾',
+          title: '2. 持久化执行：检查点与恢复',
+          tag: 'Phase 14-13',
+          blocks: [
+            { type: 'list', items: [
+              '每个节点返回后，运行时调用 <span class="highlight">checkpointer.save(session_id, step_name, state)</span> 序列化完整状态',
+              '序列化内容：step 计数 / route 决策 / ticket 工单 / 中间变量——<strong>全量，不是摘要</strong>',
+              '<strong>恢复</strong>：`resume(session_id)` → `load_latest()` → 拿到最后状态 → 从下一个节点继续',
+              '"40 步在第 38 步失败" → 从第 39 步恢复，不重跑前 38 步'
+            ]}
+          ]
+        },
+        {
+          emoji: '⏸',
+          title: '3. 人工介入：human_in_the_loop',
+          tag: 'Phase 14-13',
+          blocks: [
+            { type: 'list', items: [
+              '在关键节点前设 <span class="highlight">_pause_reason</span> → Runner 抛出 <span class="strong">PausedAtNode</span> 异常',
+              '外部代码捕获异常 → 展示当前状态 → 等待人工审批',
+              '审批后：修改 state（如设 human_approval=True） → 调用 resume_from 节点继续',
+              '演示：bug 消息 → 分类为 bug → 生成工单 BUG-xxx → human_gate 暂停 → 审批后 → send'
+            ]}
+          ]
+        },
+        {
+          emoji: '🔬',
+          title: '4. 练习 1：低置信度分类 + 人工覆盖路线',
+          tag: '练习',
+          blocks: [
+            { type: 'list', items: [
+              '<strong>问题</strong>：含糊输入（"我账号有点奇怪"）分类器给 uncertain + 低置信度（~0.34）',
+              '<strong>解法</strong>：不确定路由不硬分，直接暂停等待人工设 route 后恢复',
+              '低置信度 → uncertain 节点暂停 → 人工审阅设为 refund → 从 refund 节点恢复 → 正常走审批-发送'
+            ]}
+          ]
+        },
+        {
+          emoji: '📊',
+          title: '5. 练习 2：真实 SQLite 检查点 + 开销测量',
+          tag: '练习',
+          blocks: [
+            { type: 'table', headers: ['指标', '正常状态(~150B)', '大状态(500KB)'], rows: [
+              ['序列化延迟', '~9µs', '~1ms'],
+              ['SQLite 写入延迟', '~158µs', '~1.9ms'],
+              ['序列化吞吐量', '—', '495 MB/s'],
+              ['总每 step 开销', '~167µs', '~2.9ms']
+            ]},
+            { type: 'text', text: '<strong>结论</strong>：每步检查点开销极小（微秒级），对大多数场景可忽略。500KB payload 才 3ms。检查点真正的代价不在性能，在存储膨胀和序列化一致性（非确定性节点需要捕获随机种子）。', style: 'note' }
+          ]
+        },
+        {
+          emoji: '⚡',
+          title: '6. 练习 3：并行边 + 自定义归约器',
+          tag: '练习',
+          blocks: [
+            { type: 'text', text: '分析任务以并行模式展开（sentiment + entities + urgency 同时跑），通过自定归约器合并结果。', style: 'note' },
+            { type: 'table', headers: ['方式', '耗时', '加速比'], rows: [
+              ['串行 3 节点', '0.1296s', '1x'],
+              ['并行 3 节点', '0.0526s', '2.46x']
+            ]},
+            { type: 'list', items: [
+              '<strong>不可变状态让并行安全</strong>：每个节点收到的是 state 快照（不是共享引用），各节点独立写 update，归约器负责合并',
+              '<strong>merging_reducer</strong>：后写覆盖前（最后写的 entities 覆盖前面的）',
+              '<strong>list_append_reducer</strong>：列表字段继续追加而非覆盖（各分析节点各自贡献 tags）'
+            ]}
+          ]
+        },
+        {
+          emoji: '🔗',
+          title: '7. LangGraph 的核心模式 vs 本课实现',
+          tag: 'Phase 14-13',
+          blocks: [
+            { type: 'table', headers: ['LangGraph 特性', '本课 stdlib 实现'], rows: [
+              ['不可变状态', 'State = dict, Node 返回 update, {**state, **update} 合并'],
+              ['条件边', 'add_conditional_edges 绑定 router 函数 + targets'],
+              ['检查点', 'Runner.run() 循环内每次调用 checkpointer.save()'],
+              ['SQLite/Redis 后端', 'InMemoryCheckpointer（练习 2 换真实 SQLite）'],
+              ['中断 / HIL', '_pause_reason → PausedAtNode 异常 → 外部审批'],
+              ['子图 / 层次化', 'Runner.run() 递归调用（本课未实现但结构支持）'],
+              ['时光回溯', 'load_latest(session_id) 任一步恢复']
+            ]}
+          ]
+        },
+        {
+          emoji: '💬',
+          title: '8. 面试可能问什么',
+          tag: 'Phase 14-13',
+          blocks: [
+            { type: 'qa', items: [
+              { q: 'LangGraph 的核心三件套是什么？', a: 'State（不可变 TypedDict）、Node（state→update 纯函数）、Edge（静态边/条件边）。State 不可变防止了共享引用引发的竞态条件，每个节点只返回变更的 diff。' },
+              { q: '检查点 checkpoint 解决了什么问题？', a: '让 agent 从步长级故障恢复，而不是从头重跑。40 步的任务在第 38 步崩溃 → 检查点序列化了第 37 步的状态 → resume(session_id) 从第 38 步继续，零重放浪费。' },
+              { q: '人工介入（human-in-the-loop）怎么实现的？', a: '节点返回 update 设 _pause_reason，循环抛 PausedAtNode。外部捕获后展示状态给人类，人类修改 state（如设 route/human_approval），继续 invoke 从下一步恢复。所有状态在暂停点都已保存。' },
+              { q: 'LangGraph 的三种编排拓扑是什么？', a: '监督者（中央路由 LLM 分派给专业子 agent）、群集/点对点（agent 通过共享工具交接）、层次化（监督者管理子监督者以子图实现）。' },
+              { q: '并行边怎么保证安全？', a: '不可变状态让每个节点拿到独立的快照，不会互相污染。归约器负责 conflict resolution：每个节点独立产出 update，运行时决定哪个 update 的哪个字段生效。' },
+              { q: '检查点不该保存什么？', a: '不应只保存"摘要"状态——必须序列化完整状态才能精确恢复。非确定性节点（随机种子、时钟时间、外部 API）需要显式捕获。条件边不应过度使用——全条件边的图不可推理。' },
+              { q: 'LangGraph 和手写 ReAct 循环的区别？', a: '手写 ReAct 是 while True 黑盒：不能暂停、不能回退、不能分叉。LangGraph 把循环显式化成图后，白送检查点（恢复）、中断（HIL）、流式（实时 UI）、时光回溯（调试）。代价要设计好节点和状态先。' }
+            ]}
+          ]
+        },
+        {
+          emoji: '📌',
+          title: '今日总结',
+          accentBorder: true,
+          blocks: [
+            { type: 'subtitle', text: '状态图 = State + Node + Edge' },
+            { type: 'list', items: [
+              '状态不可变：节点返回 update diff，运行时 {**state, **update} 合并',
+              '条件边：路由函数根据 state 字段作分支'
+            ]},
+            { type: 'subtitle', text: '检查点让恢复变得廉价' },
+            { type: 'list', items: [
+              '每步后序列化完整状态，恢复 = load_latest(session_id)',
+              '练习 2 测到每 step 开销 ~167µs（正常状态），微乎其微'
+            ]},
+            { type: 'subtitle', text: '三个练习的收获' },
+            { type: 'list', items: [
+              '低置信分类 → 暂停 → 人工设 route → 恢复（条件边 + HIL）',
+              'SQLite 检查点开销 ~167µs/step，500KB payload 也才 ~3ms',
+              '并行边 2.46x 加速，不可变状态让并行安全，归约器决定合并策略'
+            ]}
+          ]
+        }
+      ]
+    }
+  ]
 }
