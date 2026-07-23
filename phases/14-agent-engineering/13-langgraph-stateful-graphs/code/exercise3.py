@@ -147,6 +147,8 @@ class ParallelRunner:
                 state = self.reducer(state, updates)
                 self.checkpointer.save(session_id, "_parallel_join", state)
 
+                # Clear targets to avoid re-triggering
+                state.pop("_parallel_targets", None)
                 # After join, continue from the join node
                 current = self.graph._next("_parallel_join", state)
                 continue
@@ -168,9 +170,11 @@ class _ThreadPool:
         pass
     def map(self, fn, args):
         results = [None] * len(args)
+        def worker(idx, arg):
+            results[idx] = fn(arg)
         threads = []
         for i, arg in enumerate(args):
-            t = threading.Thread(target=lambda idx, a: results.__setitem__(idx, fn(a)), args=(i, arg))
+            t = threading.Thread(target=worker, args=(i, arg))
             threads.append(t)
             t.start()
         for t in threads:

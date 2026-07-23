@@ -5,8 +5,12 @@
 
 ## 当前进度
 
-- **正在学**：Phase 14 · Agent 工程（共 42 课），已学到第 12 课 `12-anthropic-workflow-patterns` ✅，下一课第 13 课
-- **最后更新**：2026/07/01
+- **正在学**：T0.5 `validate_request()` 已讲完并暂停；下一节是 T0.6 `FakeCodingAgent.run()`
+- **最近完成**：Python 预备 P0.1–P0.8 教学内容 ✅；后续在项目代码中继续巩固
+- **Python 预备**：P0.1–P0.8 教学内容已完成；后续通过真实项目代码继续巩固
+- **项目状态**：T0 代码验收通过；T0.1–T0.5 已讲完，T0.6 假 Agent 待学习
+- **课程路线**：Phase 14 已完成第 14 课；从第 15 课起暂停顺序推进，改为项目遇到相关问题时按需补课
+- **最后更新**：2026/07/23
 - **实验台搬迁**（2026/07/01）：sandbox 的"课程实验"+"数据库(检查点查看器)"已全部静态化搬进学习笔记实验台，零后端纯前端。课程实验从 1 个补齐到 22 个模块（`site/vue-app/summary/src/data/modules/*.js`，import.meta.glob 自动聚合）；embedding 用离线向量快照、检查点查看器用 JsonPlusSerializer 预解码快照。
 
 ## Phase 11 · LLM 工程（课程清单）
@@ -49,7 +53,10 @@
 | 10 | 10-skill-libraries-voyager | ✅ 已完成 | voyager_skills |
 | 11 | 11-planning-htn-and-evolutionary | ✅ 已完成 | htn_evolutionary |
 | 12 | 12-anthropic-workflow-patterns | ✅ 已完成 | confidence_router |
-| .. | （13-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
+| 13 | 13-langgraph-stateful-graphs | ✅ 已完成 | langgraph_simulator |
+| 14 | 14-autogen-actor-model | ✅ 已完成 | —（无独立模块） |
+| 15 | 15-crewai-role-based-crews | ⏸ 按需学习 | — |
+| .. | （16-42 见 phases/14-agent-engineering/） | ⬜ 未开始 | — |
 
 ## 维护约定
 
