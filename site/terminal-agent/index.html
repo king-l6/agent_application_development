@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="从 JavaScript 对照 Python 开始，手写并生产化一个 Terminal Coding Agent。">
+    <meta name="theme-color" content="#f4f1ea">
+    <title>Terminal Coding Agent · 项目式学习手册</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <button class="mobile-menu" id="mobile-menu" type="button" aria-controls="course-sidebar" aria-expanded="false">
+      <span aria-hidden="true">☰</span>
+      <span>目录</span>
+    </button>
+
+    <div class="sidebar-scrim" id="sidebar-scrim" hidden></div>
+
+    <aside class="course-sidebar" id="course-sidebar">
+      <a class="brand" href="#course-overview" aria-label="回到课程首页">
+        <span class="brand-mark">TCA</span>
+        <span>
+          <strong>Terminal Coding Agent</strong>
+          <small>项目式学习手册</small>
+        </span>
+      </a>
+
+      <div class="progress-panel">
+        <div class="progress-copy">
+          <span>当前主线</span>
+          <strong>T0.4</strong>
+        </div>
+        <div class="progress-track" aria-label="课程主线进度">
+          <span style="width: 12%"></span>
+        </div>
+        <p>P0 已完成 · T0.1–T0.3 已完成</p>
+      </div>
+
+      <nav class="course-nav" id="course-nav" aria-label="课程目录"></nav>
+
+      <div class="sidebar-footer">
+        <a href="https://github.com/king-l6/agent_application_development/tree/main/projects/terminal-coding-agent">查看项目源码 ↗</a>
+        <span>最后更新 · 2026-07-23</span>
+      </div>
+    </aside>
+
+    <main class="course-main" id="course-main">
+      <noscript>
+        <p class="noscript">这个课程页需要启用 JavaScript 才能生成章节目录和正文。</p>
+      </noscript>
+    </main>
+
+    <button class="back-to-top" id="back-to-top" type="button" aria-label="回到页面顶部">↑</button>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
