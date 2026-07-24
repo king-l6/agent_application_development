@@ -340,7 +340,7 @@ class AgentError:
     code: 'T0.5',
     title: 'validate_request() 请求校验',
     status: 'done',
-    statusLabel: '已完成 · 当前暂停点',
+    statusLabel: '已完成',
     core: 'Agent 开始工作前，先检查请求是否合法。非法请求返回结构化 AgentError，合法请求返回 None。',
     targets: [
       { label: '核心代码', path: 'projects/terminal-coding-agent/terminal_agent/contracts.py', line: 77, url: `${repoBase}projects/terminal-coding-agent/terminal_agent/contracts.py#L77` },
@@ -459,20 +459,108 @@ class AgentError:
     id: 't0-6',
     code: 'T0.6',
     title: 'FakeCodingAgent.run()',
-    status: 'current',
-    statusLabel: '下一节',
+    status: 'done',
+    statusLabel: '已完成 · 当前暂停点',
     core: '把请求校验连接到统一 TaskResult，让合法任务确定性完成、非法任务确定性失败。',
-    preview: '完成教学后会按同一格式补齐：目标文件、JS 对照、Python 实现、分支流程、task_id 兜底、运行结果和练习。',
     targets: [
-      { label: '核心代码', path: 'projects/terminal-coding-agent/terminal_agent/fake_agent.py', line: 8, url: `${repoBase}projects/terminal-coding-agent/terminal_agent/fake_agent.py#L8` }
-    ]
+      { label: '核心代码', path: 'projects/terminal-coding-agent/terminal_agent/fake_agent.py', line: 8, url: `${repoBase}projects/terminal-coding-agent/terminal_agent/fake_agent.py#L8` },
+      { label: '演示代码', path: 'projects/terminal-coding-agent/python_practice/14_fake_agent_demo.py', line: 1, url: `${repoBase}projects/terminal-coding-agent/python_practice/14_fake_agent_demo.py#L1` }
+    ],
+    javascript: `class FakeCodingAgent {
+  run(request) {
+    const error = validateRequest(request);
+
+    if (error !== null) {
+      return new TaskResult({
+        taskId: request.taskId.trim() || "unknown",
+        status: TaskStatus.FAILED,
+        summary: "Task rejected before execution.",
+        error,
+      });
+    }
+
+    return new TaskResult({
+      taskId: request.taskId,
+      status: TaskStatus.COMPLETED,
+      summary: \
+        \`Accepted task \${request.taskId} for deterministic execution.\`,
+    });
+  }
+}`,
+    python: `class FakeCodingAgent:
+    """校验一次任务，并返回不执行真实操作的确定性结果。"""
+
+    def run(self, request: TaskRequest) -> TaskResult:
+        error = validate_request(request)
+        if error is not None:
+            return TaskResult(
+                task_id=request.task_id.strip() or "unknown",
+                status=TaskStatus.FAILED,
+                summary="Task rejected before execution.",
+                error=error,
+            )
+
+        return TaskResult(
+            task_id=request.task_id,
+            status=TaskStatus.COMPLETED,
+            summary=f"Accepted task {request.task_id} for deterministic execution.",
+        )`,
+    mapping: {
+      headers: ['JavaScript', 'Python', '含义'],
+      rows: [
+        ['run(request)', 'def run(self, request)', '定义对象方法'],
+        ['error !== null', 'error is not None', '校验发现错误'],
+        ['new TaskResult({...})', 'TaskResult(...)', '创建统一结果对象'],
+        ['value || "unknown"', 'value or "unknown"', '前值为空时使用兜底值'],
+        ['`Accepted ${id}`', 'f"Accepted {id}"', '把变量放进字符串'],
+        ['return', 'return', '立即结束并返回结果']
+      ]
+    },
+    explanations: [
+      {
+        title: '为什么先调用 validate_request()',
+        blocks: [
+          { type: 'text', paragraphs: ['FakeCodingAgent 不重复编写 task_id、goal 和路径检查。请求是否合法由 validate_request() 统一负责，Agent 只负责把校验结果转换成 TaskResult。'] },
+          { type: 'callout', tone: 'success', title: '职责分离', text: 'validate_request() 回答“请求能不能启动”；FakeCodingAgent.run() 回答“对调用方返回什么结果”。' }
+        ]
+      },
+      {
+        title: '错误分支如何包装结果',
+        blocks: [
+          { type: 'list', ordered: true, items: ['validate_request() 返回 AgentError。', 'if error is not None 进入失败分支。', '创建 status=FAILED 的 TaskResult。', '把原始 AgentError 放进 error 字段。', 'TaskResult.__post_init__ 再确认失败结果确实携带错误。'] },
+          { type: 'text', paragraphs: ['这样 CLI 永远只需要处理 TaskResult，不需要有时接收 AgentError、有时接收普通结果。'] }
+        ]
+      },
+      {
+        title: 'task_id.strip() or "unknown" 是什么意思',
+        blocks: [
+          { type: 'compare', left: { label: 'Python', code: 'request.task_id.strip() or "unknown"' }, right: { label: 'JavaScript', code: 'request.taskId.trim() || "unknown"' } },
+          { type: 'text', paragraphs: ['如果 task_id 去掉空白后仍是空字符串，or 会返回右边的 "unknown"。失败结果仍然需要一个可追踪任务编号，不能把全空格原样带到日志和 JSON。'] }
+        ]
+      },
+      {
+        title: '为什么它叫 FakeCodingAgent',
+        blocks: [
+          { type: 'text', paragraphs: ['它不调用模型、不读取文件、不修改代码，也没有 Agent Loop。它只用确定性分支验证 T0 的契约能完整连接起来。'] },
+          { type: 'callout', tone: 'warning', title: 'COMPLETED 的范围', text: '这里的 completed 只表示 T0 假流程完成，不代表真实编码任务已经执行。T1 会用显式 Harness Loop 替换这个占位实现。' }
+        ]
+      }
+    ],
+    run: {
+      command: 'python3 -m python_practice.14_fake_agent_demo',
+      result: ['合法请求返回 status=completed，error=None。', '空 task_id 先被 validate_request() 拒绝。', '非法请求返回 status=failed。', '失败结果的 task_id 使用 unknown。', 'AgentError 被完整包装进 TaskResult.error。']
+    },
+    exercise: {
+      prompt: '如果 request.task_id="  task-007  " 且 goal、repository 都合法，成功结果中的 task_id 会保留两端空格，还是变成 task-007？',
+      answer: '当前成功分支会保留两端空格，因为它使用 request.task_id 原值；只有失败兜底分支调用了 strip()。这说明“校验合法”与“规范化输入”是两个不同问题。'
+    }
   },
   {
     id: 't0-7',
     code: 'T0.7',
     title: 'CLI 边界与退出码',
-    status: 'upcoming',
-    statusLabel: '待学习',
+    status: 'current',
+    statusLabel: '下一节',
     core: '用 argparse 接收终端参数，把 TaskResult 输出为 JSON，并用退出码表示成功或失败。',
     preview: '完成教学后再写入正文，不提前把提纲当成课程内容。',
     targets: [

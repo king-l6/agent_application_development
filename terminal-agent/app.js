@@ -119,7 +119,7 @@ function renderHero() {
   const note = element('div', 'hero-note')
   note.append(
     element('strong', '', '当前学习位置'),
-    document.createTextNode('P0 已完成；T0.1–T0.5 已完成。下一节是 T0.6：用 FakeCodingAgent.run() 连接请求校验与统一结果。')
+    document.createTextNode('P0 已完成；T0.1–T0.6 已完成。下一节是 T0.7：用 CLI、JSON 与退出码建立正式终端边界。')
   )
 
   const mapSection = element('section', 'lesson-section')
