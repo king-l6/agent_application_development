@@ -1,3 +1,5 @@
+import { t0Lessons } from './t0-lessons.js'
+
 const repoBase = 'https://github.com/king-l6/agent_application_development/blob/main/'
 
 export const courseMeta = {
@@ -132,7 +134,7 @@ request = TaskRequest(
     title: '项目契约与最小骨架',
     duration: '1 小时',
     status: 'current',
-    statusLabel: '进行中 · T0.4',
+    statusLabel: '进行中 · T0.6',
     summary: '先定义 Agent 接收什么、返回什么、怎样表达错误和矛盾状态。此时不接模型，也不设计复杂工具，因为后续所有能力都必须建立在稳定契约上。',
     question: '如果输入、输出和失败语义都不稳定，后续模型、工具和恢复机制要依赖什么？',
     outcomes: [
@@ -192,10 +194,11 @@ class TaskResult:
             ['T0.7', 'argparse、JSON、退出码', '可从终端稳定调用'],
             ['T0.8', '契约测试与数据流复盘', '测试退出 0，能完整讲解']
           ]},
-          { type: 'callout', tone: 'success', title: '当前学习位置', text: 'T0.1–T0.3 已完成。下一步是 T0.4：用 __post_init__ 保证 TaskResult 的字段组合永远一致。' }
+          { type: 'callout', tone: 'success', title: '当前学习位置', text: 'T0.1–T0.5 已完成并整理为完整课程正文。下一步是 T0.6：FakeCodingAgent.run()。' }
         ]
       }
     ],
+    lessons: t0Lessons,
     practice: {
       title: '补齐 TaskResult 的不变量测试',
       steps: ['创建 completed + error 的矛盾结果并断言抛错。', '创建 failed + 无 error 的矛盾结果并断言抛错。', '保留 completed 和 failed 的合法构造测试。'],
