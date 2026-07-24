@@ -58,6 +58,10 @@ function renderCodePanel(label, code) {
 }
 
 function renderBlock(block) {
+  if (block.type === 'custom') {
+    return block.node
+  }
+
   if (block.type === 'text') {
     const fragment = document.createDocumentFragment()
     block.paragraphs.forEach((paragraph) => fragment.append(element('p', '', paragraph)))
@@ -115,7 +119,7 @@ function renderHero() {
   const note = element('div', 'hero-note')
   note.append(
     element('strong', '', '当前学习位置'),
-    document.createTextNode('P0 已完成；T0.1–T0.3 已完成。下一节是 T0.4：用 __post_init__ 保证 TaskResult 的状态一致性。')
+    document.createTextNode('P0 已完成；T0.1–T0.5 已完成。下一节是 T0.6：用 FakeCodingAgent.run() 连接请求校验与统一结果。')
   )
 
   const mapSection = element('section', 'lesson-section')
@@ -180,6 +184,108 @@ function renderInterview(chapter) {
   return interview
 }
 
+function renderLessonIndex(chapter) {
+  const index = element('section', 'lesson-index')
+  index.append(
+    element('p', 'eyebrow', 'Lesson directory'),
+    element('h3', '', `${chapter.code} 小节目录`),
+    element('p', 'lesson-index-note', '已完成小节提供完整正文；待学习小节只显示位置和目标，不提前用提纲代替教学。')
+  )
+
+  const grid = element('div', 'lesson-index-grid')
+  chapter.lessons.forEach((lesson) => {
+    const link = element('a', 'lesson-index-link')
+    link.href = `#${lesson.id}`
+    link.dataset.status = lesson.status
+    link.append(
+      element('span', 'lesson-index-code', lesson.code),
+      element('strong', '', lesson.title),
+      element('small', '', lesson.statusLabel)
+    )
+    grid.append(link)
+  })
+  index.append(grid)
+  return index
+}
+
+function renderTargets(targets) {
+  const list = element('div', 'source-list')
+  targets.forEach((target) => {
+    const row = element('div', 'source-row')
+    row.append(element('strong', '', target.label))
+    const link = element('a', '', `${target.path}:${target.line}`)
+    link.href = target.url
+    link.target = '_blank'
+    link.rel = 'noreferrer'
+    row.append(link)
+    list.append(row)
+  })
+  return list
+}
+
+function renderLessonPart(number, title, blocks) {
+  const part = element('section', 'lesson-part')
+  part.append(element('h4', '', `${number}. ${title}`))
+  blocks.forEach((block) => part.append(renderBlock(block)))
+  return part
+}
+
+function renderDetailedLesson(lesson, chapterId) {
+  const section = element('section', 'lesson-detail')
+  section.id = lesson.id
+  section.dataset.parentChapter = chapterId
+
+  const head = element('header', 'lesson-detail-head')
+  const titleWrap = document.createElement('div')
+  titleWrap.append(
+    element('span', `status-badge ${lesson.status}`, lesson.statusLabel),
+    element('h3', '', `${lesson.code} ${lesson.title}`)
+  )
+  head.append(element('span', 'lesson-detail-code', lesson.code), titleWrap)
+  section.append(head)
+
+  const core = element('div', 'lesson-core')
+  core.append(element('strong', '', '这一节的核心'), element('p', '', lesson.core))
+  section.append(core)
+
+  if (lesson.preview) {
+    section.append(
+      renderLessonPart(1, '目标文件', [{ type: 'custom', node: renderTargets(lesson.targets) }]),
+      (() => {
+        const pending = element('div', 'pending-lesson')
+        pending.append(element('strong', '', lesson.statusLabel), element('p', '', lesson.preview))
+        return pending
+      })()
+    )
+    return section
+  }
+
+  let partNumber = 1
+  section.append(renderLessonPart(partNumber++, '目标文件', [{ type: 'custom', node: renderTargets(lesson.targets) }]))
+  section.append(renderLessonPart(partNumber++, 'JavaScript 等价代码', [{ type: 'code', label: 'JavaScript', code: lesson.javascript }]))
+  section.append(renderLessonPart(partNumber++, 'Python 实现', [{ type: 'code', label: 'Python', code: lesson.python }]))
+  section.append(renderLessonPart(partNumber++, 'JS 与 Python 对应', [{ type: 'table', headers: lesson.mapping.headers, rows: lesson.mapping.rows }]))
+
+  lesson.explanations.forEach((explanation) => {
+    section.append(renderLessonPart(partNumber++, explanation.title, explanation.blocks))
+  })
+
+  section.append(renderLessonPart(partNumber++, '运行结果', [
+    { type: 'code', label: 'Terminal', code: lesson.run.command },
+    { type: 'list', items: lesson.run.result }
+  ]))
+
+  const exerciseBlocks = [{ type: 'text', paragraphs: [lesson.exercise.prompt] }]
+  const exercisePart = renderLessonPart(partNumber, '小练习', exerciseBlocks)
+  const answer = document.createElement('details')
+  answer.className = 'exercise-answer'
+  answer.append(element('summary', '', '查看参考判断'), element('p', '', lesson.exercise.answer))
+  exercisePart.append(answer)
+  section.append(exercisePart)
+
+  return section
+}
+
 function renderChapter(chapter) {
   const article = element('article', 'course-chapter')
   article.id = chapter.id
@@ -217,7 +323,13 @@ function renderChapter(chapter) {
     article.append(lesson)
   })
 
-  article.append(renderPractice(chapter), renderInterview(chapter))
+  if (chapter.lessons?.length) {
+    article.append(renderLessonIndex(chapter))
+    chapter.lessons.forEach((lesson) => article.append(renderDetailedLesson(lesson, chapter.id)))
+    article.append(renderInterview(chapter))
+  } else {
+    article.append(renderPractice(chapter), renderInterview(chapter))
+  }
   return article
 }
 
@@ -250,6 +362,22 @@ function renderNavigation() {
         element('span', 'nav-status')
       )
       groupNode.append(link)
+
+      if (chapter.lessons?.length) {
+        const sublist = element('div', 'nav-sublist')
+        chapter.lessons.forEach((lesson) => {
+          const sublink = element('a', 'nav-sublink')
+          sublink.href = `#${lesson.id}`
+          sublink.dataset.lesson = lesson.id
+          sublink.dataset.status = lesson.status
+          sublink.append(
+            element('span', 'nav-subcode', lesson.code),
+            element('span', '', lesson.title)
+          )
+          sublist.append(sublink)
+        })
+        groupNode.append(sublist)
+      }
     })
 
     nav.append(groupNode)
@@ -274,6 +402,7 @@ function setupNavigation() {
   })
 
   const links = [...nav.querySelectorAll('.nav-link')]
+  const sublinks = [...nav.querySelectorAll('.nav-sublink')]
   const sections = [document.querySelector('#course-overview'), ...chapters.map(({ id }) => document.querySelector(`#${id}`))]
   const observer = new IntersectionObserver((entries) => {
     const visible = entries
@@ -287,6 +416,20 @@ function setupNavigation() {
   }, { rootMargin: '-12% 0px -72% 0px', threshold: 0 })
 
   sections.forEach((section) => section && observer.observe(section))
+
+  const lessonObserver = new IntersectionObserver((entries) => {
+    const visible = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+    if (!visible) return
+
+    const chapterId = visible.target.dataset.parentChapter
+    links.forEach((link) => link.classList.toggle('active', link.dataset.chapter === chapterId))
+    sublinks.forEach((link) => link.classList.toggle('active', link.dataset.lesson === visible.target.id))
+    sublinks.find((link) => link.dataset.lesson === visible.target.id)?.scrollIntoView({ block: 'nearest' })
+  }, { rootMargin: '-16% 0px -68% 0px', threshold: 0 })
+
+  document.querySelectorAll('.lesson-detail').forEach((lesson) => lessonObserver.observe(lesson))
 }
 
 function setupBackToTop() {
