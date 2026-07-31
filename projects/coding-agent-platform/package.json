@@ -1,0 +1,21 @@
+{
+  "name": "coding-agent-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "智工台：可运行的编码 Agent 平台（Harness + API + Console）",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm --filter @cap/core test && pnpm --filter @cap/fixtures test",
+    "dev": "pnpm --filter @cap/core build && pnpm --filter @cap/fixtures build && pnpm --parallel --filter @cap/api --filter @cap/web dev",
+    "dev:api": "pnpm --filter @cap/api dev",
+    "dev:web": "pnpm --filter @cap/web dev",
+    "build:web": "pnpm --filter @cap/web build",
+    "preview:web": "pnpm --filter @cap/web preview",
+    "cli": "pnpm --filter @cap/cli start",
+    "eval": "pnpm --filter @cap/cli start eval"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

@@ -1,1 +1,2 @@
+- [教学偏好：JS 对照讲 Python](teaching_preferences.md) — 完整注释 JS 文件 + 对应表 + 语义；左 JS 右 py；讲完暂停
 - [HTML 总结必须加面试话术](project_html_interview.md) — 所有学习总结 HTML 自动附带面试回答示例

@@ -1,0 +1,13 @@
+---
+description: 只完整翻译本小节 py 范围（含函数体）；禁止整文件搬空或空壳
+alwaysApply: true
+---
+
+# 教学讲解格式
+
+1. 标明本小节 py **精确范围**
+2. `js_practice/` 只译该范围，且**函数体要全**
+3. 不要把整份大文件一次塞进一个 JS；也不要只译 `this.x = y` 空壳
+4. 对应表 + 语义 + 窄测试 + 小练习
+
+详见 `memory/teaching_preferences.md`

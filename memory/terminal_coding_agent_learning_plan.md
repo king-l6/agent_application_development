@@ -2,7 +2,7 @@
 
 > 目标：用一个可运行、可测试、可解释的终端编码 Agent，串起 Agent 工程师面试所需的核心知识。主干保持稳定，后续专题只作为枝丫挂接到明确的主干里程碑。
 
-**状态：** T0.5 `validate_request()` 已讲完并暂停；下次从 T0.6 `FakeCodingAgent.run()` 继续  
+**状态：** T1 已完成；正在学习 T2.1 ToolRecord（工具名片与校验错误形状）  
 **主项目目录：** `projects/terminal-coding-agent/`  
 **参考实现：** `phases/19-capstone-projects/01-terminal-native-coding-agent/`  
 **基础课程：** `phases/19-capstone-projects/20-*` 至 `29-*`  

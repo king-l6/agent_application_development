@@ -6,7 +6,7 @@
 **主线范围：** `P0.1–P0.8`、`T0–T15`  
 **预计时间：** Python 预备 4–6 小时，主干约 33.5 小时  
 **最终产物：** 一个可运行、可测试、可恢复、可评估、可创建 PR 的 Terminal Coding Agent  
-**当前进度：** P0 已完成；T0.1–T0.3 已完成，下一节为 T0.4 `__post_init__`
+**当前进度：** P0、T0、T1 已完成；正在学习 T2.1 ToolRecord
 
 ## 目录
 
@@ -284,7 +284,8 @@ T0 先冻结边界，不接真实模型，不加入复杂工具循环。
 - [x] T0.3：`ErrorCode` 和 `AgentError`。
 - [ ] T0.4：使用 `__post_init__` 保证结果一致性。
 - [ ] T0.5–T0.8：请求校验、Fake Agent、CLI 和契约验收。
-- [ ] T1–T15：后续主干。
+- [x] T1：Agent Harness Loop。
+- [ ] T2–T15：后续主干。
 
 每次学习只推进一个可验证小节。完成后更新 [`memory/study_progress.md`](../../memory/study_progress.md)，下一次从唯一进度真相继续。
 
